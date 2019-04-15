@@ -7,6 +7,7 @@ export default class GameBoardTile extends Component {
         super(props);
     
         let brightMod = -30 + Math.floor(Math.random() * Math.floor(30));
+        let x = props.top;
         //console.log("bright mod: " +brightMod);
 
         this.state = {
@@ -32,24 +33,31 @@ export default class GameBoardTile extends Component {
       }
 
     select(){
-    this.setState({
-        brightness: this.state.brightness+50
-    })
+        this.setState({
+         brightness: this.state.brightness+50
+        })
     }
 
-deselect(){
-    this.setState({
-      brightness: this.state.brightness-50
-    })
-}
+    deselect(){
+        this.setState({
+            brightness: this.state.brightness-50
+        })
+    }
 
     render(){
 
         let src = this.props.src;
+        let border = 0;
+        
+        //console.log("rendering game tile")
+        if(this.props.markedX==this.props.x && this.props.markedY==this.props.y) //compares string and integers, hence == instead of ===
+        {
+            border = 1
+        }
     
         return(
             <div style={this.changeBrightness(this.state.brightness)}>
-            <img src={src} alt="bg" onClick={this.props.click} onMouseLeave={this.deselect} onMouseOver={this.select} style={{position: 'absolute', height: this.props.height, width: this.props.width, top: this.props.top, left: this.props.left}}/>
+            <img src={src} alt={this.props.x +"_" +this.props.y} border={border} onClick={this.props.click} onMouseLeave={this.deselect} onMouseOver={this.select} style={{position: 'absolute', height: this.props.height-(border*2), width: this.props.width-(border*2), top: this.props.top, left: this.props.left}}/>
             </div>
         )
     }
