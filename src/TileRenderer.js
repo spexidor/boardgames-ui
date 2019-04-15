@@ -10,7 +10,7 @@ export default class TileRenderer extends Component
         let tiles = <div></div>;
 
         if(this.props.positions.length > 0){
-            tiles = <div><MapTable data={this.props.positions} size={this.props.size}/></div>
+            tiles = <div><MapTable data={this.props.positions} size={this.props.tileSize    }/></div>
         }
 
         return(
@@ -21,10 +21,14 @@ export default class TileRenderer extends Component
 }
 }
 
+function clickTest(props){
+    console.log("clicked a tile " +props);
+}
+
 function MapTable(props){
  
     return(
       props.data.map((s, index) => 
-          <GameBoardTile key={index} src={skulls} height={props.size} width={props.size} top={s.top} left={s.left}/>
+          <GameBoardTile click={clickTest} key={index} src={skulls} height={props.size} width={props.size} top={s.topPx} left={s.leftPx}/>
       ))
   }

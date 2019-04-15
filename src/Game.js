@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import GameBoard from './GameBoard.js';
 
-export class Game extends Component {
+ export default class Game extends Component {
  
   constructor(props){
     super(props);
@@ -13,8 +13,8 @@ export class Game extends Component {
   }
   
   componentDidMount(){
-    
-    fetch('localhost:8083/showdown/1')
+
+    fetch('http://localhost:8083/showdown/1')
     .then(response => response.json())
     .then(data => {
       this.setState({showdown: data});
@@ -22,6 +22,6 @@ export class Game extends Component {
   }
 
   render(){
-    return(<GameBoard data={this.state.showdown}/>)
+    return(<GameBoard showdown={this.state.showdown}/>)
   }
 }
