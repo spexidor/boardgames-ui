@@ -6,9 +6,7 @@ export default class GameBoardTile extends Component {
     constructor(props){
         super(props);
     
-        let brightMod = -30 + Math.floor(Math.random() * Math.floor(30));
-        let x = props.top;
-        //console.log("bright mod: " +brightMod);
+        let brightMod = (-30 + Math.floor(Math.random() * Math.floor(30)));
 
         this.state = {
             brightMod: brightMod,
@@ -21,13 +19,14 @@ export default class GameBoardTile extends Component {
     }
     
     changeHue(degree){
-        //console.log("setting hue to " +degree);
         let filterString = "hue-rotate(" +degree +"deg)";
         return {filter: filterString};
       }
 
       changeBrightness(percentage){
-        //console.log("setting hue to " +degree);
+          if(this.props.highlight===true){
+            percentage = percentage +50;
+          }
         let filterString = "brightness(" +percentage +"%)";
         return {filter: filterString};
       }
@@ -49,15 +48,19 @@ export default class GameBoardTile extends Component {
         let src = this.props.src;
         let border = 0;
         
-        //console.log("rendering game tile")
-        if(this.props.markedX==this.props.x && this.props.markedY==this.props.y) //compares string and integers, hence == instead of ===
+        if(this.props.markedX===this.props.x && this.props.markedY===this.props.y)
         {
             border = 1
+        }
+
+        //console.log("target: " +this.props.target.toString());
+        if(this.props.target === true){
+            border = 2;
         }
     
         return(
             <div style={this.changeBrightness(this.state.brightness)}>
-            <img src={src} alt={this.props.x +"_" +this.props.y} border={border} onClick={this.props.click} onMouseLeave={this.deselect} onMouseOver={this.select} style={{position: 'absolute', height: this.props.height-(border*2), width: this.props.width-(border*2), top: this.props.top, left: this.props.left}}/>
+            <img src={src} alt={"board_" +this.props.x +"_" +this.props.y} border={border} onClick={this.props.click} onMouseLeave={this.deselect} onMouseOver={this.select} style={{position: 'absolute', height: this.props.height-(border*2), width: this.props.width-(border*2), top: this.props.top, left: this.props.left}}/>
             </div>
         )
     }

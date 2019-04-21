@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import GameBoard from './GameBoard.js';
+import { UpdateShowdown, GetShowdown} from './RestServices';
 
  export default class Game extends Component {
  
@@ -13,15 +14,19 @@ import GameBoard from './GameBoard.js';
   }
   
   componentDidMount(){
-
-    fetch('http://localhost:8083/showdown/1')
-    .then(response => response.json())
-    .then(data => {
+    GetShowdown().then(data => {
       this.setState({showdown: data});
-    })
+    });
+  }
+
+  updateShowdown = (showdown) => {
+    console.log("updating showdown state, turn=" +showdown.turn);
+    
+    UpdateShowdown(this.state.showdown);
+    this.setState({showdown: showdown});
   }
 
   render(){
-    return(<GameBoard showdown={this.state.showdown}/>)
+    return(<GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown}/>)
   }
 }
