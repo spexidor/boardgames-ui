@@ -3,6 +3,8 @@ import './App.css';
 import SurvivorTile from './SurvivorTile';
 import s1 from './images/s1_c.jpg';
 import s2 from './images/s2_c.png';
+import s3 from './images/s3_c.png';
+import s4 from './images/s4_c.png';
 
 export default class SurvivorTiles extends Component {
  
@@ -10,7 +12,7 @@ export default class SurvivorTiles extends Component {
 
         let tiles = <div></div>;
         let survivors = [];
-        let src = [s1, s2];
+        let src = [s1, s2, s3, s4];
         const shrink = 3;
         if(this.props.survivors.length>0){
             

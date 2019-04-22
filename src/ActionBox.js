@@ -5,21 +5,41 @@ export default class ActionBox extends Component {
  
   render(){
 
+    //survivor
+    let moveDisabled = false;
+    let activateDisabled = false;
+    if(this.props.survivor.movesLeft < 1){
+        moveDisabled = true;
+    }
+    if(this.props.survivor.activationsLeft < 1){
+        activateDisabled = true;
+    }
+
+    //monster
+    let attackDisabled = true;
+    let getTargetDisabled = true;
+    if(this.props.targets.length === 1){
+        attackDisabled = false;
+    }
+    if(this.props.aiCard !== 0){
+        getTargetDisabled = false;
+    }
+
     let actionBox = <div></div>
     if(this.props.selection==="survivor"){
         actionBox = 
         <div>
-        <button onClick={this.props.move}>Move</button>
-        <button onClick={this.props.activate}>Activate</button>
+        <button disabled={moveDisabled} onClick={this.props.move}>Move</button>
+        <button disabled={activateDisabled} onClick={this.props.activate}>Activate</button>
         </div>
     }
     else if(this.props.selection==="monster"){
         actionBox = 
         <div>
         <button onClick={this.props.revealAI}>New AI</button>
-        <button onClick={this.props.target}>Get target</button>
+        <button disabled={getTargetDisabled} onClick={this.props.target}>Get target</button>
         <button onClick={this.props.move}>Move</button>
-        <button disabled={true} onClick={this.props.attack}>Attack</button>
+        <button disabled={attackDisabled} onClick={this.props.attack}>Attack</button>
         <br/><br/>
         <button onClick={this.props.changeFacing.bind(this, "UP")}>Turn up</button>
         <button onClick={this.props.changeFacing.bind(this, "DOWN")}>Turn down</button>
@@ -39,3 +59,4 @@ export default class ActionBox extends Component {
   }
 }
 
+//<button disabled={true} onClick={this.props.attack}>Attack</button>

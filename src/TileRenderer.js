@@ -25,7 +25,7 @@ export default class TileRenderer extends Component
                   }
               }
               for(let n=0; n<this.props.targets.length; n++){
-                if(x===this.props.targets[n].x && y===this.props.targets[n].y){
+                if(x===this.props.targets[n].position.x && y===this.props.targets[n].position.y){
                   target=true;
                   break;
                 }
