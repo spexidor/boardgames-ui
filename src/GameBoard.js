@@ -261,8 +261,8 @@ export default class GameBoard extends Component {
             survivor: survivor
           });
         })
-        })
-      }
+      })
+    }
   }
 
   getSpeed = () => {
@@ -390,7 +390,7 @@ export default class GameBoard extends Component {
   }
 
   target = () => {
-    console.log("revealed ai card: " +this.state.revealedAI.title);
+    console.log("finding target. revealed ai card: " +this.state.revealedAI.title);
 
     GetTargets(this.state.monster.id, this.state.revealedAI.id).then(data => {
       this.setState({targets: data});
@@ -429,6 +429,7 @@ export default class GameBoard extends Component {
         let action = this.state.action;
         action.selectMonsterTarget = false;
         this.deselect();
+        console.log("moving ai card");
         this.moveAI();
         this.setState({
           targets: [],
@@ -437,30 +438,65 @@ export default class GameBoard extends Component {
       });
     }
     else{
-      console.log("monster not in range");
+      console.log("monster not in range, canelling attack");
+      this.moveAI();
     }
-    
   }
 
   revealAI = () => {
 
-    if (this.state.monster.aiDeck.cardsInDeck.length > 0) {
-      console.log("new ai card: " +this.state.monster.aiDeck.cardsInDeck[0].title);
-      this.setState({
-        revealedAI: this.state.monster.aiDeck.cardsInDeck[0]
-      })
+    let monster = this.state.monster;
+    if (this.state.revealedAI === 0){
+      if (this.state.monster.aiDeck.cardsInDeck.length > 0) {
+        let aiCard = monster.aiDeck.cardsInDeck[0];
+        monster.aiDeck.cardsInDeck.shift();
+        console.log("new ai card: " +aiCard.title +", cards in deck: " +this.state.monster.aiDeck.cardsInDeck.length);
+        this.setState({
+          revealedAI: aiCard,
+          monster: monster
+        })
+      }
+      else {
+        this.shuffleAI();
+      }
     }
-    else this.shuffleAI()
+    else {
+      console.log("ai card already revealed");
+    }
+  }
+
+  shuffleAI = () => {
+    let monster = this.state.monster;
+    console.log("shuffling ai deck");
+    //move cards from discard to deck
+    while(monster.aiDeck.cardsInDiscard.length>0){
+      let aiCard = monster.aiDeck.cardsInDiscard[0];
+      monster.aiDeck.cardsInDiscard.shift();
+      monster.aiDeck.cardsInDeck.push(aiCard);
+    }
+
+    //shuffle
+    this.shuffle(monster.aiDeck.cardsInDeck);
+
+    this.setState({
+      revealedAI: {},
+      monster: monster
+    });
+  }
+
+  shuffle = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
+      [array[i], array[j]] = [array[j], array[i]]; // swap elements
+    }
   }
 
   moveAI = () => {
     let monster = this.state.monster;
-    let aiCard = monster.aiDeck.cardsInDeck[0];
-    monster.aiDeck.cardsInDeck.shift();
-    monster.aiDeck.cardsInDiscard.push(aiCard);
+    monster.aiDeck.cardsInDiscard.push(this.state.revealedAI);
 
     this.setState({
-      revealedAI: {},
+      revealedAI: 0,
       monster: monster
     });
   }

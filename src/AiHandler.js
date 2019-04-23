@@ -12,7 +12,6 @@ export const UpdateAiDeck = (monsterId, aiDeck) => {
  * Returns list of survivors
  */
 export const GetTargets = (monsterId, cardId) => {
-    console.log("card id: " +cardId);
     const url = 'http://localhost:8083/monster/' +monsterId +'/ai/' +cardId +'/targets';
     return fetch(url).then(response => response.json());
 }
