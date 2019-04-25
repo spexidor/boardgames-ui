@@ -5,7 +5,7 @@ import MonsterTile from './MonsterTile';
 import SurvivorTiles from './SurvivorTiles';
 import InfoBox from './InfoBox';
 import ActionBox from './ActionBox';
-import { UpdateSurvivor, UpdateMonster , GetHits} from './RestServices'
+import { UpdateSurvivor, UpdateMonster , GetHits, UpdateMonsterAI, GetHitlocations, GetInjury} from './RestServices'
 import { GetAiDeck, GetTargets } from './AiHandler';
 
 export default class GameBoard extends Component {
@@ -142,7 +142,7 @@ export default class GameBoard extends Component {
                 selection: selection, //deselect survivor after move
                 highlights: []
               })
-              UpdateSurvivor(survivor);
+              this.updateSurvivorInBackEnd(survivor);
             }
             else if (this.state.selection.typeSelected === "monster") { //MOVE MONSTER
               let monster = this.state.monster;
@@ -253,7 +253,8 @@ export default class GameBoard extends Component {
 
         GetHits(numHits, this.toWoundValue()).then(data => {
           const numWounds = data.length;
-          console.log("wounds: " +numWounds);
+          console.log("wounds: " +numWounds +" from " +this.state.survivor.name);
+          this.removeAICard(numWounds);
 
           let survivor = this.state.survivor;
           survivor.activationsLeft = survivor.activationsLeft -1;
@@ -316,8 +317,9 @@ export default class GameBoard extends Component {
 
   monsterInRange = () => {
     let inRange = false;
+    let survivor = this.getSurvivorById(this.state.selection.monsterTarget);
     for(let i=0; i<this.state.monster.baseCoordinates.length; i++){
-      if (this.validTarget(this.state.survivor) && this.adjacent(this.state.survivor.position, this.state.monster.baseCoordinates[i])) {
+      if (this.validTarget(survivor) && this.adjacent(survivor.position, this.state.monster.baseCoordinates[i])) {
         inRange = true;
         break;
       }
@@ -327,6 +329,7 @@ export default class GameBoard extends Component {
 
   validTarget = (survivor) => {
     for(let i=0; i<this.state.targets.length; i++){
+      console.log("comparing valid targetId " +this.state.targets[i].id +" with " +survivor.id)
         if(this.state.targets[i].id === survivor.id){
           return true;
         }
@@ -366,7 +369,7 @@ export default class GameBoard extends Component {
     for (let n = 0; n < showdown.survivors.length; n++) {
       showdown.survivors[n].movesLeft = 1;
       showdown.survivors[n].activationsLeft = 1;
-      UpdateSurvivor(showdown.survivors[n])
+      this.updateSurvivorInBackEnd(showdown.survivors[n]);
     }
 
     //this.updateMonsterInBackEnd(this.state.monster);
@@ -377,9 +380,6 @@ export default class GameBoard extends Component {
     let monster = this.state.monster;
     monster.facing = e;
     
-    this.setState({
-      monster: monster
-    })
     this.updateMonsterInBackEnd(monster);
   }
 
@@ -388,6 +388,19 @@ export default class GameBoard extends Component {
       this.setState({monster: data});
     })
   }
+
+  updateSurvivorInBackEnd(survivor){
+    console.log("survivor to be updated: " +survivor.id);
+    if(typeof survivor !== 'undefined'){
+      UpdateSurvivor(survivor);
+    }
+    else {
+      console.log("survivor not defined");
+    }
+  }
+//data => {
+//  this.setState({survivor: data});
+//}
 
   target = () => {
     console.log("finding target. revealed ai card: " +this.state.revealedAI.title);
@@ -425,11 +438,12 @@ export default class GameBoard extends Component {
     if(this.monsterInRange()){
       GetHits(aiCard.attack.speed, aiCard.attack.toHitValue).then(data => {
         console.log("hits: " +data.length);
+        const numHits = data.length;
 
         let action = this.state.action;
         action.selectMonsterTarget = false;
         this.deselect();
-        console.log("moving ai card");
+        this.damageSurvivor(this.state.selection.monsterTarget, numHits, aiCard.attack.damage);
         this.moveAI();
         this.setState({
           targets: [],
@@ -443,10 +457,74 @@ export default class GameBoard extends Component {
     }
   }
 
+  damageSurvivor = (survivorId, numHits, damage) => {
+
+    let survivor = this.getSurvivorById(survivorId);
+
+    if(numHits > 0)
+    {
+      GetHitlocations(numHits).then(data => {
+      console.log(survivor.name +" took hits to " +data +" (damage=" +damage +")");
+      //DODGE HERE
+      for(let i=0; i<data.length; i++)
+      {
+        this.removeArmourAt(survivor, data[i], damage);
+      }
+    });
+    }
+  }
+
+  removeArmourAt = (survivor, hitlocation, damage) => {
+      while(damage>0){
+        
+        for(let n=0; n<survivor.hitlocations.length; n++){
+            console.log("comparing " +hitlocation +" with " +survivor.hitlocations[n].type);
+            if(survivor.hitlocations[n].type === hitlocation){
+              if(survivor.hitlocations[n].hitpoints > 0){
+                console.log("removing armour");
+                survivor.hitlocations[n].hitpoints--;
+              }
+              else if(!survivor.hitlocations[n].lightInjury){
+                console.log("adding light injury");
+                survivor.hitlocations[n].lightInjury = true;
+              }
+              else if(!survivor.hitlocations[n].heavyInjury){
+                console.log("adding heavy injury");
+                survivor.hitlocations[n].heavyInjury = true;
+                survivor.knockedDown = true;
+              }
+              else {
+                console.log("query for injury");
+                survivor.knockedDown = true;
+                GetInjury(hitlocation).then(data => {
+                  console.log(survivor.name +" took injury " +data);
+                });
+              }
+              break;
+            }
+        }
+        this.updateSurvivorInBackEnd(survivor);
+        damage--;
+      }
+    }
+
+  getSurvivorById = (id) => {
+    for(let i=0; i<this.props.showdown.survivors.length; i++){
+        if(this.props.showdown.survivors[i].id === id){
+          return this.props.showdown.survivors[i];
+        } 
+    }
+    console.log("no survivor with id=" +id +" found");
+    return null;
+  }
+
   revealAI = () => {
 
     let monster = this.state.monster;
     if (this.state.revealedAI === 0){
+      if(this.state.monster.aiDeck.cardsInDeck.length === 0 && this.state.monster.aiDeck.cardsInDiscard.length > 0){
+        this.shuffleAI();
+      }
       if (this.state.monster.aiDeck.cardsInDeck.length > 0) {
         let aiCard = monster.aiDeck.cardsInDeck[0];
         monster.aiDeck.cardsInDeck.shift();
@@ -456,8 +534,9 @@ export default class GameBoard extends Component {
           monster: monster
         })
       }
-      else {
-        this.shuffleAI();
+      else{
+        console.log("using basic action");
+        this.setState({revealedAI: this.state.monster.aiDeck.basicAction});
       }
     }
     else {
@@ -470,8 +549,7 @@ export default class GameBoard extends Component {
     console.log("shuffling ai deck");
     //move cards from discard to deck
     while(monster.aiDeck.cardsInDiscard.length>0){
-      let aiCard = monster.aiDeck.cardsInDiscard[0];
-      monster.aiDeck.cardsInDiscard.shift();
+      let aiCard = monster.aiDeck.cardsInDiscard.shift();
       monster.aiDeck.cardsInDeck.push(aiCard);
     }
 
@@ -479,7 +557,7 @@ export default class GameBoard extends Component {
     this.shuffle(monster.aiDeck.cardsInDeck);
 
     this.setState({
-      revealedAI: {},
+      revealedAI: 0,
       monster: monster
     });
   }
@@ -493,16 +571,49 @@ export default class GameBoard extends Component {
 
   moveAI = () => {
     let monster = this.state.monster;
-    monster.aiDeck.cardsInDiscard.push(this.state.revealedAI);
-
+    if(this.state.revealedAI.title !== 'Basic Action'){
+      monster.aiDeck.cardsInDiscard.push(this.state.revealedAI);
+    }
+    
     this.setState({
       revealedAI: 0,
       monster: monster
     });
   }
 
+  removeAICard = (numWounds) => {
+    let monster = this.state.monster;
+    let updated = false;
+    
+    while(numWounds > 0){
+      let updated = true;
+      if(monster.aiDeck.cardsInDeck.length > 0){
+        monster.aiDeck.cardsRemoved.push(monster.aiDeck.cardsInDeck.shift());
+      }
+      else if (monster.aiDeck.cardsInDiscard.length > 0){
+        this.shuffleAI();
+        monster.aiDeck.cardsRemoved.push(monster.aiDeck.cardsInDeck.shift());
+      }
+      else {
+        this.gameWon();
+      }
+      numWounds--;
+    }
+
+    if(updated){
+      UpdateMonsterAI(monster).then(
+        this.setState({
+          monster: monster
+      }));
+    }
+  }
+
+  gameWon = () => {
+    console.log("The monster is dead! You win!");
+  }
+
   printAI = () => {
-    console.log("printing ai decks");
+    console.log("printing ai deck");
     for(let i=0; i<this.state.monster.aiDeck.cardsInDeck.length; i++){
       console.log("cards in deck: " +this.state.monster.aiDeck.cardsInDeck[i].title);
     }
@@ -560,7 +671,7 @@ export default class GameBoard extends Component {
     return (
       <div>
         <div align="left" style={{ borderRadius: "5px", background: "#282c34", fontSize: "8px", color: "white", position: "absolute", height: 50, width: 250, top: 50, left: 800 }}>Game turn: {this.props.showdown.turn}, move selected: {this.state.action.moveSelected.toString()}, game status: {this.props.showdown.gameStatus}, survivorId: {this.state.survivor.id}, monsterId: {monsterId}
-        , </div>
+        , revealed ai: {this.state.revealedAI.title}</div>
         <TileRenderer targets={this.state.targets} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
         <MonsterTile tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} />
         <SurvivorTiles tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
