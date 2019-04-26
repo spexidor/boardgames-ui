@@ -5,7 +5,7 @@ import MonsterTile from './MonsterTile';
 import SurvivorTiles from './SurvivorTiles';
 import InfoBox from './InfoBox';
 import ActionBox from './ActionBox';
-import { UpdateSurvivor, UpdateMonster , GetHits, UpdateMonsterAI, GetHitlocations, GetInjury} from './RestServices'
+import { UpdateSurvivor, DeleteSurvivor, UpdateMonster , GetHits, UpdateMonsterAI, GetHitlocations, GetInjury} from './RestServices'
 import { GetAiDeck, GetTargets } from './AiHandler';
 
 export default class GameBoard extends Component {
@@ -157,7 +157,7 @@ export default class GameBoard extends Component {
                 selection: selection, //deselect survivor after move
                 highlights: []
               })
-              this.updateSurvivorInBackEnd(survivor);
+              this.updateSurvivor(survivor);
             }
             else if (this.state.selection.typeSelected === "monster") { //MOVE MONSTER
               let monster = this.state.monster;
@@ -173,7 +173,7 @@ export default class GameBoard extends Component {
                 selection: selection,
                 highlights: []
               })
-              this.updateMonsterInBackEnd(this.state.monster);
+              this.updateMonster(this.state.monster);
             }
           }
         }
@@ -316,7 +316,8 @@ export default class GameBoard extends Component {
     let s1 = 0;
     let s2 = this.state.survivor.gearGrid.gear[2].strengthBonus;
     console.log("t: " +t +", s1: " +s1 +", s2: " +s2);
-    return Math.max(t - (s1+s2), 2); //1 to wound always fail
+    return 1;
+    //return Math.max(t - (s1+s2), 2); //1 to wound always fail
   }
 
   survivorInRange = () => {
@@ -384,10 +385,9 @@ export default class GameBoard extends Component {
     for (let n = 0; n < showdown.survivors.length; n++) {
       showdown.survivors[n].movesLeft = 1;
       showdown.survivors[n].activationsLeft = 1;
-      this.updateSurvivorInBackEnd(showdown.survivors[n]);
+      this.updateSurvivor(showdown.survivors[n]);
     }
 
-    //this.updateMonsterInBackEnd(this.state.monster);
     this.props.updateShowdown(showdown);
   }
 
@@ -395,19 +395,21 @@ export default class GameBoard extends Component {
     let monster = this.state.monster;
     monster.facing = e;
     
-    this.updateMonsterInBackEnd(monster);
+    this.updateMonster(monster);
   }
 
-  updateMonsterInBackEnd(monster){
+  updateMonster(monster){
     UpdateMonster(monster).then(data => {
       this.setState({monster: data});
     })
   }
 
-  updateSurvivorInBackEnd(survivor){
+  updateSurvivor(survivor){
     console.log("survivor to be updated: " +survivor.id);
     if(typeof survivor !== 'undefined'){
-      UpdateSurvivor(survivor);
+      UpdateSurvivor(survivor).then(data => {
+        this.setState({survivor: data});
+      });
     }
     else {
       console.log("survivor not defined");
@@ -453,7 +455,8 @@ export default class GameBoard extends Component {
     if(this.monsterInRange()){
       GetHits(aiCard.attack.speed, aiCard.attack.toHitValue).then(data => {
         console.log("hits: " +data.length);
-        const numHits = data.length;
+        //const numHits = data.length;
+        const numHits = 2; //TODO remove
 
         let action = this.state.action;
         action.selectMonsterTarget = false;
@@ -493,7 +496,12 @@ export default class GameBoard extends Component {
         //DODGE HERE
         for(let i=0; i<data.length; i++)
         {
-          this.removeArmourAt(survivor, data[i], damage);
+          if(this.getSurvivorById(this.state.selection.monsterTarget).status !== "DEAD"){ 
+            this.removeArmourAt(survivor, data[i], damage);
+          }
+          else{
+            console.log("survivor dead, skipping next attack");
+          }
         }
       });
       }
@@ -501,53 +509,76 @@ export default class GameBoard extends Component {
   }
 
   removeArmourAt = (survivor, hitlocation, damage) => {
-      while(damage>0){
-        
-        for(let n=0; n<survivor.hitlocations.length; n++){
-            if(survivor.hitlocations[n].type === hitlocation){
-              if(survivor.hitlocations[n].hitpoints > 0){
-                console.log("removing armour");
-                survivor.hitlocations[n].hitpoints--;
-              }
-              else if(!survivor.hitlocations[n].lightInjury){
-                console.log("adding light injury");
-                survivor.hitlocations[n].lightInjury = true;
-              }
-              else if(!survivor.hitlocations[n].heavyInjury){
-                console.log("adding heavy injury");
-                survivor.hitlocations[n].heavyInjury = true;
-                survivor.status = "KNOCKED_DOWN";
-              }
-              else {
-                console.log("query for injury");
-                
-                GetInjury(hitlocation).then(data => {
-                  console.log(" took injury " +data.title);
-                  if(data.dead){
-                    console.log(survivor.name +" was killed.")
+    while(damage>0){
+      for(let n=0; n<survivor.hitlocations.length; n++){
+          if(survivor.hitlocations[n].type === hitlocation){
+
+            if(survivor.hitlocations[n].hitpoints > 0){
+              console.log("removing armour");
+              survivor.hitlocations[n].hitpoints--;
+            }
+            else if(!survivor.hitlocations[n].lightInjury){
+              console.log("adding light injury");
+              survivor.hitlocations[n].lightInjury = true;
+            }
+            else if(!survivor.hitlocations[n].heavyInjury){
+              console.log("adding heavy injury");
+              survivor.hitlocations[n].heavyInjury = true;
+              survivor.status = "KNOCKED_DOWN";
+            }
+            else {
+              damage = 0; //Single roll on injury table
+              console.log("query for injury");
+              
+              GetInjury(hitlocation).then(data => {
+                console.log(" took injury " +data.title);
+                if(data.dead){
+                  survivor.status = "DEAD";
+                }
+                if(data.bleed > 0){
+                  console.log(survivor.name +" get bleed " +data.bleed);
+                  survivor.bleed = survivor.bleed+data.bleed;
+                  if(survivor.bleed > 5){
+                    console.log(survivor.name +" bled to death.")
                     survivor.status = "DEAD";
                   }
-                  if(data.bleed > 0){
-                    console.log(survivor.name +" get bleed " +data.bleed);
-                    survivor.bleed = survivor.bleed+data.bleed;
-                    if(survivor.bleed > 5){
-                      console.log(survivor.name +" was killed.")
-                      survivor.status = "DEAD";
-                    }
-                  }
-                  if(data.knockedDown){
-                    survivor.status = "KNOCKED_DOWN";
-                  }
-                  this.updateSurvivorInBackEnd(survivor);
-                })
-              }
-              break;
+                }
+
+                if(survivor.status === "DEAD"){
+                  console.log(survivor.name +" was killed.")
+                  this.survivorKilled(survivor);
+                }
+                else if(data.knockedDown){
+                  console.log("survivor knocked down from injury");
+                  survivor.status = "KNOCKED_DOWN";
+                }
+              })
             }
-        }
-        this.updateSurvivorInBackEnd(survivor);
-        damage--;
+            break; //Matching hit location processed
+          }
+      }
+      damage--;
+      this.updateSurvivor(survivor);
+    }
+  }
+
+  survivorKilled = (survivor) => {
+    console.log(survivor.name +" was killed, removing from props.showdown")
+    let showdown = this.props.showdown;
+    let survivors = showdown.survivors;
+    let index = -1;
+    for(let n=0; n<survivors.length; n++){
+      if(survivors[n].id === survivor.id){
+        index = n;
+        break;
       }
     }
+    if(index !== -1){
+      survivors.shift(index);
+      DeleteSurvivor(survivor);
+      this.props.updateShowdown(showdown);
+    }
+  }
 
   getSurvivorById = (id) => {
     for(let i=0; i<this.props.showdown.survivors.length; i++){
@@ -627,7 +658,6 @@ export default class GameBoard extends Component {
     let updated = false;
     
     while(numWounds > 0){
-      let updated = true;
       if(monster.aiDeck.cardsInDeck.length > 0){
         monster.aiDeck.cardsRemoved.push(monster.aiDeck.cardsInDeck.shift());
       }

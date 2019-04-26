@@ -23,8 +23,28 @@ export const GetInjury = (hitlocation) => {
   return fetch(url).then(response => response.json());
 }
 
+export const DeleteSurvivor = (survivor) => {
+
+  const id = survivor.id;
+  const url = 'http://localhost:8083/survivor/' +id;
+  console.log("REST: deleting survivor " +survivor.name +" from back end");
+
+  if(typeof id !== 'undefined'){ 
+    fetch(url, {
+      crossDomain:true,
+      method: 'DELETE',
+      headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+      }})
+  }
+  else{
+    console.log("Survivor id not defined: " +url);
+  }
+}
+
 export const GetShowdown = () => {
-   return fetch('http://localhost:8083/showdown/1').then(response => response.json());
+   return fetch('http://localhost:8083/showdown/68').then(response => response.json());
 }
 
 export const UpdateMonsterAI = (monster) => {
