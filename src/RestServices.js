@@ -1,17 +1,26 @@
 export const GetHits = (numDice, toHitValue) => {
   const url = 'http://localhost:8083/dice?numDice=' +numDice + '&diceSides=10&toHitValue=' +toHitValue +'&hitsOnly=true';
   console.log(numDice +" dice, hitting on " +toHitValue +"+");
-  return fetch(url).then(response => response.json())
+  if(typeof numDice !== 'undefined'){
+    return fetch(url).then(response => response.json());
+  }
+  else {
+    console.log("numDice not defined");
+    return null;
+  }
 }
 
 export const GetHitlocations = (numDice) => {
   const url = 'http://localhost:8083/survivor/hitlocation?numDice=' +numDice;
-  return fetch(url).then(response => response.json())
+  return fetch(url).then(response => response.json());
 }
 
 export const GetInjury = (hitlocation) => {
-  const url = 'http://localhost:8083/survivor/injury?table=' +hitlocation;
-  return fetch(url).then(response => response.json())
+  console.log("fetching injury from table " +hitlocation)
+  //const url = 'http://localhost:8083/survivor/injury?table=' +hitlocation;
+  const url = 'http://localhost:8083/survivor/injury?table=head';
+  
+  return fetch(url).then(response => response.json());
 }
 
 export const GetShowdown = () => {
@@ -52,26 +61,36 @@ export const UpdateSurvivor = (survivor) => {
     const id = survivor.id;
     const url = 'http://localhost:8083/survivor/' +id;
 
-    fetch(url, {
-    crossDomain:true,
-    method: 'PUT',
-    headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-        id: survivor.id,
-        name: survivor.name,
-        isAlive: survivor.isAlive,
-        knockedDown: survivor.knockedDown,
-        hitlocations: survivor.hitlocations,
-        position: {
-          x: parseInt(survivor.position.x),
-          y: parseInt(survivor.position.y)
-        },
-        movesLeft: survivor.movesLeft
-      }),
-    });
+    if(typeof id !== 'undefined'){ 
+      return fetch(url, {
+      crossDomain:true,
+      method: 'PUT',
+      headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+          id: survivor.id,
+          name: survivor.name,
+          isAlive: survivor.isAlive,
+          status: survivor.status,
+          bleed: survivor.bleed,
+          hitlocations: survivor.hitlocations,
+          position: survivor.position,
+          movesLeft: survivor.movesLeft,
+          activationsLeft: survivor.activationsLeft,
+          movement: survivor.movement,
+          survival: survivor.survival,
+          insanity: survivor.insanity,
+          gearGrid: survivor.gearGrid,
+          alive: survivor.alive
+        }),
+      });
+  }
+  else {
+    console.log("Survivor id not defined: " +url);
+    return null;
+  }
 }
 
 export const UpdateMonster = (monster) => {
@@ -100,7 +119,8 @@ export const UpdateMonster = (monster) => {
     }).then(response => response.json());
   }
   else{
-    console.log("Id not defined: " +url);
+    console.log("Monster id not defined: " +url);
+    return null;
   }
 }
 

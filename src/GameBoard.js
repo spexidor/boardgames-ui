@@ -36,10 +36,25 @@ export default class GameBoard extends Component {
       revealedAI: 0
     }
 
-    this.click = this.click.bind(this);
     this.setSurvivorMoves = this.setSurvivorMoves.bind(this);
     this.clickedMove = this.clickedMove.bind(this);
   }
+
+  componentDidMount(){
+    document.addEventListener("keydown", this.keyFunction, false);
+  }
+  componentWillUnmount(){
+    document.removeEventListener("keydown", this.keyFunction, false);
+  }
+  keyFunction(event){
+    //37, 38, 39, 40: left, up, right, down
+    //49: 1
+    //alert("onKeyPressed! " +event.keyCode);
+   
+   if(event.keyCode===41){
+     //alert("pressed 1");
+   }
+ }
 
   click = (props) => {
 
@@ -329,7 +344,7 @@ export default class GameBoard extends Component {
 
   validTarget = (survivor) => {
     for(let i=0; i<this.state.targets.length; i++){
-      console.log("comparing valid targetId " +this.state.targets[i].id +" with " +survivor.id)
+      //console.log("comparing valid targetId " +this.state.targets[i].id +" with " +survivor.id)
         if(this.state.targets[i].id === survivor.id){
           return true;
         }
@@ -443,7 +458,7 @@ export default class GameBoard extends Component {
         let action = this.state.action;
         action.selectMonsterTarget = false;
         this.deselect();
-        this.damageSurvivor(this.state.selection.monsterTarget, numHits, aiCard.attack.damage);
+        this.damageSurvivor(this.state.selection.monsterTarget, numHits, aiCard.attack);
         this.moveAI();
         this.setState({
           targets: [],
@@ -457,20 +472,31 @@ export default class GameBoard extends Component {
     }
   }
 
-  damageSurvivor = (survivorId, numHits, damage) => {
-
-    let survivor = this.getSurvivorById(survivorId);
+  damageSurvivor = (survivorId, numHits, attack) => {
 
     if(numHits > 0)
     {
-      GetHitlocations(numHits).then(data => {
-      console.log(survivor.name +" took hits to " +data +" (damage=" +damage +")");
-      //DODGE HERE
-      for(let i=0; i<data.length; i++)
-      {
-        this.removeArmourAt(survivor, data[i], damage);
+      let survivor = this.getSurvivorById(survivorId);
+      let damage = attack.damage;
+
+      if(attack.brainDamage){
+        console.log(survivor.name +" took brain damage (damage=" +damage +")");
+        for(let i=0; i<numHits; i++)
+        {
+          this.removeArmourAt(survivor, "BRAIN", damage);
+        }
       }
-    });
+      else 
+      {
+        GetHitlocations(numHits).then(data => {
+        console.log(survivor.name +" took hits to " +data +" (damage=" +damage +")");
+        //DODGE HERE
+        for(let i=0; i<data.length; i++)
+        {
+          this.removeArmourAt(survivor, data[i], damage);
+        }
+      });
+      }
     }
   }
 
@@ -478,7 +504,6 @@ export default class GameBoard extends Component {
       while(damage>0){
         
         for(let n=0; n<survivor.hitlocations.length; n++){
-            console.log("comparing " +hitlocation +" with " +survivor.hitlocations[n].type);
             if(survivor.hitlocations[n].type === hitlocation){
               if(survivor.hitlocations[n].hitpoints > 0){
                 console.log("removing armour");
@@ -491,14 +516,30 @@ export default class GameBoard extends Component {
               else if(!survivor.hitlocations[n].heavyInjury){
                 console.log("adding heavy injury");
                 survivor.hitlocations[n].heavyInjury = true;
-                survivor.knockedDown = true;
+                survivor.status = "KNOCKED_DOWN";
               }
               else {
                 console.log("query for injury");
-                survivor.knockedDown = true;
+                
                 GetInjury(hitlocation).then(data => {
-                  console.log(survivor.name +" took injury " +data);
-                });
+                  console.log(" took injury " +data.title);
+                  if(data.dead){
+                    console.log(survivor.name +" was killed.")
+                    survivor.status = "DEAD";
+                  }
+                  if(data.bleed > 0){
+                    console.log(survivor.name +" get bleed " +data.bleed);
+                    survivor.bleed = survivor.bleed+data.bleed;
+                    if(survivor.bleed > 5){
+                      console.log(survivor.name +" was killed.")
+                      survivor.status = "DEAD";
+                    }
+                  }
+                  if(data.knockedDown){
+                    survivor.status = "KNOCKED_DOWN";
+                  }
+                  this.updateSurvivorInBackEnd(survivor);
+                })
               }
               break;
             }

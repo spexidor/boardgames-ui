@@ -3,15 +3,19 @@ import './App.css';
 
 export default class ActionBox extends Component {
  
+  deadOrKnockedDown = () => {
+      return (this.props.survivor.status === "KNOCKED_DOWN" || this.props.survivor.status === "DEAD");
+  }
+
   render(){
 
     //survivor
     let moveDisabled = false;
     let activateDisabled = false;
-    if(this.props.survivor.movesLeft < 1){
+    if(this.props.survivor.movesLeft < 1 || this.deadOrKnockedDown()){
         moveDisabled = true;
     }
-    if(this.props.survivor.activationsLeft < 1){
+    if(this.props.survivor.activationsLeft < 1 || this.deadOrKnockedDown()){
         activateDisabled = true;
     }
 

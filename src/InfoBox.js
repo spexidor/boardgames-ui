@@ -11,7 +11,8 @@ export default class InfoBox extends Component {
     let survival="";
     let movesLeft="";
     let activationsLeft="";
-    let knockedDown ="";
+    let status ="";
+    let bleed = "";
     let infoBox = <div></div>
 
     if(this.props.selection==="survivor"){
@@ -22,15 +23,17 @@ export default class InfoBox extends Component {
         survival = this.props.survivor.survival;
         movesLeft = this.props.survivor.movesLeft;
         activationsLeft = this.props.survivor.activationsLeft;
-        knockedDown = this.props.survivor.knockedDown;
+        status = this.props.survivor.status;
+        bleed = this.props.survivor.bleed;
 
         infoBox = <div>
         Survivor Status
         <ul>Survivor: {name+", id=" +id}</ul>
         <ul>Survival: {survival}</ul>
+        <ul>Bleed: {bleed}</ul>
         <ul>Moves left: {movesLeft}</ul>
         <ul>Activations left: {activationsLeft}</ul>
-        <ul>Knocked down: {knockedDown}</ul>
+        <ul>Status: {status}</ul>
         </div>
       }
     }
