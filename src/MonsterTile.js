@@ -49,6 +49,12 @@ export default class MonsterTile extends Component {
     let height = this.props.height*this.props.tileSize -shrink*2;
     let width = this.props.width*this.props.tileSize -shrink*2;
     let degree = 0; //Default up
+
+    if(this.props.gameStatus === "WIN"){
+      height = 0;
+      width = 0;
+    }
+
     if(this.props.facing==="LEFT"){
       degree = 270;
     }
@@ -61,7 +67,7 @@ export default class MonsterTile extends Component {
     let rotate = "rotate(" +degree +"deg)";
 
     let border = 0;
-    if(this.props.selectedMonster!==-1) //compares string and integers, hence == instead of ===
+    if(this.props.selectedMonster!==-1)
     {
         border = 2
     }

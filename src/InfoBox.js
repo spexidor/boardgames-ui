@@ -7,7 +7,6 @@ export default class InfoBox extends Component {
 
     let name ="";
     let id="";
-    let insantiy="";
     let survival="";
     let movesLeft="";
     let activationsLeft="";
@@ -19,7 +18,6 @@ export default class InfoBox extends Component {
       if(this.props.survivor !== undefined){
         name = this.props.survivor.name;
         id = this.props.survivor.id;
-        insantiy = this.props.survivor.insanity;
         survival = this.props.survivor.survival;
         movesLeft = this.props.survivor.movesLeft;
         activationsLeft = this.props.survivor.activationsLeft;

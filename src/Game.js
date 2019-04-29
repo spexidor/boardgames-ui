@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
-import GameBoard from './GameBoard.js';
-import { UpdateShowdown, GetShowdown} from './RestServices';
+import GameBoard from './GameBoard';
+import GameSelector from './GameSelector'
+import { UpdateShowdown, GetShowdown, GetLatestShowdown, CreateShowdown} from './RestServices/Showdown';
 
  export default class Game extends Component {
  
@@ -14,7 +15,7 @@ import { UpdateShowdown, GetShowdown} from './RestServices';
   }
   
   componentDidMount(){
-    GetShowdown().then(data => {
+    GetLatestShowdown(this.state.id).then(data => {
       this.setState({showdown: data});
     });
   }
@@ -26,7 +27,20 @@ import { UpdateShowdown, GetShowdown} from './RestServices';
     this.setState({showdown: showdown});
   }
 
+  createGame = (e) => {
+    
+    CreateShowdown(e).then(data => {
+      this.setState({
+      showdown: data,
+      })
+    });
+  }
+
   render(){
-    return(<GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown}/>)
+    return(
+      <div>
+        <GameSelector createGame={this.createGame}/>
+        <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown}/>
+      </div>)
   }
 }

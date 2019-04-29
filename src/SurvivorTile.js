@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './App.css';
-import survivorImg from'./images/survivor_tile_1_1.png';
 
 export default class SurvivorTile extends Component {
 
@@ -48,6 +47,3 @@ export default class SurvivorTile extends Component {
         )
     }
 }       
-
-          //<div alt={"survivor_" +this.props.id} onClick={this.props.click} onMouseLeave={this.dehover} onMouseOver={this.hover}  style={{borderRadius: "10px", background: "lightgreen", fontSize: "16px", color: "black", width: "20%", position: "absolute", height: 45, width: 45, top: this.props.top, left: this.props.left}}>{this.props.name}</div>
-            

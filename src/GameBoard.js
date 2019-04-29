@@ -5,8 +5,9 @@ import MonsterTile from './MonsterTile';
 import SurvivorTiles from './SurvivorTiles';
 import InfoBox from './InfoBox';
 import ActionBox from './ActionBox';
-import { UpdateSurvivor, DeleteSurvivor, UpdateMonster , GetHits, UpdateMonsterAI, GetHitlocations, GetInjury} from './RestServices'
-import { GetAiDeck, GetTargets } from './AiHandler';
+import { UpdateSurvivor, DeleteSurvivor, GetHitlocations, GetSurvivorMoves, GetInjury} from './RestServices/Survivor';
+import { UpdateMonster , UpdateMonsterAI, GetAiDeck, GetTargets, GetMonsterMoves } from './RestServices/Monster';
+import { GetHits } from './RestServices/Dice'
 
 export default class GameBoard extends Component {
 
@@ -27,6 +28,7 @@ export default class GameBoard extends Component {
         selectMonsterTarget: false
       },
       survivor: {},
+      survivorIds: [404, 414, 424, 434],
       monster: {},
       highlights: [],
       
@@ -46,14 +48,98 @@ export default class GameBoard extends Component {
   componentWillUnmount(){
     document.removeEventListener("keydown", this.keyFunction, false);
   }
-  keyFunction(event){
+  keyFunction = (event) => {
     //37, 38, 39, 40: left, up, right, down
     //49: 1
     //alert("onKeyPressed! " +event.keyCode);
+
+    let selection = this.state.selection;
    
-   if(event.keyCode===41){
-     //alert("pressed 1");
+   if(event.keyCode===49){
+    this.selectSurvivor(this.state.survivorIds[0]);
+   }else if(event.keyCode===50){
+    this.selectSurvivor(this.state.survivorIds[1]);
    }
+   else if(event.keyCode===51){
+    this.selectSurvivor(this.state.survivorIds[2]);
+   }
+   else if(event.keyCode===52){
+    this.selectSurvivor(this.state.survivorIds[3]);
+   }
+   else if(event.keyCode===53){ //monster at 5
+    this.selectMonster();
+   }
+ }
+
+ survivorAlive = (id) => {
+  return (this.getSurvivorById(id) !== null)
+ }
+
+ selectMonster = () => {
+  let selection = this.state.selection;
+  let action = this.state.action;
+
+  if(selection.selectedMonsterId !== -1){
+    this.deselect();
+  }
+  else {
+    this.setMonsterMoves(this.props.showdown.monster.id);
+    selection.selectedMonsterId = this.props.showdown.monster.id;
+    selection.selectedSurvivorId = -1;
+    selection.typeSelected = "monster";
+    selection.markedX = -1;
+    selection.markedY = -1;
+    action.moveSelected = false;
+
+    this.setState({
+      selection: selection,
+      action: action
+    });
+  }
+ }
+
+ selectSurvivor = (id) => {
+  let selection = this.state.selection;
+  let action = this.state.action;
+  let survivor = this.getSurvivorById(id);
+
+    if(id === selection.selectedSurvivorId){
+      this.deselect();
+    }
+    else{
+
+      selection.selectedMonsterId = -1;
+      if(this.survivorAlive(id)){
+        if(this.state.action.selectMonsterTarget){
+          console.log("choosing among multiple survivors");
+          selection.typeSelected = "monster";
+          selection.monsterTarget = id;
+          this.setState({
+            targets: [survivor]
+          });
+        }
+        else {
+          selection.typeSelected = "survivor";
+          selection.selectedMonsterId = -1;
+          this.setSurvivorMoves(survivor.id);
+        }
+
+        selection.selectedSurvivorId = id;
+        selection.markedX = -1;
+        selection.markedY = -1;
+        action.moveSelected = false;
+        action.selectMonsterTarget = false;
+
+        this.setState({
+          selection: selection,
+          survivor: this.getSurvivorById(id),
+          action: action
+        });
+      }
+      else{
+        this.deselect();
+      }
+    }
  }
 
   click = (props) => {
@@ -68,75 +154,13 @@ export default class GameBoard extends Component {
     let selectedId = newX;
 
     if (identifier === "survivor") { //clicked a survivor
-      
-      if (selectedId === this.state.selection.selectedSurvivorId) { //deselect if click twice
-        this.deselect();
-      }
-      else {
-        let survivor;
-        for (let n = 0; n < this.props.showdown.survivors.length; n++) { //find selected survivor
-          if (selectedId === this.props.showdown.survivors[n].id) {
-            survivor = this.props.showdown.survivors[n];
-            break;
-          }
-        }
-
-        let selection = this.state.selection;
-        let action = this.state.action;
-
-        if(this.state.action.selectMonsterTarget){
-          console.log("choosing among multiple survivors");
-          selection.typeSelected = "monster";
-          selection.monsterTarget = selectedId;
-          this.setState({
-            targets: [survivor]
-          });
-        }
-        else{
-          selection.typeSelected = "survivor";
-          selection.selectedMonsterId = -1;
-          this.setSurvivorMoves(survivor.id);
-        }
-        selection.selectedSurvivorId = selectedId;
-        selection.markedX = -1;
-        selection.markedY = -1;
-
-        action.moveSelected = false;
-
-        this.setState({
-          selection: selection,
-          survivor: survivor,
-          action: action
-        })
-        
-
-      }
+      this.selectSurvivor(selectedId);
     }
-    else if (identifier === "monster") {
-      if (selectedId === this.state.selection.selectedMonsterId) { //deselect if click twice
-        this.deselect();
-      }
-      else {
-
-        let selection = this.state.selection;
-        selection.typeSelected = "monster";
-        selection.selectedMonsterId = selectedId;
-        selection.selectedSurvivorId = -1;
-        selection.markedX = -1;
-        selection.markedY = -1;
-        let action = this.state.action;
-        action.moveSelected = false;
-
-        this.setState({
-          selection: selection,
-          action: action
-        })
-        this.setMonsterMoves(this.props.showdown.monster.id);
-      }
-
+    else if (identifier === "monster") { //clicked monster
+      this.selectMonster();
     }
-    else if ((identifier === "board")) {
-      if (newX === this.state.selection.markedX && newY === this.state.selection.markedY) { //deselect if click twice
+    else if ((identifier === "board")) { //clicked board
+      if (newX === this.state.selection.markedX && newY === this.state.selection.markedY) { //deselect if click same tile twice
         this.deselect();
       }
       else {
@@ -228,25 +252,20 @@ export default class GameBoard extends Component {
   }
 
   setSurvivorMoves(id) {
-    let url = "http://localhost:8083/survivor/" + id + "/openMoves";
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
+    GetSurvivorMoves(id).then(data => {
         this.setState({
           highlights: data
         })
       })
   }
 
-  setMonsterMoves(id) {
-    let url = "http://localhost:8083/monster/" + id + "/openMoves";
-    fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        this.setState({
-          highlights: data
-        })
+
+  setMonsterMoves(id){
+    GetMonsterMoves(id).then(data => {
+      this.setState({
+        highlights: data
       })
+    })
   }
 
   clickedMove = () => {
@@ -294,7 +313,6 @@ export default class GameBoard extends Component {
     let inBlindSpot = false;
     for(let i=0; i<this.state.monster.blindspot.length; i++) {
       if(this.positionsEqual(survivor.position, this.state.monster.blindspot[i])){
-        //console.log(survivor.position.x +"," +survivor.position.y +" in blind spot");
         inBlindSpot = true;
         break;
       }
@@ -316,8 +334,7 @@ export default class GameBoard extends Component {
     let s1 = 0;
     let s2 = this.state.survivor.gearGrid.gear[2].strengthBonus;
     console.log("t: " +t +", s1: " +s1 +", s2: " +s2);
-    return 1;
-    //return Math.max(t - (s1+s2), 2); //1 to wound always fail
+    return Math.max(t - (s1+s2), 2); //1 to wound always fail
   }
 
   survivorInRange = () => {
@@ -345,7 +362,6 @@ export default class GameBoard extends Component {
 
   validTarget = (survivor) => {
     for(let i=0; i<this.state.targets.length; i++){
-      //console.log("comparing valid targetId " +this.state.targets[i].id +" with " +survivor.id)
         if(this.state.targets[i].id === survivor.id){
           return true;
         }
@@ -393,9 +409,15 @@ export default class GameBoard extends Component {
 
   changeFacing = (e) => {
     let monster = this.state.monster;
-    monster.facing = e;
-    
-    this.updateMonster(monster);
+
+    if(e !== monster.facing){
+      console.log("turning monster to " +e);
+      monster.facing = e;
+      this.updateMonster(monster);
+    }
+    else{
+      console.log("no turning needed, already facing");
+    }
   }
 
   updateMonster(monster){
@@ -447,16 +469,29 @@ export default class GameBoard extends Component {
     return null;
   }
 
+  turnMonsterToSurvivor = () => {
+    let survivor = this.getSurvivorById(this.state.selection.monsterTarget);
+    if(survivor.position.y < this.state.monster.position.y){
+      this.changeFacing("UP");
+    }else if(survivor.position.x < this.state.monster.position.x){
+      this.changeFacing("LEFT");
+    }
+    else if(survivor.position.y > (this.state.monster.position.y + this.state.monster.statline.height-1)){
+      this.changeFacing("DOWN");
+    }else if(survivor.position.x > (this.state.monster.position.x + this.state.monster.statline.width-1)){
+      this.changeFacing("RIGHT");
+    }
+  }
+
   attack = () => {
-    console.log("pressed attack");
 
     let aiCard = this.state.revealedAI;
-
     if(this.monsterInRange()){
+      this.turnMonsterToSurvivor();
+
       GetHits(aiCard.attack.speed, aiCard.attack.toHitValue).then(data => {
         console.log("hits: " +data.length);
-        //const numHits = data.length;
-        const numHits = 2; //TODO remove
+        const numHits = data.length;
 
         let action = this.state.action;
         action.selectMonsterTarget = false;
@@ -493,15 +528,10 @@ export default class GameBoard extends Component {
       {
         GetHitlocations(numHits).then(data => {
         console.log(survivor.name +" took hits to " +data +" (damage=" +damage +")");
-        //DODGE HERE
+        //TODO: DODGE HERE
         for(let i=0; i<data.length; i++)
         {
-          if(this.getSurvivorById(this.state.selection.monsterTarget).status !== "DEAD"){ 
             this.removeArmourAt(survivor, data[i], damage);
-          }
-          else{
-            console.log("survivor dead, skipping next attack");
-          }
         }
       });
       }
@@ -574,10 +604,22 @@ export default class GameBoard extends Component {
       }
     }
     if(index !== -1){
-      survivors.shift(index);
+      survivors.splice(index, 1);
       DeleteSurvivor(survivor);
       this.props.updateShowdown(showdown);
     }
+    if(survivors.length === 0){
+      this.gameLoss();
+    }
+  }
+
+  gameLoss = () => {
+    console.log("all survivors dead, game lost");
+
+    let showdown = this.props.showdown;
+    showdown.gameStatus = "LOSS";
+
+    this.props.updateShowdown(showdown);
   }
 
   getSurvivorById = (id) => {
@@ -671,16 +713,16 @@ export default class GameBoard extends Component {
       numWounds--;
     }
 
-    if(updated){
-      UpdateMonsterAI(monster).then(
-        this.setState({
-          monster: monster
-      }));
-    }
+    UpdateMonsterAI(monster);
   }
 
   gameWon = () => {
     console.log("The monster is dead! You win!");
+
+    let showdown = this.props.showdown;
+    showdown.gameStatus = "WIN";
+
+    this.props.updateShowdown(showdown);
   }
 
   printAI = () => {
@@ -705,6 +747,7 @@ export default class GameBoard extends Component {
     const topOffset = 50;
     const leftOffset = 50;
     let highlights = this.state.highlights;
+    const gameStatus = this.props.showdown.gameStatus;
 
     //monster
     let monsterPosX = 0;
@@ -742,9 +785,9 @@ export default class GameBoard extends Component {
     return (
       <div>
         <div align="left" style={{ borderRadius: "5px", background: "#282c34", fontSize: "8px", color: "white", position: "absolute", height: 50, width: 250, top: 50, left: 800 }}>Game turn: {this.props.showdown.turn}, move selected: {this.state.action.moveSelected.toString()}, game status: {this.props.showdown.gameStatus}, survivorId: {this.state.survivor.id}, monsterId: {monsterId}
-        , revealed ai: {this.state.revealedAI.title}</div>
+        , revealed ai: {this.state.revealedAI.title}, game name: {this.props.showdown.description}</div>
         <TileRenderer targets={this.state.targets} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
-        <MonsterTile tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} />
+        <MonsterTile tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
         <SurvivorTiles tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
         <InfoBox selection={this.state.selection.typeSelected} survivor={this.state.survivor} monster={monster} />
         <ActionBox survivor={this.state.survivor} aiCard={this.state.revealedAI} targets={this.state.targets} selection={this.state.selection.typeSelected} attack={this.attack} target={this.target} revealAI={this.revealAI} nextTurn={this.nextTurn} move={this.clickedMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />

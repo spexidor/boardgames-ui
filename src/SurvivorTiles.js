@@ -12,23 +12,34 @@ export default class SurvivorTiles extends Component {
 
         let tiles = <div></div>;
         let survivors = [];
-        let src = [s1, s2, s3, s4];
+        let srcArr = [s1, s2, s3, s4];
         const shrink = 3;
         if(this.props.survivors.length>0){
             
             for(let i =0; i<this.props.survivors.length; i++){
-                let top  = this.props.survivors[i].position.y*this.props.tileSize + this.props.topOffset;
-                let left = this.props.survivors[i].position.x*this.props.tileSize + this.props.leftOffset;
-                //console.log("creating survivor tile data, top " +top +" y " +this.props.survivors[i].position.y +" name " +this.props.survivors[i].name);
-                survivors.push(
-                    {
-                      topPx: top+shrink, 
-                      leftPx: left+shrink,
-                      name: this.props.survivors[i].name,
-                      id: this.props.survivors[i].id,
-                      selectedSurvivorId: this.props.selectedSurvivorId,
-                      src: src[i]
-                    });
+
+              let src;
+              if(this.props.survivors[i].name === "Allister"){ src = srcArr[0];
+              }
+              else if(this.props.survivors[i].name === "Lucy"){ src = srcArr[1];
+              }
+              else if(this.props.survivors[i].name === "Erza"){ src = srcArr[2];
+              }
+              else if(this.props.survivors[i].name === "Zachary"){ src = srcArr[3];
+              }
+
+              let top  = this.props.survivors[i].position.y*this.props.tileSize + this.props.topOffset;
+              let left = this.props.survivors[i].position.x*this.props.tileSize + this.props.leftOffset;
+              //console.log("creating survivor tile data, top " +top +" y " +this.props.survivors[i].position.y +" name " +this.props.survivors[i].name);
+              survivors.push(
+                  {
+                    topPx: top+shrink, 
+                    leftPx: left+shrink,
+                    name: this.props.survivors[i].name,
+                    id: this.props.survivors[i].id,
+                    selectedSurvivorId: this.props.selectedSurvivorId,
+                    src: src
+                  });
             }
             tiles = <MapSurvivors data={survivors} click={this.props.click}/>
         }
