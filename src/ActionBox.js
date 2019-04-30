@@ -28,12 +28,17 @@ export default class ActionBox extends Component {
     if(this.props.aiCard !== 0){
         getTargetDisabled = false;
     }
+    let moveActive = "";
+        if(this.props.moveSelected){
+            moveActive = "button-active";
+        }
 
     let actionBox = <div></div>
     if(this.props.selection==="survivor"){
+
         actionBox = 
         <div>
-        <button disabled={moveDisabled} onClick={this.props.move}>Move</button>
+        <button className={moveActive} disabled={moveDisabled} onClick={this.props.move}>Move</button>
         <button disabled={activateDisabled} onClick={this.props.activate}>Activate</button>
         </div>
     }
@@ -42,7 +47,7 @@ export default class ActionBox extends Component {
         <div>
         <button onClick={this.props.revealAI}>New AI</button>
         <button disabled={getTargetDisabled} onClick={this.props.target}>Get target</button>
-        <button onClick={this.props.move}>Move</button>
+        <button className={moveActive} onClick={this.props.move}>Move</button>
         <button disabled={attackDisabled} onClick={this.props.attack}>Attack</button>
         <br/><br/>
         <button onClick={this.props.changeFacing.bind(this, "UP")}>Turn up</button>

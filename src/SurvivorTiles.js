@@ -19,13 +19,17 @@ export default class SurvivorTiles extends Component {
             for(let i =0; i<this.props.survivors.length; i++){
 
               let src;
-              if(this.props.survivors[i].name === "Allister"){ src = srcArr[0];
+              if(this.props.survivors[i].name === "Allister"){ 
+                src = srcArr[0];
               }
-              else if(this.props.survivors[i].name === "Lucy"){ src = srcArr[1];
+              else if(this.props.survivors[i].name === "Lucy"){ 
+                src = srcArr[1];
               }
-              else if(this.props.survivors[i].name === "Erza"){ src = srcArr[2];
+              else if(this.props.survivors[i].name === "Erza"){ 
+                src = srcArr[2];
               }
-              else if(this.props.survivors[i].name === "Zachary"){ src = srcArr[3];
+              else if(this.props.survivors[i].name === "Zachary"){ 
+                src = srcArr[3];
               }
 
               let top  = this.props.survivors[i].position.y*this.props.tileSize + this.props.topOffset;
@@ -35,10 +39,10 @@ export default class SurvivorTiles extends Component {
                   {
                     topPx: top+shrink, 
                     leftPx: left+shrink,
-                    name: this.props.survivors[i].name,
+                    name: this.props.survivors[i].name + " (" +(i+1) +")",
                     id: this.props.survivors[i].id,
                     selectedSurvivorId: this.props.selectedSurvivorId,
-                    src: src
+                    src: src,
                   });
             }
             tiles = <MapSurvivors data={survivors} click={this.props.click}/>

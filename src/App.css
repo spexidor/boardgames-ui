@@ -2,6 +2,13 @@
   text-align: center;
 }
 
+.button{
+  color: black
+}
+.button-active{
+  color: red
+}
+
 .App-header {
   background-color: black;
   min-height: 100vh;

@@ -15,7 +15,6 @@ export const UpdateSurvivor = (survivor) => {
       body: JSON.stringify({
           id: survivor.id,
           name: survivor.name,
-          isAlive: survivor.isAlive,
           status: survivor.status,
           bleed: survivor.bleed,
           hitlocations: survivor.hitlocations,
@@ -26,9 +25,8 @@ export const UpdateSurvivor = (survivor) => {
           survival: survivor.survival,
           insanity: survivor.insanity,
           gearGrid: survivor.gearGrid,
-          alive: survivor.alive
         }),
-      });
+      }).then(response => response.json());
   }
   else {
     console.log("Survivor id not defined: " +url);
