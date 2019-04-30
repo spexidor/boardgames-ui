@@ -541,6 +541,11 @@ export default class GameBoard extends Component {
         GetHitlocations(numHits).then(data => {
         console.log(survivor.name +" took hits to " +data +" (damage=" +damage +")");
         //TODO: DODGE HERE
+        console.log("data before dodge: " +data.length);
+        if(survivor.survival > 0){
+          data = this.dodgePopUp(data); //may remove 1 hit
+        }
+        console.log("data after dodge: " +data.length);
         for(let i=0; i<data.length; i++)
         {
             this.removeArmourAt(survivor, data[i], damage);
@@ -548,6 +553,24 @@ export default class GameBoard extends Component {
       });
       }
     }
+  }
+
+  dodgePopUp = (hits) => {
+    
+    alert("dodge hits?")
+    hits = this.dodge(hits, hits[0]);
+
+    return hits;
+  }
+
+  dodge = (hits, locationToDoge) => {
+    for(let n=0; n<hits.length; n++){
+      if(hits[n] === locationToDoge){
+        hits.splice(n,1);
+        break;
+      }
+    }
+    return hits;
   }
 
   removeArmourAt = (survivor, hitlocation, damage) => {
