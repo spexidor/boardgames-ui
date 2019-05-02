@@ -27,6 +27,9 @@ export default class GameBoard extends Component {
         moveSelected: false,
         selectMonsterTarget: false
       },
+      dodge: {
+        showDodgePopup: false
+      },
       survivor: {},
       monster: this.props.showdown.monster,
       highlights: [],
@@ -449,9 +452,6 @@ export default class GameBoard extends Component {
       console.log("survivor not defined");
     }
   }
-//data => {
-//  this.setState({survivor: data});
-//}
 
   target = () => {
     console.log("finding target. revealed ai card: " +this.state.revealedAI.title);
@@ -539,41 +539,75 @@ export default class GameBoard extends Component {
       else 
       {
         GetHitlocations(numHits).then(data => {
-        console.log(survivor.name +" took hits to " +data +" (damage=" +damage +")");
+        //console.log(survivor.name +" took hits to " +data +" (damage=" +damage +")");
+        
         //TODO: DODGE HERE
-        console.log("data before dodge: " +data.length);
+        console.log(survivor.name +" has " +survivor.survival +" survival")
         if(survivor.survival > 0){
-          data = this.dodgePopUp(data); //may remove 1 hit
+          data = this.dodgePopUp(data, survivor, damage); //may remove 1 hit
         }
-        console.log("data after dodge: " +data.length);
-        for(let i=0; i<data.length; i++)
-        {
-            this.removeArmourAt(survivor, data[i], damage);
+        else {
+          this.removeArmourWrapper(data, survivor, damage);
         }
       });
       }
     }
   }
-
-  dodgePopUp = (hits) => {
-    
-    alert("dodge hits?")
-    hits = this.dodge(hits, hits[0]);
-
-    return hits;
+  removeArmourWrapper = (data, survivor, damage) => {
+    //console.log("removeArmourWrapper! data=" +data +"survivor=" +survivor +"damage=" +damage)
+    for(let i=0; i<data.length; i++)
+        {
+            this.removeArmourAt(survivor, data[i], damage);
+        }
   }
 
+  dodgePopUp = (hits, survivor, damage) => {
+    const dodge = {
+      hits: hits,
+      survivor: survivor,
+      damage: damage,
+      showDodgePopup: true
+    }
+
+    this.setState({
+      dodge: dodge
+    })
+  }
+
+  dodgePopUpClosed = (dodgedHit) => {
+
+    console.log("selected to dodge hit: " +dodgedHit);
+    let dodge = this.state.dodge;
+    dodge.showDodgePopup = false;
+
+    let hits = this.dodge(dodge.hits, dodgedHit);
+    console.log("total hits after dodge: " +hits);
+   
+    let survivor = dodge.survivor;
+    survivor.survival--;
+    this.updateSurvivor(survivor);
+    this.removeArmourWrapper(hits, survivor, this.state.dodge.damage);
+
+    this.setState({
+      dodge: dodge
+    })
+  }
+
+
   dodge = (hits, locationToDoge) => {
+    console.log("hits before splice: " +hits)
     for(let n=0; n<hits.length; n++){
       if(hits[n] === locationToDoge){
         hits.splice(n,1);
         break;
       }
     }
+    console.log("hits after splice: " +hits)
     return hits;
   }
 
   removeArmourAt = (survivor, hitlocation, damage) => {
+    //console.log("removeArmourAt: damage=" +damage +", survivor=" +survivor +", hitLocation=" +hitlocation);
     while(damage>0){
       for(let n=0; n<survivor.hitlocations.length; n++){
           if(survivor.hitlocations[n].type === hitlocation){
@@ -826,33 +860,22 @@ export default class GameBoard extends Component {
         <InfoBox selection={this.state.selection.typeSelected} survivor={this.state.survivor} monster={monster} />
         <ActionBox moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} targets={this.state.targets} selection={this.state.selection.typeSelected} attack={this.attack} target={this.target} revealAI={this.revealAI} nextTurn={this.nextTurn} move={this.clickedMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         {this.state.showPopup ? <ActivationSelecter text='Close Me' closePopup={this.togglePopup.bind(this)} /> : null}
+        {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
       </div>
     )
   }
-
+  
   togglePopup = () => {
     console.log("updating popup state")
     this.setState({
       showPopup: !this.state.showPopup
     });
   }
-  /*
-  survivorAtPos = (position) => {
-    console.log("finding survivor in " +position.x +"," +position.y);
-    const survivors = this.props.showdown.survivors;
-
-    for(let n=0; n<survivors.length; n++){
-        if(survivors[n].position.x === position.x && survivors[n].position.y === position.y){
-            return survivors[n];
-        }
-    }
-    return null;
-  }*/
 }
 
 class ActivationSelecter extends React.Component {
   render() {
-    console.log("rendering popup");
+    //console.log("rendering popup");
     return (
       <div className='popup'>
         <div className='popup_inner'>
@@ -861,5 +884,85 @@ class ActivationSelecter extends React.Component {
         </div>
       </div>
     );
+  }
+}
+
+class DodgeSelecter extends React.Component {
+
+  constructor(props){
+    super(props);
+
+    this.state = {
+      selectedHit: ""
+    }
+  }
+
+  dododge = () => {
+    this.props.dodgeHits(this.state.selectedHit);
+  }
+
+  dontdodge = () => {
+    this.props.dodgeHits("");
+  }
+
+  onChange = (e) => {
+    this.setState({
+      selectedHit: e.target.value
+    });
+  }
+
+  render() {
+
+    let hitLocations = [];
+    for(let n=0; n<this.props.hits.length; n++){
+      hitLocations.push({
+        value: this.props.hits[n],
+        onChange: this.onChange.bind(this)
+      });
+    }
+    
+    let radioButtons = <MapRadioButtons data={hitLocations}/>
+
+    return (
+      <div className='popup'>
+        <div className='popup_inner'>
+          <h2>Dodge hits?</h2>
+
+          {radioButtons}
+          
+            <div>
+              <button onClick={this.dododge} >Dodge</button>
+              <button onClick={this.dontdodge}>Skip</button>
+            </div>
+        </div>
+      </div>
+    );
+  }
+}
+
+function MapRadioButtons(props){
+ 
+  return(
+    props.data.map((s, index) => 
+        <RadioButtonOption value={s.value} onChange={s.onChange} key={index}/>
+    ))
+}
+
+class RadioButtonOption extends React.Component {
+  render(){
+    return(
+      <div>
+        <label>
+          <input
+            type="radio"
+            name="react-tips"
+            value={this.props.value}
+            onChange={this.props.onChange}
+            className="form-check-input"
+          />
+          {this.props.value}
+        </label>
+        </div>
+    )
   }
 }
