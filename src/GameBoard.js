@@ -26,13 +26,14 @@ export default class GameBoard extends Component {
       },
       action: {
         moveSelected: false,
-        selectMonsterTarget: false
+        selectMonsterTarget: false,
+        survivorGrabbed: false
       },
       dodge: {
         showDodgePopup: false
       },
       survivor: {},
-      survivors: [],
+      survivors: this.props.showdown.survivors,
       monster: this.props.showdown.monster,
       highlights: [],
       
@@ -88,6 +89,9 @@ export default class GameBoard extends Component {
   return (this.getSurvivorById(id) !== null)
  }
 
+ /*
+  * Selects the monster on screen, or deselects of already marked
+  */
  selectMonster = () => {
   let selection = this.state.selection;
   let action = this.state.action;
@@ -111,6 +115,9 @@ export default class GameBoard extends Component {
   }
  }
 
+ /*
+  * Selects a survivor on screen, or deselects of already marked
+  */
  selectSurvivor = (id) => {
   let selection = this.state.selection;
   let action = this.state.action;
@@ -155,6 +162,9 @@ export default class GameBoard extends Component {
     }
  }
 
+ /*
+  * Handles a click on the board
+  */
   click = (props) => {
 
     if (typeof this.state.monster.id === 'undefined') {
@@ -219,7 +229,7 @@ export default class GameBoard extends Component {
                   console.log("waiting for grab, placing survivor")
                   let action = this.state.action;
                   action.survivorGrabbed = false;
-                  this.grabSurvivor(this.state.survivor);
+                  this.grabSurvivor(this.getSurvivorById(this.state.selection.monsterTarget));
 
                   this.setState({
                     action: action
@@ -250,6 +260,9 @@ export default class GameBoard extends Component {
     }
   }
 
+  /*
+   * Deselects survivor/monster
+   */
   deselect = () => {
     let selection = this.state.selection;
     selection.typeSelected = "";
@@ -286,7 +299,6 @@ export default class GameBoard extends Component {
       })
   }
 
-
   setMonsterMoves = (id) => {
     GetMonsterMoves(id).then(data => {
       this.setState({
@@ -296,7 +308,6 @@ export default class GameBoard extends Component {
   }
 
   clickedMove = () => {
-
     let action = this.state.action;
     action.moveSelected = true;
     this.setState({
@@ -399,12 +410,12 @@ export default class GameBoard extends Component {
     }
 
   getSurvivor = (id) => {
+    //const survivors = this.props.showdown.survivors; //REFACTOR
 
-    const survivors = this.props.showdown.survivors;
     let survivor = null;
-    for(let n=0; n<survivors.length; n++){
-      if(id === survivors[n].id){
-        survivor = survivors[n];
+    for(let n=0; n<this.state.survivors.length; n++){
+      if(id === this.state.survivors[n].id){
+        survivor = this.state.survivors[n];
       }
     }
     return survivor;
@@ -424,29 +435,29 @@ export default class GameBoard extends Component {
 
   nextAct = (e) => {
     let showdown = this.props.showdown;
+    let survivors = this.state.survivors;
 
     if(showdown.act === "MONSTERS"){
       showdown.act = "SURVIVORS";
 
-      for (let n = 0; n < showdown.survivors.length; n++) {
-        if(showdown.survivors[n].status === "KNOCKED_DOWN"){
-          console.log(showdown.survivors[n].name +" stands up");
-          showdown.survivors[n].status = "STANDING"; //TODO: actually only applies to survivors knocked down last act
+      for (let n = 0; n < survivors.length; n++) {
+        if(survivors[n].status === "KNOCKED_DOWN"){
+          console.log(survivors[n].name +" stands up");
+          survivors[n].status = "STANDING"; //TODO: actually only applies to survivors knocked down last act
         }
-        this.updateSurvivor(showdown.survivors[n]);
       }
+      this.updateSurvivors(survivors);
     }
     else{
       showdown.act = "MONSTERS";
       showdown.turn = showdown.turn + 1;
 
-      for (let n = 0; n < showdown.survivors.length; n++) {
-        showdown.survivors[n].movesLeft = 1;
-        showdown.survivors[n].activationsLeft = 1;
-        this.updateSurvivor(showdown.survivors[n]);
+      for (let n = 0; n < survivors.length; n++) {
+        survivors[n].movesLeft = 1;
+        survivors[n].activationsLeft = 1;
       }
+      this.updateSurvivors(survivors);
     }
-
     this.props.updateShowdown(showdown);
   }
 
@@ -471,13 +482,29 @@ export default class GameBoard extends Component {
 
   updateSurvivor = (survivor) => {
     if(typeof survivor !== 'undefined'){
-      UpdateSurvivor(survivor).then(data => {
-        console.log("survivor updated in backend, updating local state. position y: " +data.position.y)
-        this.setState({survivor: data});
+      UpdateSurvivor(survivor).then(survivor => {
+        //console.log("survivor updated in backend " +survivor.name)
+        this.updateSurvivorInState(survivor);
       });
     }
     else {
-      console.log("survivor not defined");
+      console.log("updateSurvivor: Input not defined");
+    }
+  }
+
+  updateSurvivorInState = (survivor) => {
+    let survivors = this.state.survivors;
+    for(let n=0; n<survivors.length; n++){
+      if(survivor.id === survivors[n].id){
+        survivors[n] = survivor;
+      }
+    }
+    this.setState({survivors: survivors})
+  }
+
+  updateSurvivors = (survivors) => {
+    for(let n=0; n<survivors.length; n++){
+      this.updateSurvivor(survivors[n]);
     }
   }
 
@@ -637,7 +664,6 @@ export default class GameBoard extends Component {
           });
 
           if(effect.grab){ //grab = knock down + damage (monster lv) + place in front
-            //TODO: place survivor in front of monster
             console.log("triggerEffect: grab");
             action.survivorGrabbed = true;
             this.setState({
@@ -648,22 +674,29 @@ export default class GameBoard extends Component {
       }
       else {
         if(effect.grab){ //grab = knock down + damage (monster lv) + place in front
-          //TODO: place survivor in front of monster
           console.log("triggerEffect: grab")
           this.grabSurvivor(survivor);
         }
       }
   }
 
-  grabSurvivor = (survivor) => {
+  grabSurvivor = (survivor) => { //grab = knock down + damage(monster level) +in front of monster
 
     console.log(survivor.name +" has been grabbed")
-    let pos = EmptySpaceInFrontOfMonster(this.state.monster, this.props.showdown.survivors);
+    let pos = EmptySpaceInFrontOfMonster(this.state.monster, this.state.survivors);
     if(pos !== null){
       console.log("empty pos from monster: x=" +pos.x +", y=" +pos.y)
       survivor.position.x = pos.x;
       survivor.position.y = pos.y;
+      survivor.status = "KNOCKED_DOWN";
+
+      const attack = {
+        damage: this.state.monster.level,
+        trigger: {}
+      }
+
       this.updateSurvivor(survivor);
+      this.damageSurvivor(survivor.id, 1, attack);
     }
     else{
       console.log("no empty space in front of monster");
@@ -801,9 +834,9 @@ export default class GameBoard extends Component {
   }
 
   getSurvivorById = (id) => {
-    for(let i=0; i<this.props.showdown.survivors.length; i++){
-        if(this.props.showdown.survivors[i].id === id){
-          return this.props.showdown.survivors[i];
+    for(let i=0; i<this.state.survivors.length; i++){
+        if(this.state.survivors[i].id === id){
+          return this.state.survivors[i];
         } 
     }
     console.log("no survivor with id=" +id +" found");
@@ -926,7 +959,7 @@ export default class GameBoard extends Component {
 
   render() {
 
-    console.log("rendering GameBoard.js");
+    //console.log("rendering GameBoard.js");
 
     //general
     const size = 40;
@@ -980,7 +1013,7 @@ export default class GameBoard extends Component {
       <div>
         <TileRenderer targets={this.state.targets} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
         
-        <div align="left" style={{ borderRadius: "5px", background: "#282c34", fontSize: "8px", color: "white", position: "absolute", height: 50, width: 250, top: 50, left: 800 }}>Game turn: {this.props.showdown.turn}, move selected: {this.state.action.moveSelected.toString()}, game status: {this.props.showdown.gameStatus}, showdown id: {this.props.showdown.id}, survivorId: {this.state.survivor.id}, monsterId: {monsterId}
+        <div align="left" style={{ borderRadius: "5px", background: "#282c34", fontSize: "8px", color: "white", position: "absolute", height: 40, width: 300, top: 5, left: 375 }}>Game turn: {this.props.showdown.turn}, move selected: {this.state.action.moveSelected.toString()}, game status: {this.props.showdown.gameStatus}, showdown id: {this.props.showdown.id}, survivorId: {this.state.survivor.id}, monsterId: {monsterId}
         , revealed ai: {this.state.revealedAI.title}, game name: {this.props.showdown.description}</div>
         <MonsterTile tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
         <SurvivorTiles tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />

@@ -80,7 +80,7 @@ export default class ActionBox extends Component {
             onStart={this.handleStart}
             onDrag={this.handleDrag}
             onStop={this.handleStop}>
-            <div className="handle" align="left" style={{borderRadius: "5px", opacity: 0.9, background: "#282c34", fontSize: "12px", color: "white", position: "absolute", height: 200, width: 250, top: 300, left: 800}}>   
+            <div className="handle" align="left" style={{borderRadius: "5px", opacity: 0.9, background: "#282c34", fontSize: "12px", color: "white", position: "absolute", height: 100, width: 250, top: 300, left: 800}}>   
                 {actionBox}
             </div>
         </Draggable>

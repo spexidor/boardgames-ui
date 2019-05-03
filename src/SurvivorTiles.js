@@ -10,7 +10,7 @@ export default class SurvivorTiles extends Component {
  
     render(){
 
-      console.log("rendering SurvivorTiles.js")
+      //console.log("rendering SurvivorTiles.js")
 
         let tiles = <div></div>;
         let survivors = [];

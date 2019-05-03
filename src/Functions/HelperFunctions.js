@@ -60,7 +60,7 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
     }
     else if(monster.facing === "RIGHT"){
       const pos1 = {
-        x: monster.position.x+1,
+        x: monster.position.x+2,
         y: monster.position.y
       }
       if(!SurvivorInPosition(pos1, survivors))
@@ -68,7 +68,7 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
         return pos1;
       }
       const pos2 = {
-        x: monster.position.x+1,
+        x: monster.position.x+2,
         y: monster.position.y+1
       }
       if(!SurvivorInPosition(pos2, survivors))
