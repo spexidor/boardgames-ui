@@ -46,7 +46,8 @@ export const GetShowdown = (id) => {
         id: showdown.id,
         turn: showdown.turn,
         name: showdown.name,
-        gameStatus: showdown.gameStatus
+        gameStatus: showdown.gameStatus,
+        act: showdown.act
       }),
     })
   }

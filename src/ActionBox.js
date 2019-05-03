@@ -40,6 +40,7 @@ export default class ActionBox extends Component {
         <div>
         <button className={moveActive} disabled={moveDisabled} onClick={this.props.move}>Move</button>
         <button disabled={activateDisabled} onClick={this.props.activate}>Activate</button>
+        <button onClick={this.props.showGearGrid}>Gear Grid</button>
         </div>
     }
     else if(this.props.selection==="monster"){
@@ -57,7 +58,14 @@ export default class ActionBox extends Component {
         </div>
     }
     else{
-        actionBox = <button onClick={this.props.nextTurn}>Next turn</button>
+        let nextAct ="";
+        if(this.props.act === "SURVIVORS"){
+            nextAct = "Go to Monsters act";
+        }
+        else{
+            nextAct = "Go to Survivors act";
+        }
+        actionBox = <button onClick={this.props.nextAct}>{nextAct}</button>
     }
     
     return(

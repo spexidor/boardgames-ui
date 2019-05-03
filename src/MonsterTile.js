@@ -11,7 +11,7 @@ export default class MonsterTile extends Component {
 
     this.state = {
         brightness: 100,
-        brightMod: 20,
+        brightMod: 30,
         hue: 0,
         facing: props.facing
     }

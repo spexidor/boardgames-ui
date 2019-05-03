@@ -15,6 +15,7 @@ export const UpdateMonster = (monster) => {
       },
       body: JSON.stringify({
           id: monster.id,
+          lastWoundedBy: monster.lastWoundedBy,
           position: {
             x: parseInt(monster.position.x),
             y: parseInt(monster.position.y)
@@ -79,3 +80,8 @@ export const GetMonsterMoves = (id) => {
     const url = "http://localhost:8083/monster/" + id + "/openMoves";
     return fetch(url).then(response => response.json());
   }
+
+export const GetAwayFromThreats = (id) => {
+  const url = "http://localhost:8083/monster/" + id + "/awayFromAllThreats";
+  return fetch(url).then(response => response.json());
+}

@@ -303,9 +303,16 @@ export default class GameBoard extends Component {
         GetHits(numHits, this.toWoundValue()).then(data => {
           const numWounds = data.length;
           console.log("wounds: " +numWounds +" from " +this.state.survivor.name);
-          this.removeAICard(numWounds);
-
+          
           let survivor = this.state.survivor;
+          if(numWounds>0){
+            let monster = this.state.monster;
+            monster.lastWoundedBy = survivor.id;
+
+            this.updateMonster(monster);
+            this.removeAICard(numWounds);
+          }
+          
           survivor.activationsLeft = survivor.activationsLeft -1;
           this.setState({
             survivor: survivor
@@ -409,14 +416,29 @@ export default class GameBoard extends Component {
     else { return false }
   }
 
-  nextTurn = (e) => {
+  nextAct = (e) => {
     let showdown = this.props.showdown;
-    showdown.turn = showdown.turn + 1;
 
-    for (let n = 0; n < showdown.survivors.length; n++) {
-      showdown.survivors[n].movesLeft = 1;
-      showdown.survivors[n].activationsLeft = 1;
-      this.updateSurvivor(showdown.survivors[n]);
+    if(showdown.act === "MONSTERS"){
+      showdown.act = "SURVIVORS";
+
+      for (let n = 0; n < showdown.survivors.length; n++) {
+        if(showdown.survivors[n].status === "KNOCKED_DOWN"){
+          console.log(showdown.survivors[n].name +" stands up");
+          showdown.survivors[n].status = "STANDING"; //TODO: actually only applies to survivors knocked down last act
+        }
+        this.updateSurvivor(showdown.survivors[n]);
+      }
+    }
+    else{
+      showdown.act = "MONSTERS";
+      showdown.turn = showdown.turn + 1;
+
+      for (let n = 0; n < showdown.survivors.length; n++) {
+        showdown.survivors[n].movesLeft = 1;
+        showdown.survivors[n].activationsLeft = 1;
+        this.updateSurvivor(showdown.survivors[n]);
+      }
     }
 
     this.props.updateShowdown(showdown);
@@ -442,7 +464,6 @@ export default class GameBoard extends Component {
   }
 
   updateSurvivor = (survivor) => {
-    console.log("survivor to be updated: " +survivor.id);
     if(typeof survivor !== 'undefined'){
       UpdateSurvivor(survivor).then(data => {
         this.setState({survivor: data});
@@ -498,7 +519,7 @@ export default class GameBoard extends Component {
   attack = () => {
 
     let aiCard = this.state.revealedAI;
-    if(this.monsterInRange()){
+    if(this.monsterInRange() && typeof aiCard !== 'undefined'){
       this.turnMonsterToSurvivor();
 
       GetHits(aiCard.attack.speed, aiCard.attack.toHitValue).then(data => {
@@ -509,6 +530,7 @@ export default class GameBoard extends Component {
         action.selectMonsterTarget = false;
         this.deselect();
         this.damageSurvivor(this.state.selection.monsterTarget, numHits, aiCard.attack);
+
         this.moveAI();
         this.setState({
           targets: [],
@@ -517,8 +539,11 @@ export default class GameBoard extends Component {
       });
     }
     else{
-      console.log("monster not in range, canelling attack");
+      console.log("monster not in range or no AI card revealed, canceling attack");
       this.moveAI();
+      this.setState({
+        targets: [],
+      });
     }
   }
 
@@ -538,34 +563,73 @@ export default class GameBoard extends Component {
       }
       else 
       {
-        GetHitlocations(numHits).then(data => {
-        //console.log(survivor.name +" took hits to " +data +" (damage=" +damage +")");
+        GetHitlocations(numHits).then(hitLocations => {
+        console.log(survivor.name +" took hits to " +hitLocations +" (damage=" +damage +")");
         
-        //TODO: DODGE HERE
         console.log(survivor.name +" has " +survivor.survival +" survival")
         if(survivor.survival > 0){
-          data = this.dodgePopUp(data, survivor, damage); //may remove 1 hit
+          this.dodgePopUp(hitLocations, survivor, attack); //may remove 1 hit
         }
         else {
-          this.removeArmourWrapper(data, survivor, damage);
+          this.removeArmourWrapper(hitLocations, survivor, attack);
         }
       });
       }
     }
   }
-  removeArmourWrapper = (data, survivor, damage) => {
+  removeArmourWrapper = (hitLocations, survivor, attack) => {
     //console.log("removeArmourWrapper! data=" +data +"survivor=" +survivor +"damage=" +damage)
-    for(let i=0; i<data.length; i++)
-        {
-            this.removeArmourAt(survivor, data[i], damage);
-        }
+    const damage = attack.damage;
+    for(let i=0; i<hitLocations.length; i++)
+    {
+        this.removeArmourAt(survivor, hitLocations[i], damage);
+    }
+    if(hitLocations.length > 0 && attack.trigger && attack.trigger.afterDamage){
+        this.addTriggerEffect(survivor, attack.triggerEffect);
+    }
   }
 
-  dodgePopUp = (hits, survivor, damage) => {
+  addTriggerEffect = (survivor, effect) => {
+      console.log("adding triggerEffect")
+
+      if(effect.bleed > 0){
+        console.log("triggerEffect: bleed " +effect.bleed)
+        survivor.bleed += effect.bleed;
+      }
+      if(effect.brainDamage > 0){
+        console.log("triggerEffect: brain damage")
+        this.removeArmourAt(survivor, "BRAIN", effect.brainDamage);
+      }
+      if(effect.damage > 0){
+        console.log("triggerEffect: damage")
+        const normalAttack = {
+          damage: effect.damage,
+          trigger: {}
+        }
+        this.damageSurvivor(survivor.id, 1, normalAttack);
+      }
+      if(effect.knockDown){
+        console.log("triggerEffect: knock down")
+        survivor.status = "KNOCKED_DOWN";
+        this.updateSurvivor(survivor);
+      }
+      if(effect.grab){ //grab = knock down + damage (monster lv) + place in front
+        //TODO: place survivor in front of monster
+        console.log("triggerEffect: grab")
+      }
+      if(typeof effect.move !== 'undefined'){
+        console.log("triggerEffect: move")
+        console.log("triggerEffect: move direction=" +effect.move.direction)
+        console.log("triggerEffect: move")
+      
+      }
+  }
+
+  dodgePopUp = (hits, survivor, attack) => {
     const dodge = {
       hits: hits,
       survivor: survivor,
-      damage: damage,
+      attack: attack,
       showDodgePopup: true
     }
 
@@ -586,7 +650,7 @@ export default class GameBoard extends Component {
     let survivor = dodge.survivor;
     survivor.survival--;
     this.updateSurvivor(survivor);
-    this.removeArmourWrapper(hits, survivor, this.state.dodge.damage);
+    this.removeArmourWrapper(hits, survivor, this.state.dodge.attack);
 
     this.setState({
       dodge: dodge
@@ -621,7 +685,7 @@ export default class GameBoard extends Component {
               survivor.hitlocations[n].lightInjury = true;
             }
             else if(!survivor.hitlocations[n].heavyInjury){
-              console.log("adding heavy injury");
+              console.log("adding heavy injury and knock down");
               survivor.hitlocations[n].heavyInjury = true;
               survivor.status = "KNOCKED_DOWN";
             }
@@ -727,6 +791,9 @@ export default class GameBoard extends Component {
     }
   }
 
+  /*
+  Adds cards from discard to deck and shuffles deck
+  */
   shuffleAI = () => {
     let monster = this.state.monster;
     console.log("shuffling ai deck");
@@ -753,6 +820,7 @@ export default class GameBoard extends Component {
   }
 
   moveAI = () => {
+    console.log("moving monster AI");
     let monster = this.state.monster;
     if(this.state.revealedAI.title !== 'Basic Action'){
       monster.aiDeck.cardsInDiscard.push(this.state.revealedAI);
@@ -762,12 +830,15 @@ export default class GameBoard extends Component {
       revealedAI: 0,
       monster: monster
     });
+    UpdateMonsterAI(monster);
   }
 
   removeAICard = (numWounds) => {
     let monster = this.state.monster;
+    let updated = false;
     
     while(numWounds > 0){
+      updated = true;
       if(monster.aiDeck.cardsInDeck.length > 0){
         monster.aiDeck.cardsRemoved.push(monster.aiDeck.cardsInDeck.shift());
       }
@@ -781,7 +852,9 @@ export default class GameBoard extends Component {
       numWounds--;
     }
 
-    UpdateMonsterAI(monster);
+    if(updated){
+      UpdateMonsterAI(monster);
+    }
   }
 
   gameWon = () => {
@@ -810,8 +883,8 @@ export default class GameBoard extends Component {
 
     //general
     const size = 50;
-    const width_tiles = 14;
-    const height_tiles = 10;
+    const width_tiles = 22;
+    const height_tiles = 18;
     const topOffset = 50;
     const leftOffset = 50;
     let highlights = this.state.highlights;
@@ -858,7 +931,7 @@ export default class GameBoard extends Component {
         <MonsterTile tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
         <SurvivorTiles tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
         <InfoBox selection={this.state.selection.typeSelected} survivor={this.state.survivor} monster={monster} />
-        <ActionBox moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} targets={this.state.targets} selection={this.state.selection.typeSelected} attack={this.attack} target={this.target} revealAI={this.revealAI} nextTurn={this.nextTurn} move={this.clickedMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
+        <ActionBox act={this.props.showdown.act} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} targets={this.state.targets} selection={this.state.selection.typeSelected} attack={this.attack} target={this.target} revealAI={this.revealAI} nextAct={this.nextAct} move={this.clickedMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         {this.state.showPopup ? <ActivationSelecter text='Close Me' closePopup={this.togglePopup.bind(this)} /> : null}
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
       </div>
