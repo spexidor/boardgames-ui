@@ -10,6 +10,8 @@ export default class SurvivorTiles extends Component {
  
     render(){
 
+      console.log("rendering SurvivorTiles.js")
+
         let tiles = <div></div>;
         let survivors = [];
         let srcArr = [s1, s2, s3, s4];
@@ -43,6 +45,7 @@ export default class SurvivorTiles extends Component {
                     id: this.props.survivors[i].id,
                     selectedSurvivorId: this.props.selectedSurvivorId,
                     src: src,
+                    size: this.props.tileSize
                   });
             }
             tiles = <MapSurvivors data={survivors} click={this.props.click}/>
@@ -57,6 +60,6 @@ export default class SurvivorTiles extends Component {
 function MapSurvivors(props){
     return(
       props.data.map((s, index) => 
-          <SurvivorTile src={s.src} click={props.click} selectedSurvivorId={s.selectedSurvivorId} key={index} top={s.topPx} left={s.leftPx} name={s.name} id={s.id}/>
+          <SurvivorTile size={s.size} src={s.src} click={props.click} selectedSurvivorId={s.selectedSurvivorId} key={index} top={s.topPx} left={s.leftPx} name={s.name} id={s.id}/>
       ))
 }

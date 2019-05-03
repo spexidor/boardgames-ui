@@ -6,8 +6,9 @@ import SurvivorTiles from './SurvivorTiles';
 import InfoBox from './InfoBox';
 import ActionBox from './ActionBox';
 import { UpdateSurvivor, DeleteSurvivor, GetHitlocations, GetSurvivorMoves, GetInjury} from './RestServices/Survivor';
-import { UpdateMonster , UpdateMonsterAI, GetTargets, GetMonsterMoves } from './RestServices/Monster';
+import { UpdateMonster , UpdateMonsterAI, GetTargets, GetMonsterMoves, GetMonsterSpecialMove } from './RestServices/Monster';
 import { GetHits } from './RestServices/Dice'
+import { PositionsEqual, EmptySpaceInFrontOfMonster } from './Functions/HelperFunctions'
 
 export default class GameBoard extends Component {
 
@@ -31,17 +32,17 @@ export default class GameBoard extends Component {
         showDodgePopup: false
       },
       survivor: {},
+      survivors: [],
       monster: this.props.showdown.monster,
       highlights: [],
       
-      showPopup: false,
       selectedWeapon: 2, //index in gear grid
       targets: [],
       revealedAI: 0
     }
 
-    this.setSurvivorMoves = this.setSurvivorMoves.bind(this);
-    this.clickedMove = this.clickedMove.bind(this);
+    //this.setSurvivorMoves = this.setSurvivorMoves.bind(this);
+    //this.clickedMove = this.clickedMove.bind(this);
   }
 
   componentDidMount(){
@@ -213,6 +214,17 @@ export default class GameBoard extends Component {
                 highlights: []
               })
               this.updateMonster(this.state.monster);
+
+              if(this.state.action.survivorGrabbed){
+                  console.log("waiting for grab, placing survivor")
+                  let action = this.state.action;
+                  action.survivorGrabbed = false;
+                  this.grabSurvivor(this.state.survivor);
+
+                  this.setState({
+                    action: action
+                  })
+              }
             }
           }
         }
@@ -332,18 +344,12 @@ export default class GameBoard extends Component {
   }
 
   inBlindSpot = (survivor) => {
-    let inBlindSpot = false;
     for(let i=0; i<this.state.monster.blindspot.length; i++) {
-      if(this.positionsEqual(survivor.position, this.state.monster.blindspot[i])){
-        inBlindSpot = true;
-        break;
+      if(PositionsEqual(survivor.position, this.state.monster.blindspot[i])){
+        return true;
       }
     }
-    return inBlindSpot;
-  }
-
-  positionsEqual = (p1, p2) => {
-    return (p1.x===p2.x && p1.y===p2.y)
+    return false;
   }
 
   getSelectedWeapon = () => {
@@ -466,6 +472,7 @@ export default class GameBoard extends Component {
   updateSurvivor = (survivor) => {
     if(typeof survivor !== 'undefined'){
       UpdateSurvivor(survivor).then(data => {
+        console.log("survivor updated in backend, updating local state. position y: " +data.position.y)
         this.setState({survivor: data});
       });
     }
@@ -496,10 +503,6 @@ export default class GameBoard extends Component {
         console.log("no valid targets")
       }
     });
-  }
-
-  shuffleAI = () => {
-    return null;
   }
 
   turnMonsterToSurvivor = () => {
@@ -613,16 +616,58 @@ export default class GameBoard extends Component {
         survivor.status = "KNOCKED_DOWN";
         this.updateSurvivor(survivor);
       }
-      if(effect.grab){ //grab = knock down + damage (monster lv) + place in front
-        //TODO: place survivor in front of monster
-        console.log("triggerEffect: grab")
-      }
+      
       if(typeof effect.move !== 'undefined'){
         console.log("triggerEffect: move")
         console.log("triggerEffect: move direction=" +effect.move.direction)
-        console.log("triggerEffect: move")
-      
+        
+        GetMonsterSpecialMove(this.props.showdown.monster.id).then(data => {
+          console.log("fetch data: "+data.length)
+
+          let action = this.state.action;
+          action.moveSelected = true;
+          action.selectedMonsterId = this.props.showdown.monster.id;
+          let selection = this.state.selection;
+          selection.typeSelected = "monster"; 
+
+          this.setState({
+            highlights: data,
+            action: action,
+            selection: selection
+          });
+
+          if(effect.grab){ //grab = knock down + damage (monster lv) + place in front
+            //TODO: place survivor in front of monster
+            console.log("triggerEffect: grab");
+            action.survivorGrabbed = true;
+            this.setState({
+              action: action,
+            });
+          }
+        })
       }
+      else {
+        if(effect.grab){ //grab = knock down + damage (monster lv) + place in front
+          //TODO: place survivor in front of monster
+          console.log("triggerEffect: grab")
+          this.grabSurvivor(survivor);
+        }
+      }
+  }
+
+  grabSurvivor = (survivor) => {
+
+    console.log(survivor.name +" has been grabbed")
+    let pos = EmptySpaceInFrontOfMonster(this.state.monster, this.props.showdown.survivors);
+    if(pos !== null){
+      console.log("empty pos from monster: x=" +pos.x +", y=" +pos.y)
+      survivor.position.x = pos.x;
+      survivor.position.y = pos.y;
+      this.updateSurvivor(survivor);
+    }
+    else{
+      console.log("no empty space in front of monster");
+    }
   }
 
   dodgePopUp = (hits, survivor, attack) => {
@@ -881,10 +926,12 @@ export default class GameBoard extends Component {
 
   render() {
 
+    console.log("rendering GameBoard.js");
+
     //general
-    const size = 50;
-    const width_tiles = 22;
-    const height_tiles = 18;
+    const size = 40;
+    const width_tiles = 22; //22
+    const height_tiles = 18; //18
     const topOffset = 50;
     const leftOffset = 50;
     let highlights = this.state.highlights;
@@ -914,20 +961,27 @@ export default class GameBoard extends Component {
       else{
         monster = this.state.monster;
       }
+      if(this.state.survivors.length === 0){
+        survivors = this.props.showdown.survivors;
+      }
+      else{
+        survivors = this.state.survivors;
+      }
+
       monsterPosX = monster.position.x;
       monsterPosY = monster.position.y;
       monsterWidth = monster.statline.width;
       monsterHeight = monster.statline.height;
       monsterFacing = monster.facing;
       monsterId = monster.id;
-      survivors = this.props.showdown.survivors;
     }
 
     return (
       <div>
+        <TileRenderer targets={this.state.targets} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
+        
         <div align="left" style={{ borderRadius: "5px", background: "#282c34", fontSize: "8px", color: "white", position: "absolute", height: 50, width: 250, top: 50, left: 800 }}>Game turn: {this.props.showdown.turn}, move selected: {this.state.action.moveSelected.toString()}, game status: {this.props.showdown.gameStatus}, showdown id: {this.props.showdown.id}, survivorId: {this.state.survivor.id}, monsterId: {monsterId}
         , revealed ai: {this.state.revealedAI.title}, game name: {this.props.showdown.description}</div>
-        <TileRenderer targets={this.state.targets} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
         <MonsterTile tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
         <SurvivorTiles tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
         <InfoBox selection={this.state.selection.typeSelected} survivor={this.state.survivor} monster={monster} />

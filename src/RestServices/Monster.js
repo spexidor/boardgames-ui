@@ -5,7 +5,7 @@ export const UpdateMonster = (monster) => {
   
     if(typeof id !== 'undefined'){
   
-      //console.log("new facing to rest " +monster.facing)
+      console.log("updating monster in backend");
       return fetch(url, {
       crossDomain:true,
       method: 'PUT',
@@ -81,7 +81,9 @@ export const GetMonsterMoves = (id) => {
     return fetch(url).then(response => response.json());
   }
 
-export const GetAwayFromThreats = (id) => {
-  const url = "http://localhost:8083/monster/" + id + "/awayFromAllThreats";
+export const GetMonsterSpecialMove = (id) => {
+  let direction = "AWAY_FROM_THREATS";
+  let length = 5;
+  const url = "http://localhost:8083/monster/" + id + "/specificMove?direction=" +direction +"&length=" +length;
   return fetch(url).then(response => response.json());
 }

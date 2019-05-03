@@ -59,4 +59,3 @@ export default class InfoBox extends Component {
     )
   }
 }
-
