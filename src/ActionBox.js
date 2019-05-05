@@ -11,8 +11,8 @@ export default class ActionBox extends Component {
   render(){
 
     //survivor
-    let moveDisabled = false;
     let activateDisabled = false;
+    let moveDisabled = false;
     if(this.props.survivor.movesLeft < 1 || this.deadOrKnockedDown()){
         moveDisabled = true;
     }
@@ -21,25 +21,29 @@ export default class ActionBox extends Component {
     }
 
     //monster
-    let attackDisabled = true;
+    let monsterAttackDisabled = true;
+    let monsterMoveDisabled = true;
     let getTargetDisabled = true;
     if(this.props.targets.length === 1){
-        attackDisabled = false;
+        monsterAttackDisabled = false;
     }
-    if(this.props.aiCard !== 0){
+    if(this.props.targets.length === 1 && !this.props.aiCard.noMove){
+        monsterMoveDisabled = false;
+    }
+    if(this.props.aiCard !== 0 && this.props.targets.length === 0){
         getTargetDisabled = false;
     }
     let moveActive = "";
-        if(this.props.moveSelected){
-            moveActive = "button-active";
-        }
+    if(this.props.moveSelected){
+        moveActive = "button-active";
+    }
 
     let actionBox = <div></div>
     if(this.props.selection==="survivor"){
 
         actionBox = 
         <div>
-        <button className={moveActive} disabled={moveDisabled} onClick={this.props.move}>Move</button>
+        <button disabled={moveDisabled}className={moveActive} onClick={this.props.move}>Move</button>
         <button disabled={activateDisabled} onClick={this.props.activate}>Activate</button>
         <button onClick={this.props.showGearGrid}>Gear Grid</button>
         </div>
@@ -49,8 +53,8 @@ export default class ActionBox extends Component {
         <div>
         <button onClick={this.props.revealAI}>New AI</button>
         <button disabled={getTargetDisabled} onClick={this.props.target}>Get target</button>
-        <button className={moveActive} onClick={this.props.move}>Move</button>
-        <button disabled={attackDisabled} onClick={this.props.attack}>Attack</button>
+        <button disabled={monsterMoveDisabled} className={moveActive} onClick={this.props.monsterMove}>Move</button>
+        <button disabled={monsterAttackDisabled} onClick={this.props.attack}>Attack</button>
         <br/><br/>
         <button onClick={this.props.changeFacing.bind(this, "UP")}>Turn up</button>
         <button onClick={this.props.changeFacing.bind(this, "DOWN")}>Turn down</button>

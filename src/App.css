@@ -32,11 +32,27 @@
   background-color: rgba(0,0,0, 0.5);
 }
 .popup_inner {
+  color: white;
   position: absolute;
+  border-radius: 5px;
   left: 25%;
   right: 25%;
   top: 25%;
   bottom: 25%;
+  margin: auto;
+  background: black;
+  background-image: url("marble.png");
+  background-size: 100% 200%;
+}
+
+.my_box {
+  color: white;
+  position: absolute;
+  border-radius: 5px;
+  left: 10%;
+  right: 10%;
+  top: 10%;
+  bottom: 10%;
   margin: auto;
   background: black;
   background-image: url("marble.png");
