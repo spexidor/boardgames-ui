@@ -58,6 +58,33 @@ export const UpdateMonster = (monster) => {
     }
   }
 
+  export const UpdateMonsterHL = (monster) => {
+
+    const id = monster.id;
+    const url = 'http://localhost:8083/monster/' +id +'/hl';
+  
+    if(typeof id !== 'undefined'){
+  
+      return fetch(url, {
+      crossDomain:true,
+      method: 'PUT',
+      headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+          id: monster.hlDeck.id,
+          cardsInDeck: monster.hlDeck.cardsInDeck,
+          cardsInDiscard: monster.hlDeck.cardsInDiscard,
+          cardsRemoved: monster.hlDeck.cardsRemoved,
+        }),
+      }).then(response => response.json());
+    }
+    else{
+      console.log("Id not defined: " +url);
+    }
+  }
+
 
 export const GetAiDeck = (monsterId) => {
     const url = 'http://localhost:8083/monster/' +monsterId +'/ai';
