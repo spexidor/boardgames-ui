@@ -981,7 +981,8 @@ export default class GameBoard extends Component {
         action.selectHLCard = true;
         this.setState({
           action: action,
-          revealedHL: revealedHL
+          revealedHL: revealedHL,
+          monster: monster
         });
       }
     }
@@ -1096,7 +1097,7 @@ export default class GameBoard extends Component {
     console.log("cards in revealed hl: " +revealedHL.length);
     for(let n=0; n<revealedHL.length; n++){
       if(revealedHL[n].title === hlCard.title){
-        console.log("removing index " +n);
+        console.log("removing index " +n +", title=" +revealedHL[n].title);
         revealedHL.splice(n, 1);
         break;
       }

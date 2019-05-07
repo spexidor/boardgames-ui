@@ -31,6 +31,7 @@ export default class HLSelecter extends React.Component {
 
       let newLoc;
       if(this.props.hlCards.length === 1){
+          console.log("just one card left, setting it in state")
           newLoc = this.props.hlCards[0].title;
           this.setState({selectedHitLocation: newLoc});
       }
@@ -62,6 +63,8 @@ export default class HLSelecter extends React.Component {
   
     render() {
   
+      console.log("rendering HLSelecter.js");
+
       let hlCards = [];
       let trapIndex = -1;
       let resolveDisabled = true;

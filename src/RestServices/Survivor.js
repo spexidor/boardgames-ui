@@ -1,6 +1,6 @@
 export const UpdateSurvivor = (survivor) => {
 
-    console.log("updating survivor in back end");
+    //console.log("updating survivor in back end");
     const id = survivor.id;
     const url = 'http://localhost:8083/survivor/' +id;
 
