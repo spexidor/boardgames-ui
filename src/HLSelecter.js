@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import './App.css';
 
 export default class HLSelecter extends React.Component {
@@ -14,27 +14,25 @@ export default class HLSelecter extends React.Component {
     woundLocation = () => {
       let hlCard = 0;
 
-      console.log("selectedHitLocation: " +this.state.selectedHitLocation);
-      for(let n=0; n<this.props.hlCards.length; n++){
-        if(this.props.hlCards[n].title === this.state.selectedHitLocation || this.props.hlCards[n].trap){
-            hlCard = this.props.hlCards[n];
-            break;
+      if(this.props.hlCards.length === 1){
+        hlCard = this.props.hlCards[0];
+      }
+      else {
+        for(let n=0; n<this.props.hlCards.length; n++){
+          if(this.props.hlCards[n].title === this.state.selectedHitLocation || this.props.hlCards[n].trap){
+              hlCard = this.props.hlCards[n];
+              break;
+          }
         }
       }
-
+      
       if(hlCard !== 0){
         this.props.woundLocation(hlCard);
       }
       else{
         console.log("hl card not set properly in HLSelecter.js")
       }
-
-      let newLoc;
-      if(this.props.hlCards.length === 1){
-          console.log("just one card left, setting it in state")
-          newLoc = this.props.hlCards[0].title;
-          this.setState({selectedHitLocation: newLoc});
-      }
+      this.setState({selectedHitLocation: ""});
     }
   
     onChange = (e) => {
@@ -55,7 +53,6 @@ export default class HLSelecter extends React.Component {
       else{
         chosenLocation = trap.title;
       }
-      //console.log("onChange, setting state to " +chosenLocation)
       this.setState({
         selectedHitLocation: chosenLocation
       });
@@ -63,12 +60,12 @@ export default class HLSelecter extends React.Component {
   
     render() {
   
-      console.log("rendering HLSelecter.js");
-
-      let hlCards = [];
+      let radioButtonData = [];
       let trapIndex = -1;
       let resolveDisabled = true;
       let disabled = false;
+
+      let selected = this.state.selectedHitLocation;
 
       for(let n=0; n<this.props.hlCards.length; n++){
         if(this.props.hlCards[n].trap){
@@ -79,36 +76,19 @@ export default class HLSelecter extends React.Component {
       for(let n=0; n<this.props.hlCards.length; n++){
 
         let title = this.props.hlCards[n].title;
-        if(this.props.hlCards[n].trap){
-          //title = title + " (trap)"
+        if(trapIndex !== -1){ 
+          disabled = true; //trap in list, unable to change target from it
         }
-        else{
-          if(trapIndex !== -1){ //trap in list
-            disabled = true;
-          }
-        }
-        
-        /*
-        if(this.props.hlCards[n].woundEffect){
-          title = title + " (with wound effect)"
-        }
-        else if(this.props.hlCards[n].reflexEffect){
-          title = title + " (with reflex effect)"
-        }
-        else if(this.props.hlCards[n].failureEffect){
-          title = title + " (with failure effect)"
-        }
-        */
-
-        hlCards.push({
+      
+        radioButtonData.push({
           value: title,
           onChange: this.onChange.bind(this),
-          checked: this.props.hlCards[n].trap || this.props.hlCards.length===1, //only trap is checked from start
+          checked: this.props.hlCards[n].trap, //only trap is checked from start
           disabled: disabled
         });
       }
       
-      let radioButtons = <MapRadioButtons data={hlCards}/>
+      let radioButtons = <MapRadioButtons data={radioButtonData}/>
       let title = "";
       if(trapIndex !== -1){
         title = "Trap!"
@@ -116,12 +96,12 @@ export default class HLSelecter extends React.Component {
       else{
         title = "Choose hit location to wound"
       }
-      if(trapIndex !== -1 || this.state.selectedHitLocation !== ""){
-        console.log("resolveDisabled not disabled trapIndex=" +trapIndex +", selectedHitLocation=" +this.state.selectedHitLocation)
+      
+      if(trapIndex !== -1 || selected !== ""){
         resolveDisabled = false;
       }
-      else{
-        console.log("resolveDisabled! trapIndex=" +trapIndex +", selectedHitLocation=" +this.state.selectedHitLocation)
+      else if(this.props.hlCards.length === 1){
+        resolveDisabled = false;
       }
   
       return (
