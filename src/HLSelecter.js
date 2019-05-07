@@ -30,7 +30,7 @@ export default class HLSelecter extends React.Component {
         this.props.woundLocation(hlCard);
       }
       else{
-        console.log("hl card not set properly in HLSelecter.js")
+        console.log("HL card not set properly in HLSelecter.js")
       }
       this.setState({selectedHitLocation: ""});
     }
