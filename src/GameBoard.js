@@ -55,6 +55,11 @@ export default class GameBoard extends Component {
     document.removeEventListener("keydown", this.keyFunction, false);
   }
 
+  componentWillReceiveProps(){
+    console.log("receiving new props!");
+    console.log("showdown id: " +this.props.showdown.id);
+  }
+
   keyFunction = (event) => {
     //37, 38, 39, 40: left, up, right, down
     //49: 1
@@ -165,101 +170,105 @@ export default class GameBoard extends Component {
     }
  }
 
+ selectBoard = (x,y) => {
+  if (x === this.state.selection.markedX && y === this.state.selection.markedY) { //deselect if click same tile twice
+    this.deselect();
+  }
+  else {
+    if (this.state.action.moveSelected === true) {         //MOVEMENT
+      if (this.validMove(x, y)) {
+        if (this.state.selection.typeSelected === "survivor") {  //MOVE SURVIVOR
+          let survivor = this.state.survivor;
+          survivor.position.x = x;
+          survivor.position.y = y;
+          survivor.movesLeft = 0;
+
+          let selection = this.state.selection;
+
+          if(survivor.activationsLeft === 0){ //deselect if acted
+            selection.typeSelected = "board";
+            selection.selectedSurvivorId = -1;
+          }
+
+          this.setState({
+            survivor: survivor,
+            selection: selection, //deselect survivor after move
+            highlights: []
+          })
+          this.updateSurvivor(survivor);
+        }
+        else if (this.state.selection.typeSelected === "monster") { //MOVE MONSTER
+          let monster = this.state.monster;
+          monster.position.x = x;
+          monster.position.y = y;
+          monster.activatedThisTurn = true;
+          
+          let selection = this.state.selection;
+          selection.selectedMonsterId = -1;
+
+          this.setState({
+            monster: monster,
+            selection: selection,
+            highlights: []
+          })
+          this.updateMonster(this.state.monster);
+
+          if(this.state.action.survivorGrabbed){
+              console.log("waiting for grab, placing survivor")
+              let action = this.state.action;
+              action.survivorGrabbed = false;
+              this.grabSurvivor(this.getSurvivorById(this.state.selection.monsterTarget));
+
+              this.setState({
+                action: action
+              })
+          }
+        }
+      }
+    }
+    else {
+
+      let selection = this.state.selection;
+      selection.typeSelected = "board";
+      selection.markedX = x;
+      selection.markedY = y;
+      selection.selectedMonsterId = -1;
+      selection.selectedSurvivorId = -1;
+
+      this.setState({
+        selection: selection,
+        highlights: [],
+      })
+    }
+
+    let action = this.state.action;
+    action.moveSelected = false;
+    this.setState({ action: action })
+  }
+ }
+
  /*
   * Handles a click on the board
   */
   click = (props) => {
 
     if (typeof this.state.monster.id === 'undefined') {
+      console.log("DEPRECATED: setting monster in props, remove!")
       this.setState({ monster: this.props.showdown.monster })
     }
 
     let identifier = props.target.alt.split("_")[0];
-    let newX = parseInt(props.target.alt.split("_")[1]);
-    let newY = parseInt(props.target.alt.split("_")[2]);
-    let selectedId = newX;
+    let x = parseInt(props.target.alt.split("_")[1]);
+    let y = parseInt(props.target.alt.split("_")[2]);
 
     if (identifier === "survivor") { //clicked a survivor
-      this.selectSurvivor(selectedId);
+      this.selectSurvivor(x);
     }
     else if (identifier === "monster") { //clicked monster
       this.selectMonster();
     }
     else if ((identifier === "board")) { //clicked board
-      if (newX === this.state.selection.markedX && newY === this.state.selection.markedY) { //deselect if click same tile twice
-        this.deselect();
-      }
-      else {
-        if (this.state.action.moveSelected === true) {         //MOVEMENT
-          if (this.validMove(newX, newY)) {
-            if (this.state.selection.typeSelected === "survivor") {  //MOVE SURVIVOR
-              let survivor = this.state.survivor;
-              survivor.position.x = newX;
-              survivor.position.y = newY;
-              survivor.movesLeft = 0;
-
-              let selection = this.state.selection;
-
-              if(survivor.activationsLeft === 0){ //deselect if acted
-                selection.typeSelected = "board";
-                selection.selectedSurvivorId = -1;
-              }
-
-              this.setState({
-                survivor: survivor,
-                selection: selection, //deselect survivor after move
-                highlights: []
-              })
-              this.updateSurvivor(survivor);
-            }
-            else if (this.state.selection.typeSelected === "monster") { //MOVE MONSTER
-              let monster = this.state.monster;
-              monster.position.x = newX;
-              monster.position.y = newY;
-              monster.activatedThisTurn = true;
-              
-              let selection = this.state.selection;
-              selection.selectedMonsterId = -1;
-
-              this.setState({
-                monster: monster,
-                selection: selection,
-                highlights: []
-              })
-              this.updateMonster(this.state.monster);
-
-              if(this.state.action.survivorGrabbed){
-                  console.log("waiting for grab, placing survivor")
-                  let action = this.state.action;
-                  action.survivorGrabbed = false;
-                  this.grabSurvivor(this.getSurvivorById(this.state.selection.monsterTarget));
-
-                  this.setState({
-                    action: action
-                  })
-              }
-            }
-          }
-        }
-        else {
-
-          let selection = this.state.selection;
-          selection.typeSelected = "board";
-          selection.markedX = newX;
-          selection.markedY = newY;
-          selection.selectedMonsterId = -1;
-          selection.selectedSurvivorId = -1;
-
-          this.setState({
-            selection: selection,
-            highlights: [],
-          })
-        }
-
-        let action = this.state.action;
-        action.moveSelected = false;
-        this.setState({ action: action })
-      }
+      this.selectBoard(x, y);
     }
   }
 
@@ -319,7 +328,6 @@ export default class GameBoard extends Component {
   }
 
   clickedMonsterMove = () => {
-    console.log("monster move")
     let action = this.state.action;
     action.moveSelected = true;
     this.setState({
@@ -333,7 +341,6 @@ export default class GameBoard extends Component {
 
   activateSurvivor = (survivor) => {
     let inRange = this.survivorInRange(survivor);
-    console.log("in range: " + inRange);
 
     if(inRange){
       survivor.activationsLeft = survivor.activationsLeft -1;
@@ -347,6 +354,9 @@ export default class GameBoard extends Component {
         //Reveal HitLocations
         this.revealHL(numHits);
       })
+    }
+    else{
+      console.log("survivor not in range")
     }
   }
 
@@ -678,11 +688,11 @@ export default class GameBoard extends Component {
         this.addTriggerEffect(survivor, attack.cardEffect);
       }
 
-      if(attack.targetLocation === "BRAIN"){
-        console.log(survivor.name +" took brain damage (damage=" +damage +")");
+      if(attack.targetLocation !== null){
+        console.log(survivor.name +" took AIMED damage (damage=" +damage +") at " +attack.targetLocation);
         for(let i=0; i<numHits; i++)
         {
-          this.removeArmourAt(survivor, "BRAIN", damage);
+          this.removeArmourAt(survivor, attack.targetLocation, damage);
         }
       }
       else 
@@ -1094,7 +1104,7 @@ export default class GameBoard extends Component {
     let monster = this.state.monster;
     let revealedHL = this.state.revealedHL;
 
-    console.log("cards in revealed hl: " +revealedHL.length);
+    //console.log("cards in revealed hl: " +revealedHL.length);
     for(let n=0; n<revealedHL.length; n++){
       if(revealedHL[n].title === hlCard.title){
         console.log("removing index " +n +", title=" +revealedHL[n].title);
@@ -1102,7 +1112,7 @@ export default class GameBoard extends Component {
         break;
       }
     }
-    console.log("cards in revealed hl : " +revealedHL.length);
+    //console.log("cards in revealed hl : " +revealedHL.length);
 
     monster.hlDeck.cardsInDiscard.push(hlCard);
 
