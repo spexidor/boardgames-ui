@@ -33,7 +33,7 @@ render(){
     */
 
     //gameLog = MapMessages(this.props.log);
-    gameLog = this.props.log.map((s, index) => <ul key={index}>{s.message}</ul>);
+    gameLog = this.props.log.map((s, index) => <div key={index}>{s.message}</div>);
 
 
     return(

@@ -11,7 +11,7 @@ import Gamelog from './Gamelog';
 
 import { UpdateSurvivor, DeleteSurvivor, GetHitlocations, GetSurvivorMoves, GetInjury} from './RestServices/Survivor';
 import { UpdateMonster , UpdateMonsterAI, UpdateMonsterHL, GetTargets, GetMonsterMoves, GetMonsterSpecialMove } from './RestServices/Monster';
-import { GetHits, GetWound , GetDiceRoll} from './RestServices/Dice'
+import { GetHits , GetDiceRoll} from './RestServices/Dice'
 import { PositionsEqual, EmptySpaceInFrontOfMonster } from './Functions/HelperFunctions'
 
 export default class GameBoard extends Component {
@@ -220,7 +220,13 @@ export default class GameBoard extends Component {
               console.log("waiting for grab, placing survivor")
               let action = this.state.action;
               action.survivorGrabbed = false;
-              this.grabSurvivor(this.state.selection.monsterTarget);
+
+              if(this.state.selection.monsterTarget !== -1 && typeof this.state.selection.monsterTarget !== 'undefined'){
+                this.grabSurvivor(this.state.selection.monsterTarget);
+              }
+              else{
+                console.log("ERROR: Monster target not set")
+              }
 
               this.setState({
                 action: action
@@ -372,13 +378,14 @@ export default class GameBoard extends Component {
 
   successfulWound = (diceRoll) => {
     const sucessValue = this.toWoundValue();
+    //console.log("roll: " +diceRoll[0].result);
 
-    if(diceRoll.value >= sucessValue){
-      this.addLogMessage("Rolled " +diceRoll.value +", success", "SURVIVOR");
+    if(diceRoll[0].result >= sucessValue){
+      this.addLogMessage("Rolled " +diceRoll[0].result +", success", "SURVIVOR");
       return true;
     }
     else {
-      this.addLogMessage("Rolled " +diceRoll.value +", no wound scored", "SURVIVOR");
+      this.addLogMessage("Rolled " +diceRoll[0].result +", no wound scored", "SURVIVOR");
       return false;
     }
   }
@@ -392,7 +399,7 @@ export default class GameBoard extends Component {
     else {
       GetDiceRoll(1).then(data => {
         
-        const scoredWound = this.successfulWounds(data);
+        let scoredWound = this.successfulWound(data);
 
         let critScored = false;
         if(data.result === 10){
@@ -561,6 +568,8 @@ export default class GameBoard extends Component {
       }
       this.updateSurvivors(survivors);
     }
+    this.addLogMessage("------------------------", "GAME_INFO");
+    this.addLogMessage("** Proceeding to " +showdown.act +" act **", "GAME_INFO");
     this.props.updateShowdown(showdown);
   }
 
@@ -659,6 +668,7 @@ export default class GameBoard extends Component {
 
       GetHits(aiCard.attack.speed, aiCard.attack.toHitValue).then(data => {
         console.log("hits: " +data.length);
+        this.addLogMessage("The monster scored " +data.length +" hits", "MONSTER");
         const numHits = data.length;
 
         let action = this.state.action;
@@ -713,7 +723,7 @@ export default class GameBoard extends Component {
         GetHitlocations(numHits).then(hitLocations => {
           this.addLogMessage(survivor.name +" took hits to " +hitLocations +" (damage=" +damage +")", "SURVIVOR");
         
-          this.addLogMessage(survivor.name +" has " +survivor.survival +" survival, doomed=" +survivor.doomed, "DEBUG");
+          this.addLogMessage(survivor.name +" has " +survivor.survival +" survival", "DEBUG");
           if(survivor.survival > 0 && !survivor.doomed){
             this.dodgePopUp(hitLocations, survivor, attack); //may remove 1 hit
           }
@@ -753,7 +763,7 @@ export default class GameBoard extends Component {
           damage: effect.damage,
           trigger: {}
         }
-        this.damageSurvivor(survivor.id, 1, normalAttack);
+        this.damageSurvivor(survivor, 1, normalAttack);
       }
       if(effect.knockDown){
         console.log("triggerEffect: knock down")
@@ -813,7 +823,7 @@ export default class GameBoard extends Component {
       }
 
       this.updateSurvivor(survivor);
-      this.damageSurvivor(survivor.id, 1, attack);
+      this.damageSurvivor(survivor, 1, attack);
     }
     else{
       console.log("no empty space in front of monster");
@@ -837,7 +847,9 @@ export default class GameBoard extends Component {
 
     let dodge = this.state.dodge;
     dodge.showDodgePopup = false;
-    this.addLogMessage("Dodged hit to " +dodgedHit, "SURVIVOR");
+    if(dodgedHit !== ""){
+      this.addLogMessage("Dodged hit to " +dodgedHit, "SURVIVOR");
+    }
 
     let hits = this.dodge(dodge.hits, dodgedHit);
    
@@ -1045,7 +1057,7 @@ export default class GameBoard extends Component {
     let monster = this.state.monster;
     let revealedHL = this.state.revealedHL;
 
-    console.log("shuffling hl deck");
+    this.addLogMessage("Trap triggered, shuffling HL deck", "GAME_INFO");
     //move cards from discard to deck
     while(monster.hlDeck.cardsInDiscard.length>0){
       let hlCard = monster.hlDeck.cardsInDiscard.shift();
@@ -1094,6 +1106,7 @@ export default class GameBoard extends Component {
   }
 
   removeAICard = (numWounds) => {
+    this.addLogMessage("Removing " +numWounds +" wounds from monster", "GAME_INFO");
     let monster = this.state.monster;
     let updated = false;
     

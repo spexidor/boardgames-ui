@@ -10,14 +10,6 @@ export const GetHits = (numDice, toHitValue) => {
   }
 }
 
-export const GetWound = (toWoundValue) => {
-  const numDice = 1;
-  const url = 'http://localhost:8083/dice?numDice=' +numDice + '&diceSides=10';
-  console.log(numDice +" dice, wounding on " +toWoundValue +"+");
- 
-  return fetch(url).then(response => response.json());
-}
-
 export const GetDiceRoll = (numDice) => {
   const url = 'http://localhost:8083/dice?numDice=' +numDice + '&diceSides=10';
  
