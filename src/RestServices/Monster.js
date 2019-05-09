@@ -108,8 +108,7 @@ export const GetMonsterMoves = (id) => {
     return fetch(url).then(response => response.json());
   }
 
-export const GetMonsterSpecialMove = (id) => {
-  let direction = "AWAY_FROM_THREATS";
+export const GetMonsterSpecialMove = (id, direction) => {
   let length = 5;
   const url = "http://localhost:8083/monster/" + id + "/specificMove?direction=" +direction +"&length=" +length;
   return fetch(url).then(response => response.json());

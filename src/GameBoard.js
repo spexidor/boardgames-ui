@@ -89,8 +89,12 @@ export default class GameBoard extends Component {
    else if(event.keyCode===65){ //a
      if(this.state.selection.selectedSurvivorId !== -1 && this.state.survivor.activationsLeft > 0){
       this.clickedActivate();
-     }
-    
+    }
+   }
+   else if(event.keyCode===78){ //n
+    if(this.state.selection.selectedMonsterId !== -1 && this.state.revealedAI === 0){
+      this.clickedRevealAI();
+    }
    }
  }
 
@@ -431,7 +435,8 @@ export default class GameBoard extends Component {
           }
         }
         if(hlCard.reflexEffect || effectTriggered){
-          this.performEffect(hlCard.effect);
+          //this.performEffect(hlCard.effect);
+          this.addTriggerEffect(survivor, hlCard.effect)
         }
   
         if(critScored && hlCard.crit){
@@ -461,9 +466,11 @@ export default class GameBoard extends Component {
     console.log("setting persistant injury (no implementation yet)")
   }
 
+  /*
   performEffect = (efffect) => {
     console.log("effect triggered! (no implementation yet)")
   }
+  */
 
   getSpeed = () => {
     return this.getSelectedWeapon().speed;
@@ -775,7 +782,7 @@ export default class GameBoard extends Component {
         console.log("triggerEffect: move")
         console.log("triggerEffect: move direction=" +effect.move.direction)
         
-        GetMonsterSpecialMove(this.props.showdown.monster.id).then(data => {
+        GetMonsterSpecialMove(this.props.showdown.monster.id, effect.move.direction).then(data => {
           console.log("fetch data: "+data.length)
 
           let action = this.state.action;
@@ -971,7 +978,7 @@ export default class GameBoard extends Component {
     return null;
   }
 
-  revealAI = () => {
+  clickedRevealAI = () => {
 
     let monster = this.state.monster;
     if (this.state.revealedAI === 0){
@@ -981,7 +988,7 @@ export default class GameBoard extends Component {
       if (this.state.monster.aiDeck.cardsInDeck.length > 0) {
         let aiCard = monster.aiDeck.cardsInDeck.shift(); //monster.aiDeck.cardsInDeck[0];
         //monster.aiDeck.cardsInDeck.shift();
-        this.addLogMessage("New AI Card revealed: " +aiCard.title +". Cards in deck: " +this.state.monster.aiDeck.cardsInDeck.length, "GAME_INFO");
+        this.addLogMessage("New AI Card revealed: " +aiCard.title, "GAME_INFO");
         this.setState({
           revealedAI: aiCard,
           monster: monster
@@ -1262,7 +1269,7 @@ export default class GameBoard extends Component {
         <MonsterTile tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
         <SurvivorTiles tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
         <InfoBox selection={this.state.selection.typeSelected} survivor={this.state.survivor} monster={monster} />
-        <ActionBox act={this.props.showdown.act} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} targets={this.state.targets} selection={this.state.selection.typeSelected} attack={this.clickedAttack} target={this.target} revealAI={this.revealAI} nextAct={this.nextAct} monsterMove={this.clickedMonsterMove} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
+        <ActionBox act={this.props.showdown.act} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} targets={this.state.targets} selection={this.state.selection.typeSelected} attack={this.clickedAttack} target={this.target} revealAI={this.clickedRevealAI} nextAct={this.nextAct} monsterMove={this.clickedMonsterMove} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         <Gamelog log={this.state.log}/>
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}
