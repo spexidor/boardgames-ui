@@ -20,6 +20,22 @@
   color: gray;
 }
 
+.game-log {
+  text-align: left;
+  padding-left: 15px;
+  overflow-y: scroll;
+  border-radius: 5px;
+  background-color: #282c34;
+  opacity: 0.9;
+  position: absolute;
+  height: 200px;
+  width: 225px;
+  top: -300px;
+  left: 0px;
+  color: #65ff63;
+  font-size: 10px;
+}
+
 .popup {
   position: fixed;
   width: 100%;
@@ -34,15 +50,16 @@
 .popup_inner {
   color: white;
   position: absolute;
-  border-radius: 5px;
-  left: 25%;
-  right: 25%;
-  top: 25%;
-  bottom: 25%;
+  border-radius: 10px;
+  left: 30%;
+  right: 30%;
+  top: 35%;
+  bottom: 35%;
   margin: auto;
   background: black;
-  background-image: url("marble.png");
   background-size: 100% 200%;
+  opacity: 0.7;
+  font-size: 16px;
 }
 
 .my_box {

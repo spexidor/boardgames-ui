@@ -45,7 +45,8 @@ export default class SurvivorTiles extends Component {
                     id: this.props.survivors[i].id,
                     selectedSurvivorId: this.props.selectedSurvivorId,
                     src: src,
-                    size: this.props.tileSize
+                    size: this.props.tileSize,
+                    knockedDown: this.props.survivors[i].status === "KNOCKED_DOWN"
                   });
             }
             tiles = <MapSurvivors data={survivors} click={this.props.click}/>
@@ -60,6 +61,6 @@ export default class SurvivorTiles extends Component {
 function MapSurvivors(props){
     return(
       props.data.map((s, index) => 
-          <SurvivorTile size={s.size} src={s.src} click={props.click} selectedSurvivorId={s.selectedSurvivorId} key={index} top={s.topPx} left={s.leftPx} name={s.name} id={s.id}/>
+          <SurvivorTile knockedDown={s.knockedDown} size={s.size} src={s.src} click={props.click} selectedSurvivorId={s.selectedSurvivorId} key={index} top={s.topPx} left={s.leftPx} name={s.name} id={s.id}/>
       ))
 }

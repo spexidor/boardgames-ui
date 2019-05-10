@@ -40,6 +40,8 @@ export default class GameBoard extends Component {
       survivor: {},
       survivors: this.props.showdown.survivors,
       monster: this.props.showdown.monster,
+      aiDeck: this.props.showdown.monster.aiDeck,
+      hlDeck: this.props.showdown.monster.hlDeck,
       highlights: [],
       
       selectedWeapon: 2, //index in gear grid
@@ -237,6 +239,12 @@ export default class GameBoard extends Component {
               })
           }
         }
+        let action = this.state.action;
+        action.moveSelected = false;
+        this.setState({ action: action })
+      }
+      else {
+        console.log("Invalid move selected");
       }
     }
     else {
@@ -254,9 +262,15 @@ export default class GameBoard extends Component {
       })
     }
 
+    //let action = this.state.action;
+    //action.moveSelected = false;
+    //this.setState({ action: action })
+  }
+
+  if(this.state.revealedHL !== 0 && this.state.revealedHL.length > 0){
     let action = this.state.action;
-    action.moveSelected = false;
-    this.setState({ action: action })
+    action.selectHLCard = true;
+    this.setState({action: action});
   }
  }
 
@@ -334,7 +348,7 @@ export default class GameBoard extends Component {
 
   clickedSurvivorMove = () => {
     let action = this.state.action;
-    action.moveSelected = true;
+    action.moveSelected = !action.moveSelected;
     this.setState({
       action: action
     })
@@ -342,7 +356,7 @@ export default class GameBoard extends Component {
 
   clickedMonsterMove = () => {
     let action = this.state.action;
-    action.moveSelected = true;
+    action.moveSelected = !action.moveSelected;
     this.setState({
       action: action
     })
@@ -395,10 +409,20 @@ export default class GameBoard extends Component {
   }
 
   woundLocation = (hlCard) => {
+
+    let action = this.state.action;
+    action.selectHLCard = false;
+    this.setState({action: action}); //Temporary hide HL card popup to show game
+    
     this.addLogMessage("Attempting to wound " +hlCard.title, "SURVIVOR");
+    let survivor = this.state.survivor;
 
     if(hlCard.trap){
       this.resolveTrap(hlCard);
+    }
+    else if(!this.survivorInRange(survivor)){
+      this.addLogMessage("Survivor out of range, cancelling hit", "GAME_INFO");
+      this.discardHLCard(hlCard);
     }
     else {
       GetDiceRoll(1).then(data => {
@@ -411,7 +435,6 @@ export default class GameBoard extends Component {
           critScored = true;
         }
         
-        let survivor = this.state.survivor;
         let effectTriggered = false;
         this.addLogMessage("Impervious: " +hlCard.impervious, "DEBUG");
 
@@ -449,17 +472,22 @@ export default class GameBoard extends Component {
     }
   }
 
-  resolveTrap = () => {
+  resolveTrap = (trapCard) => {
     this.addLogMessage("Resolving trap", "GAME_INFO");
 
     let survivor = this.state.survivor;
-    survivor.doomed = true;
-    this.attack(this.state.monster.aiDeck.basicAction, survivor);
+    let hlDeck = this.state.hlDeck;
 
-    this.shuffleHL();
+    survivor.doomed = true;
+    this.attack(this.state.aiDeck.basicAction, survivor);
+
+    hlDeck = this.shuffleHL(hlDeck);
     let action = this.state.action;
     action.selectHLCard = false;
-    this.setState({action: action});
+    this.setState({
+      action: action,
+      hlDeck: hlDeck,
+      revealedHL: 0});
   }
 
   setPersistantInjury = (hlCard) => {
@@ -595,6 +623,8 @@ export default class GameBoard extends Component {
 
   updateMonster = (monster) => {
     UpdateMonster(monster).then(data => {
+      data.aiDeck = 0;
+      data.hlDeck = 0;
       this.setState({monster: data});
     })
   }
@@ -718,7 +748,7 @@ export default class GameBoard extends Component {
         this.addTriggerEffect(survivor, attack.cardEffect);
       }
 
-      if(attack.targetLocation !== null){
+      if(attack.targetLocation !== null && typeof attack.targetLocation !== 'undefined'){
         this.addLogMessage(survivor.name +" took AIMED damage (damage=" +damage +") at " +attack.targetLocation, "SURVIVOR")
         for(let i=0; i<numHits; i++)
         {
@@ -781,13 +811,14 @@ export default class GameBoard extends Component {
       if(typeof effect.move !== 'undefined' && effect.move !== null){
         console.log("triggerEffect: move")
         console.log("triggerEffect: move direction=" +effect.move.direction)
+
+        this.addLogMessage("Monster moves " +effect.move.direction);
         
-        GetMonsterSpecialMove(this.props.showdown.monster.id, effect.move.direction).then(data => {
-          console.log("fetch data: "+data.length)
+        GetMonsterSpecialMove(this.state.monster.id, effect.move.direction).then(data => {
 
           let action = this.state.action;
           action.moveSelected = true;
-          action.selectedMonsterId = this.props.showdown.monster.id;
+          action.selectedMonsterId = this.state.monster.id;
           let selection = this.state.selection;
           selection.typeSelected = "monster"; 
 
@@ -811,6 +842,10 @@ export default class GameBoard extends Component {
           console.log("triggerEffect: grab")
           this.grabSurvivor(survivor);
         }
+      }
+
+      if(effect.drawAI > 0){
+        this.clickedRevealAI(); //cant draw more than 1 AI right now
       }
   }
 
@@ -978,25 +1013,28 @@ export default class GameBoard extends Component {
     return null;
   }
 
+  /*
+   Reveals top AI card. State in backend not updated.
+  */
   clickedRevealAI = () => {
 
-    let monster = this.state.monster;
+    let aiDeck = this.state.aiDeck;
     if (this.state.revealedAI === 0){
-      if(this.state.monster.aiDeck.cardsInDeck.length === 0 && this.state.monster.aiDeck.cardsInDiscard.length > 0){
-        this.shuffleAI();
+      if(this.state.aiDeck.cardsInDeck.length === 0 && this.state.aiDeck.cardsInDiscard.length > 0){
+        aiDeck = this.shuffleAI(aiDeck);
       }
-      if (this.state.monster.aiDeck.cardsInDeck.length > 0) {
-        let aiCard = monster.aiDeck.cardsInDeck.shift(); //monster.aiDeck.cardsInDeck[0];
-        //monster.aiDeck.cardsInDeck.shift();
-        this.addLogMessage("New AI Card revealed: " +aiCard.title, "GAME_INFO");
+      if (aiDeck.cardsInDeck.length > 0) {
+        let aiCard = aiDeck.cardsInDeck.shift(); 
+
+        this.addLogMessage("** New AI Card revealed: " +aiCard.title, "GAME_INFO");
         this.setState({
           revealedAI: aiCard,
-          monster: monster
+          aiDeck: aiDeck
         })
       }
       else{
         this.addLogMessage("Attacking with basic action");
-        this.setState({revealedAI: this.state.monster.aiDeck.basicAction});
+        this.setState({revealedAI: this.state.aiDeck.basicAction});
       }
     }
     else {
@@ -1004,16 +1042,19 @@ export default class GameBoard extends Component {
     }
   }
 
+  /*
+   Reveals multiple HL cards. State in backend not updated.
+  */
   revealHL = (numCards) => {
     if (this.state.revealedHL === 0){
       console.log("no hl card revealed, revealing " +numCards);
-      let monster = this.state.monster;
       let revealedHL = [];
+      let hlDeck = this.state.hlDeck;
 
       if(numCards > 0){
         for(let n=0; n<numCards; n++){
-          if(monster.hlDeck.cardsInDeck.length>0){
-            let hlCard =  monster.hlDeck.cardsInDeck.shift();
+          if(hlDeck.cardsInDeck.length>0){
+            let hlCard =  hlDeck.cardsInDeck.shift();
             revealedHL.push(hlCard);
             this.addLogMessage("HL card revealed: " +hlCard.title, "GAME_INFO");
           }
@@ -1023,35 +1064,32 @@ export default class GameBoard extends Component {
         this.setState({
           action: action,
           revealedHL: revealedHL,
-          monster: monster
+          hlDeck: hlDeck
         });
       }
     }
     else {
-      console.log("ERROR - hl card already revealed ");
+      console.log("ERROR - HL card already revealed ");
     }
   }
 
   /*
   Adds cards from discard to deck and shuffles deck
   */
-  shuffleAI = () => {
-    let monster = this.state.monster;
+  shuffleAI = (aiDeck) => {
     this.addLogMessage("AI deck empty, shuffling", "GAME_INFO");
-    //move cards from discard to deck
-    while(monster.aiDeck.cardsInDiscard.length>0){
-      let aiCard = monster.aiDeck.cardsInDiscard.shift();
-      monster.aiDeck.cardsInDeck.push(aiCard);
+    while(aiDeck.cardsInDiscard.length>0){
+      let aiCard = aiDeck.cardsInDiscard.shift();
+      aiDeck.cardsInDeck.push(aiCard);
     }
 
     //shuffle
-    this.shuffle(monster.aiDeck.cardsInDeck);
-    this.setOrderInDeck(monster.aiDeck.cardsInDeck);
+    this.shuffle(aiDeck.cardsInDeck); //TODO: verify that reference is passed
+    this.setOrderInDeck(aiDeck.cardsInDeck);
 
-    this.setState({
-      revealedAI: 0,
-      monster: monster
-    });
+    UpdateMonsterAI(this.state.monster.id, aiDeck);
+
+    return aiDeck;
   }
 
   setOrderInDeck = (deck) => {
@@ -1060,30 +1098,27 @@ export default class GameBoard extends Component {
     }
   }
 
-  shuffleHL = () => {
-    let monster = this.state.monster;
+  shuffleHL = (hlDeck) => {
     let revealedHL = this.state.revealedHL;
 
     this.addLogMessage("Trap triggered, shuffling HL deck", "GAME_INFO");
     //move cards from discard to deck
-    while(monster.hlDeck.cardsInDiscard.length>0){
-      let hlCard = monster.hlDeck.cardsInDiscard.shift();
-      monster.hlDeck.cardsInDeck.push(hlCard);
+    while(hlDeck.cardsInDiscard.length>0){
+      let hlCard = hlDeck.cardsInDiscard.shift();
+      hlDeck.cardsInDeck.push(hlCard);
     }
     while(revealedHL.length>0){
       let hlCard = revealedHL.shift();
-      monster.hlDeck.cardsInDeck.push(hlCard);
+      hlDeck.cardsInDeck.push(hlCard);
     }
 
     //shuffle
-    this.shuffle(monster.hlDeck.cardsInDeck);
-    this.setOrderInDeck(monster.hlDeck.cardsInDeck);
-    UpdateMonsterHL(monster);
+    this.shuffle(hlDeck.cardsInDeck);
+    this.setOrderInDeck(hlDeck.cardsInDeck);
 
-    this.setState({
-      revealedHL: 0,
-      monster: monster
-    });
+    UpdateMonsterHL(this.state.monster.id, hlDeck);
+
+    return hlDeck;
   }
 
   shuffle = (array) => {
@@ -1094,13 +1129,16 @@ export default class GameBoard extends Component {
     }
   }
 
+  /*
+    Moves revealed AI card to discard
+  */
   moveAI = () => {
     
-    let monster = this.state.monster;
+    let aiDeck = this.state.aiDeck;
     if(this.state.revealedAI.title !== 'Basic Action' && this.state.revealedAI !== 0){
-      monster.aiDeck.cardsInDiscard.push(this.state.revealedAI);
+      aiDeck.cardsInDiscard.push(this.state.revealedAI);
       console.log("moving monster AI, title= " +this.state.revealedAI.title);
-      UpdateMonsterAI(monster);
+      UpdateMonsterAI(this.state.monster.id, aiDeck);
     }
     else{
       console.log("basic action resolved");
@@ -1108,23 +1146,23 @@ export default class GameBoard extends Component {
     
     this.setState({
       revealedAI: 0,
-      monster: monster
+      aiDeck: aiDeck
     });
   }
 
   removeAICard = (numWounds) => {
     this.addLogMessage("Removing " +numWounds +" wounds from monster", "GAME_INFO");
-    let monster = this.state.monster;
+    let aiDeck = this.state.aiDeck;
     let updated = false;
     
     while(numWounds > 0){
       updated = true;
-      if(monster.aiDeck.cardsInDeck.length > 0){
-        monster.aiDeck.cardsRemoved.push(monster.aiDeck.cardsInDeck.shift());
+      if(aiDeck.cardsInDeck.length > 0){
+        aiDeck.cardsRemoved.push(aiDeck.cardsInDeck.shift());
       }
-      else if (monster.aiDeck.cardsInDiscard.length > 0){
-        this.shuffleAI();
-        monster.aiDeck.cardsRemoved.push(monster.aiDeck.cardsInDeck.shift());
+      else if (aiDeck.cardsInDiscard.length > 0){
+        aiDeck = this.shuffleAI(aiDeck);
+        aiDeck.cardsRemoved.push(aiDeck.cardsInDeck.shift());
       }
       else {
         this.gameWon();
@@ -1133,15 +1171,15 @@ export default class GameBoard extends Component {
     }
 
     if(updated){
-      UpdateMonsterAI(monster);
-      this.setState({monster: monster});
+      UpdateMonsterAI(this.state.monster.id, aiDeck);
     }
+    this.setState({aiDeck: aiDeck});
   }
 
   discardHLCard = (hlCard) => {
     console.log("discard hl card: " +hlCard.title);
     
-    let monster = this.state.monster;
+    let hlDeck = this.state.hlDeck;
     let revealedHL = this.state.revealedHL;
 
     //console.log("cards in revealed hl: " +revealedHL.length);
@@ -1154,17 +1192,17 @@ export default class GameBoard extends Component {
     }
     //console.log("cards in revealed hl : " +revealedHL.length);
 
-    monster.hlDeck.cardsInDiscard.push(hlCard);
+    hlDeck.cardsInDiscard.push(hlCard);
 
     let action = this.state.action;
     if(revealedHL.length === 0){
       action.selectHLCard = false;
       revealedHL = 0; 
     }
-    UpdateMonsterHL(monster); //async
+    UpdateMonsterHL(this.state.monster.id, hlDeck);
     this.setState({
-      monster: monster,
       revealedHL: revealedHL,
+      hlDeck: hlDeck,
       action: action
     });
   }
@@ -1180,27 +1218,27 @@ export default class GameBoard extends Component {
 
   printAI = () => {
     console.log("printing ai deck");
-    for(let i=0; i<this.state.monster.aiDeck.cardsInDeck.length; i++){
-      console.log("cards in deck: " +this.state.monster.aiDeck.cardsInDeck[i].title);
+    for(let i=0; i<this.state.aiDeck.cardsInDeck.length; i++){
+      console.log("cards in deck: " +this.state.aiDeck.cardsInDeck[i].title);
     }
-    for(let i=0; i<this.state.monster.aiDeck.cardsInDiscard.length; i++){
-      console.log("cards in discard: " +this.state.monster.aiDeck.cardsInDiscard[i].title);
+    for(let i=0; i<this.state.aiDeck.cardsInDiscard.length; i++){
+      console.log("cards in discard: " +this.state.aiDeck.cardsInDiscard[i].title);
     }
-    for(let i=0; i<this.state.monster.aiDeck.cardsRemoved.length; i++){
-      console.log("cards removed: " +this.state.monster.aiDeck.cardsRemoved[i].title);
+    for(let i=0; i<this.state.aiDeck.cardsRemoved.length; i++){
+      console.log("cards removed: " +this.state.aiDeck.cardsRemoved[i].title);
     }
   }
 
   printHL = () => {
-    console.log("printing hl deck, " +this.state.monster.hlDeck.cardsInDeck.length +" in deck, " +this.state.monster.hlDeck.cardsInDiscard.length +" in discard, " +this.state.monster.hlDeck.cardsRemoved.length +" removed, " +this.state.revealedHL.length +" revealed.");
-    for(let i=0; i<this.state.monster.hlDeck.cardsInDeck.length; i++){
-      console.log("cards in deck: " +this.state.monster.hlDeck.cardsInDeck[i].title);
+    console.log("printing hl deck, " +this.state.hlDeck.cardsInDeck.length +" in deck, " +this.state.hlDeck.cardsInDiscard.length +" in discard, " +this.state.hlDeck.cardsRemoved.length +" removed, " +this.state.revealedHL.length +" revealed.");
+    for(let i=0; i<this.state.hlDeck.cardsInDeck.length; i++){
+      console.log("cards in deck: " +this.state.hlDeck.cardsInDeck[i].title);
     }
-    for(let i=0; i<this.state.monster.hlDeck.cardsInDiscard.length; i++){
-      console.log("cards in discard: " +this.state.monster.hlDeck.cardsInDiscard[i].title);
+    for(let i=0; i<this.state.hlDeck.cardsInDiscard.length; i++){
+      console.log("cards in discard: " +this.state.hlDeck.cardsInDiscard[i].title);
     }
-    for(let i=0; i<this.state.monster.hlDeck.cardsRemoved.length; i++){
-      console.log("cards removed: " +this.state.monster.hlDeck.cardsRemoved[i].title);
+    for(let i=0; i<this.state.hlDeck.cardsRemoved.length; i++){
+      console.log("cards removed: " +this.state.hlDeck.cardsRemoved[i].title);
     }
     for(let i=0; i<this.state.revealedHL.length; i++){
       console.log("cards revealed: " +this.state.revealedHL[i].title);
@@ -1263,12 +1301,12 @@ export default class GameBoard extends Component {
 
     return (
       <div>
-        <TileRenderer targets={this.state.targets} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
+        <TileRenderer targets={this.state.targets} tileSizeX={size} tileSizeY={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
         <div align="left" style={{ borderRadius: "5px", background: "#282c34", fontSize: "8px", color: "white", position: "absolute", height: 40, width: 300, top: 5, left: 375 }}>Game turn: {this.props.showdown.turn}, move selected: {this.state.action.moveSelected.toString()}, game status: {this.props.showdown.gameStatus}, showdown id: {this.props.showdown.id}, survivorId: {this.state.survivor.id}, monsterId: {monsterId}
         , revealed ai: {this.state.revealedAI.title}, game name: {this.props.showdown.description}</div>
         <MonsterTile tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
         <SurvivorTiles tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
-        <InfoBox selection={this.state.selection.typeSelected} survivor={this.state.survivor} monster={monster} />
+        <InfoBox selection={this.state.selection.typeSelected} survivor={this.state.survivor} monster={monster} aiDeck={this.state.aiDeck}/>
         <ActionBox act={this.props.showdown.act} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} targets={this.state.targets} selection={this.state.selection.typeSelected} attack={this.clickedAttack} target={this.target} revealAI={this.clickedRevealAI} nextAct={this.nextAct} monsterMove={this.clickedMonsterMove} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         <Gamelog log={this.state.log}/>
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}

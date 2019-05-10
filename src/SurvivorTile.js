@@ -15,8 +15,8 @@ export default class SurvivorTile extends Component {
         this.dehover = this.dehover.bind(this);
       }
 
-    changeBrightness(percentage){
-        let filterString = "brightness(" +percentage +"%)";
+    applyFilters(brightness, saturation){
+        let filterString = "brightness(" +brightness +"%) saturate(" +saturation +"%)";
         return {filter: filterString};
     }
 
@@ -37,13 +37,17 @@ export default class SurvivorTile extends Component {
 
         let border = 0;
         let name = this.props.name;
-        if(this.props.selectedSurvivorId===this.props.id) //compares string and integers, hence == instead of ===
+        if(this.props.selectedSurvivorId===this.props.id)
         {
             border = 1
         }
+        let saturation = 100;
+        if(this.props.knockedDown){
+            saturation = 50;
+        }
 
         return(
-            <div style={this.changeBrightness(this.state.brightness)}>
+            <div style={this.applyFilters(this.state.brightness, saturation)}>
                 <img src={this.props.src} alt={"survivor_" +this.props.id} border={border} onClick={this.props.click} onMouseLeave={this.dehover} onMouseOver={this.hover} style={{position: 'absolute', height: this.props.size*0.85, width: this.props.size*0.85, top: this.props.top, left: this.props.left}}/>
                 <p style={{backgroundcolor: "red", color: "white", fontSize: "8px", position: 'absolute', height: 10, width: 60, top: this.props.top-9, left: this.props.left-14}}>{name}</p>
             </div>

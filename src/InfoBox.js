@@ -43,7 +43,7 @@ export default class InfoBox extends Component {
         <ul>Name: {this.props.monster.statline.name}</ul>
         <ul>Movement: {this.props.monster.statline.movement}</ul>
         <ul>Toughness: {this.props.monster.statline.toughness}</ul>
-        <ul>Remaining AI: {this.props.monster.aiDeck.cardsInDeck.length + this.props.monster.aiDeck.cardsInDiscard.length}</ul>
+        <ul>Remaining AI: {this.props.aiDeck.cardsInDeck.length + this.props.aiDeck.cardsInDiscard.length}</ul>
         <ul>Activated this turn: {this.props.monster.activatedThisTurn.toString()}</ul>
         </div>
       }

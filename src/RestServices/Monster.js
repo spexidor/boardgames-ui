@@ -30,12 +30,11 @@ export const UpdateMonster = (monster) => {
     }
   }
 
-  export const UpdateMonsterAI = (monster) => {
+  export const UpdateMonsterAI = (monsterId, aiDeck) => {
 
-    const id = monster.id;
-    const url = 'http://localhost:8083/monster/' +id +'/ai';
+    const url = 'http://localhost:8083/monster/' +monsterId +'/ai';
   
-    if(typeof id !== 'undefined'){
+    if(typeof monsterId !== 'undefined'){
   
       return fetch(url, {
       crossDomain:true,
@@ -45,11 +44,11 @@ export const UpdateMonster = (monster) => {
           'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-          id: monster.aiDeck.id,
-          cardsInDeck: monster.aiDeck.cardsInDeck,
-          cardsInDiscard: monster.aiDeck.cardsInDiscard,
-          cardsRemoved: monster.aiDeck.cardsRemoved,
-          basicAction: monster.aiDeck.basicAction
+          id: aiDeck.id,
+          cardsInDeck: aiDeck.cardsInDeck,
+          cardsInDiscard: aiDeck.cardsInDiscard,
+          cardsRemoved: aiDeck.cardsRemoved,
+          basicAction: aiDeck.basicAction
         }),
       }).then(response => response.json());
     }
@@ -58,12 +57,11 @@ export const UpdateMonster = (monster) => {
     }
   }
 
-  export const UpdateMonsterHL = (monster) => {
+  export const UpdateMonsterHL = (monsterId, hlDeck) => {
 
-    const id = monster.id;
-    const url = 'http://localhost:8083/monster/' +id +'/hl';
+    const url = 'http://localhost:8083/monster/' +monsterId +'/hl';
   
-    if(typeof id !== 'undefined'){
+    if(typeof monsterId !== 'undefined'){
   
       return fetch(url, {
       crossDomain:true,
@@ -73,10 +71,10 @@ export const UpdateMonster = (monster) => {
           'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-          id: monster.hlDeck.id,
-          cardsInDeck: monster.hlDeck.cardsInDeck,
-          cardsInDiscard: monster.hlDeck.cardsInDiscard,
-          cardsRemoved: monster.hlDeck.cardsRemoved,
+          id: hlDeck.id,
+          cardsInDeck: hlDeck.cardsInDeck,
+          cardsInDiscard: hlDeck.cardsInDiscard,
+          cardsRemoved: hlDeck.cardsRemoved,
         }),
       }).then(response => response.json());
     }
