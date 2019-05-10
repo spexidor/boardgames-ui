@@ -207,9 +207,59 @@ export default class GameBoard extends Component {
           this.updateSurvivor(survivor);
         }
         else if (this.state.selection.typeSelected === "monster") { //MOVE MONSTER
+          console.log("moving monster!");
           let monster = this.state.monster;
-          monster.position.x = x;
-          monster.position.y = y;
+          let survivors = this.state.survivors;
+
+          let counter = 0;
+          while(monster.position.x !== x || monster.position.y !== y){
+
+            if(monster.position.x < x && counter%2 === 0){
+              monster.position.x++;
+            }
+            else if(monster.position.x > x && counter%2 === 0){
+              monster.position.x--;
+            }
+            else if(monster.position.y < y){
+              monster.position.y++;
+            }
+            else if(monster.position.y > y){
+              monster.position.y--;
+            }
+
+            /*
+            All survivors passed over are knocked down
+            */
+            const collisions = this.monsterOnSurvivor(monster, survivors);
+            for(let n=0; n<collisions.length; n++)
+            {
+              let survivor_n = this.getSurvivorById(collisions[n]);
+              survivor_n.status = "KNOCKED_DOWN";
+              console.log("set knock down for " +survivor_n.name);
+
+              this.updateSurvivor(survivor_n);
+            }
+
+            counter++;
+          }
+
+          /*
+          All survivors under monster gets knockback
+          */
+           const collisions = this.monsterOnSurvivor(monster, survivors);
+           for(let n=0; n<collisions.length; n++)
+           {
+             let survivor_n = this.getSurvivorById(collisions[n]);
+             survivor_n.status = "KNOCKED_DOWN";
+             console.log("set knock down for " +survivor_n.name);
+
+             survivor_n = this.addKnockback(survivor_n, 6);
+             this.updateSurvivor(survivor_n);
+           }
+
+
+          //monster.position.x = x;
+          //monster.position.y = y;
           monster.activatedThisTurn = true;
           
           let selection = this.state.selection;
@@ -273,6 +323,94 @@ export default class GameBoard extends Component {
     this.setState({action: action});
   }
  }
+
+ addKnockback = (survivor, length) => {
+   console.log("knockback on " +survivor.name);
+   
+   let monster = this.state.monster;
+   let facing = monster.facing;
+
+   if(facing === "UP" || facing === "DOWN"){
+    console.log("facing up/down");
+     if(monster.position.x === survivor.position.x){ //survivor on left side
+      console.log("survivor on left side");
+        if(survivor.position.x >= length){
+          console.log("knock back to left");            
+          survivor.position.x -= length;            //knockback to left if possible
+        }
+        else{
+          survivor.position.x += length;
+        }
+     }
+     else{ //survivor on right side
+        if(survivor.position.x+length <= this.state.board.width){
+          survivor.position.x += length;
+        }
+        else{
+          survivor.position.x -= length;
+        }
+     }
+   }
+   else if(facing === "LEFT" || facing === "RIGHT"){
+    if(monster.position.y === survivor.position.y){ //survivor on top side
+      if(survivor.position.y >= length){
+        survivor.position.y -= length;
+      }
+      else{
+        survivor.position.y += length;
+      }
+    }
+    else{ //survivor on bottom side
+      if(survivor.position.y+length <= this.state.board.height){
+        survivor.position.y += length;
+      }
+      else{
+        survivor.position.y -= length;
+      }
+    }
+   }
+
+   return survivor;
+ }
+
+ /*
+ Returns array with id of survivors collided with
+ */
+ monsterOnSurvivor = (monster, survivors) => {
+
+  let collisions = []
+  let baseCoordinates = this.getBaseCoordinates(monster.position);
+  this.printBaseCoordinates(baseCoordinates);
+
+  for(let n=0; n<baseCoordinates.length; n++){
+    for(let m=0; m<survivors.length; m++){
+      if(survivors[m].position.x === baseCoordinates[n].x && survivors[m].position.y === baseCoordinates[n].y){
+          console.log("collision in (" +survivors[m].position.x +"," +survivors[m].position.y+")")
+          collisions.push(survivors[m].id);
+        }
+    }
+  }
+  return collisions; 
+ }
+
+ printBaseCoordinates = (base) => {
+   for(let m=0; m<base.length; m++){
+      console.log("BASE (" +base[m].x +","  +base[m].y +")");
+    }
+ }
+
+ getBaseCoordinates(position){
+  let baseCoordinates = [];
+  let x = position.x;
+  let y = position.y;
+
+  for(let i=0;i<this.state.monster.statline.width; i++){
+      for(let j=0;j<this.state.monster.statline.height; j++){
+          baseCoordinates.push({x: x+i, y: y+j});
+      }
+  }
+  return baseCoordinates;
+}
 
  /*
   * Handles a click on the board
@@ -977,6 +1115,7 @@ export default class GameBoard extends Component {
     console.log(survivor.name +" was killed, removing from props.showdown")
     let showdown = this.props.showdown;
     let survivors = showdown.survivors;
+
     let index = -1;
     for(let n=0; n<survivors.length; n++){
       if(survivors[n].id === survivor.id){
@@ -1096,6 +1235,7 @@ export default class GameBoard extends Component {
     for(let n=0; n<deck.length; n++){
       deck[n].orderInDeck = n;
     }
+    return deck;
   }
 
   shuffleHL = (hlDeck) => {
@@ -1113,10 +1253,15 @@ export default class GameBoard extends Component {
     }
 
     //shuffle
-    this.shuffle(hlDeck.cardsInDeck);
-    this.setOrderInDeck(hlDeck.cardsInDeck);
+    hlDeck.cardsInDeck = this.shuffle(hlDeck.cardsInDeck);
+    hlDeck.cardsInDeck = this.setOrderInDeck(hlDeck.cardsInDeck);
 
-    UpdateMonsterHL(this.state.monster.id, hlDeck);
+    if(hlDeck.cardsInDeck.length !== 8){
+      console.log("ERROR - UNEXPEXTED HL DECK LENGTH")
+    }
+    else {
+      UpdateMonsterHL(this.state.monster.id, hlDeck);
+    }
 
     return hlDeck;
   }
@@ -1127,6 +1272,7 @@ export default class GameBoard extends Component {
       let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
       [array[i], array[j]] = [array[j], array[i]]; // swap elements
     }
+    return array;
   }
 
   /*
