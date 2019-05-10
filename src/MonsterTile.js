@@ -13,12 +13,43 @@ export default class MonsterTile extends Component {
         brightness: 100,
         brightMod: 30,
         hue: 0,
-        facing: props.facing
+        facing: props.facing,
+        x: this.props.positionX,
+        y: this.props.positionY 
     }
 
     this.hover = this.hover.bind(this);
     this.dehover = this.dehover.bind(this);
   }
+
+  tick(){
+    this.updateRenderedSurvivors();
+}
+
+updateRenderedSurvivors = () => {
+  //TODO: check if survivor killed
+  let x = this.state.x;
+  let y = this.state.y;
+  const margin = 0.05;
+  const moveSpeed = 0.2;
+  if(x+margin < this.props.positionX){
+    x += moveSpeed;
+  }
+  else if(x-margin > this.props.positionX){
+    x -= moveSpeed;
+  }
+  if(y+margin < this.props.positionY){
+    y += moveSpeed;
+  }
+  else if(y-margin > this.props.positionY){
+    y -= moveSpeed;
+  }
+  this.setState({x: x, y: y});
+}
+
+componentDidMount(){
+  this.interval = setInterval(() => this.tick(), 30);
+}
 
   changeBrightness(percentage){
     let filterString = "brightness(" +percentage +"%)";
@@ -44,8 +75,8 @@ export default class MonsterTile extends Component {
     //console.log("MonsterTile.js: y=" +this.props.positionY)
     
     const shrink = 10;
-    let top=this.props.positionY*this.props.tileSize + this.props.topOffset +shrink;
-    let left=this.props.positionX*this.props.tileSize+ this.props.leftOffset +shrink;
+    let top=this.state.y*this.props.tileSize + this.props.topOffset +shrink;
+    let left=this.state.x*this.props.tileSize+ this.props.leftOffset +shrink;
     let height = this.props.height*this.props.tileSize -shrink*2;
     let width = this.props.width*this.props.tileSize -shrink*2;
     let degree = 0; //Default up

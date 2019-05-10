@@ -8,6 +8,57 @@ import s4 from './images/s4_c.png';
 
 export default class SurvivorTiles extends Component {
  
+    constructor(props){
+      super(props);
+
+      let x_array = [];
+      let y_array = [];
+      for(let n=0; n<this.props.survivors.length; n++){
+        //console.log("in child x:  " +this.props.survivors[n].position.x)
+        //console.log("in child y:  " +this.props.survivors[n].position.y)
+
+        x_array.push(this.props.survivors[n].position.x);
+        y_array.push(this.props.survivors[n].position.y);
+      }
+
+      this.state = {
+          //actualSurvivors: this.props.survivors,
+          x:  x_array, //will diff during move animation
+          y:  y_array
+      }
+    }
+
+    tick(){
+        this.updateRenderedSurvivors();
+    }
+
+    updateRenderedSurvivors = () => {
+      //TODO: check if survivor killed
+      let x = this.state.x;
+      let y = this.state.y;
+      const margin = 0.05;
+      const moveSpeed = 0.2;
+      for(let n=0; n<this.props.survivors.length; n++){
+          if(x[n]+margin < this.props.survivors[n].position.x){
+            x[n] += moveSpeed;
+          }
+          else if(x[n]-margin > this.props.survivors[n].position.x){
+            x[n] -= moveSpeed;
+          }
+          if(y[n]+margin < this.props.survivors[n].position.y){
+            y[n] += moveSpeed;
+          }
+          else if(y[n]-margin > this.props.survivors[n].position.y){
+            y[n] -= moveSpeed;
+          }
+      }
+      this.setState({x: x, y: y});
+    }
+
+    componentDidMount(){
+      this.interval = setInterval(() => this.tick(), 30);
+    }
+
     render(){
 
       //console.log("rendering SurvivorTiles.js")
@@ -34,9 +85,8 @@ export default class SurvivorTiles extends Component {
                 src = srcArr[3];
               }
 
-              let top  = this.props.survivors[i].position.y*this.props.tileSize + this.props.topOffset;
-              let left = this.props.survivors[i].position.x*this.props.tileSize + this.props.leftOffset;
-              //console.log("creating survivor tile data, top " +top +" y " +this.props.survivors[i].position.y +" name " +this.props.survivors[i].name);
+              let left = this.state.x[i]*this.props.tileSize + this.props.leftOffset;
+              let top =  this.state.y[i]*this.props.tileSize + this.props.topOffset;
               survivors.push(
                   {
                     topPx: top+shrink, 
