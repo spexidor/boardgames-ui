@@ -11,8 +11,6 @@ export default class SurvivorTile extends Component {
             hue: 0
         }
     
-        this.hover = this.hover.bind(this);
-        this.dehover = this.dehover.bind(this);
       }
 
     applyFilters(brightness, saturation){
@@ -20,13 +18,15 @@ export default class SurvivorTile extends Component {
         return {filter: filterString};
     }
 
-    hover(){
+    hover = () => {
+        this.props.hover(this.props.id);
         this.setState({
             brightness: this.state.brightness+50
         })
     }
 
-    dehover(){
+    dehover = () => {
+        this.props.deHover();
         this.setState({
             brightness: this.state.brightness-50
         })

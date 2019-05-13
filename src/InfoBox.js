@@ -15,7 +15,7 @@ export default class InfoBox extends Component {
     let bleed = "";
     let infoBox = <div></div>
 
-    if(this.props.selection==="survivor"){
+    if(this.props.hover==="survivor"){
       if(this.props.survivor !== undefined){
         name = this.props.survivor.name;
         id = this.props.survivor.id;
@@ -26,7 +26,6 @@ export default class InfoBox extends Component {
         bleed = this.props.survivor.bleed;
 
         infoBox = <div>
-        Survivor Status
         <ul>Survivor: {name+", id=" +id}</ul>
         <ul>Survival: {survival}</ul>
         <ul>Bleed: {bleed}</ul>
@@ -36,10 +35,9 @@ export default class InfoBox extends Component {
         </div>
       }
     }
-    else if(this.props.selection==="monster"){
+    else if(this.props.hover==="monster"){
       if(this.props.monster !== undefined){
         infoBox = <div>
-        Monster Status
         <ul>Name: {this.props.monster.statline.name}</ul>
         <ul>Movement: {this.props.monster.statline.movement}</ul>
         <ul>Toughness: {this.props.monster.statline.toughness}</ul>

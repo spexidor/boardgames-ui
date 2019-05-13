@@ -26,13 +26,6 @@ render(){
 
     let gameLog = ""
 
-    /*
-    for(let n=0; n<this.props.log.length; n++){
-        gameLog = gameLog +this.props.log[n].message;
-    }
-    */
-
-    //gameLog = MapMessages(this.props.log);
     gameLog = this.props.log.map((s, index) => <div key={index}>{s.message}</div>);
 
 

@@ -23,10 +23,10 @@ export default class MonsterTile extends Component {
   }
 
   tick(){
-    this.updateRenderedSurvivors();
+    this.updateRenderedMonster();
 }
 
-updateRenderedSurvivors = () => {
+updateRenderedMonster = () => {
   //TODO: check if survivor killed
   let x = this.state.x;
   let y = this.state.y;
@@ -57,12 +57,14 @@ componentDidMount(){
   }
 
   hover(){
+    this.props.hoverMonster();
     this.setState({
         brightness: this.state.brightness+this.state.brightMod
     })
   }
 
   dehover(){
+    this.props.deHoverMonster();
     this.setState({
       brightness: this.state.brightness-this.state.brightMod
     })
@@ -70,10 +72,6 @@ componentDidMount(){
 
   render(){
 
-    //console.log("MonsterTile.js: facing=" +this.props.facing)
-    //console.log("MonsterTile.js: x=" +this.props.positionX)
-    //console.log("MonsterTile.js: y=" +this.props.positionY)
-    
     const shrink = 10;
     let top=this.state.y*this.props.tileSize + this.props.topOffset +shrink;
     let left=this.state.x*this.props.tileSize+ this.props.leftOffset +shrink;

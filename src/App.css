@@ -36,6 +36,120 @@
   font-size: 10px;
 }
 
+.aiCard {
+  color: black;
+  text-align: left;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
+  border-radius: 7px;
+  background-color: #adadad;
+  position: absolute;
+  height: 275px;
+  width: 200px;
+  top: -450px;
+  left: -350px;
+  font-size: 12px;
+}
+
+.aiCard-target {
+  border-radius: 7px;
+  padding-left: 10px;
+  background-image: linear-gradient(#adadad, #bebdbd);
+}
+
+.aiCard-round {
+  border-radius: 10px;
+  background-color: #adadad;
+  width: 20px;
+  height: 20px;
+  margin: auto;
+  text-align: center;
+  position: relative;
+  top: -174px;
+  color: white;
+}
+
+.aiCard-attack {
+  border-radius: 7px;
+  height: 150px;
+  background-image: linear-gradient( #bebdbd, #adadad);
+  padding-top: 10px;
+}
+
+.aiCard-target-list {
+  font-size: 10px;
+  padding-bottom: 10px;
+  list-style: circle;
+  padding-left: 10px;
+}
+
+.aiCard-table {
+  background-color: #7e7e7e;
+  border-radius: 7px;
+  position: relative;
+  left: 7%;
+  right: 7%;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 10px;
+  background-image: linear-gradient(#bebdbd, #a1a1a1);
+}
+
+.aiCard-trigger-left {
+  border-bottom-left-radius: 7px;
+  border-top-left-radius: 7px;
+  width: 10px;
+  background-color: #e4e4e4;
+  font-size: 12px;
+  position: relative;
+  left: 10px;
+  padding: 5px;
+  height: 15px;
+}
+.aiCard-trigger-right {
+  border-bottom-right-radius: 7px;
+  border-top-right-radius: 7px;
+  background-color: #a1a1a1;
+  font-size: 8px;
+  position: relative;
+  left: 32px;
+  top: -26px;
+  width: 120px;
+  padding: 4px;
+}
+
+.aiCard-table-trigger {
+  background-color: #e4e4e4;
+  border-radius: 7px;
+  position: relative;
+  left: 7%;
+  right: 7%;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-bottom: 5px;
+  
+}
+
+.aiCard-table-header {
+  font-size: 6px;
+}
+.aiCard-table-body {
+  font-size: 15px;
+}
+.aiCard-table-trigger-header {
+  width: 70px;
+}
+.aiCard-table-trigger-body {
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.card-title {
+  text-align: center;
+  font-size: 15px;
+}
+
 .popup {
   position: fixed;
   width: 100%;

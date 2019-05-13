@@ -61,7 +61,7 @@ export default class SurvivorTiles extends Component {
 
     render(){
 
-      //console.log("rendering SurvivorTiles.js")
+      //console.log("rendering SurvivorTiles.js: " +this.props.hoverSurvivor)
 
         let tiles = <div></div>;
         let survivors = [];
@@ -96,7 +96,9 @@ export default class SurvivorTiles extends Component {
                     selectedSurvivorId: this.props.selectedSurvivorId,
                     src: src,
                     size: this.props.tileSize,
-                    knockedDown: this.props.survivors[i].status === "KNOCKED_DOWN"
+                    knockedDown: this.props.survivors[i].status === "KNOCKED_DOWN",
+                    hover: this.props.hoverSurvivor,
+                    deHover: this.props.deHoverSurvivor
                   });
             }
             tiles = <MapSurvivors data={survivors} click={this.props.click}/>
@@ -111,6 +113,6 @@ export default class SurvivorTiles extends Component {
 function MapSurvivors(props){
     return(
       props.data.map((s, index) => 
-          <SurvivorTile knockedDown={s.knockedDown} size={s.size} src={s.src} click={props.click} selectedSurvivorId={s.selectedSurvivorId} key={index} top={s.topPx} left={s.leftPx} name={s.name} id={s.id}/>
+          <SurvivorTile deHover={s.deHover} hover={s.hover} knockedDown={s.knockedDown} size={s.size} src={s.src} click={props.click} selectedSurvivorId={s.selectedSurvivorId} key={index} top={s.topPx} left={s.leftPx} name={s.name} id={s.id}/>
       ))
 }
