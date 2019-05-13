@@ -90,3 +90,15 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
     }
     return false;
   }
+
+  export const Adjacent = (p1, p2) => {
+    //console.log("p1: x=" + p1.x + ", y=" + p1.y);
+    //console.log("p2: x=" + p2.x + ", y=" + p2.y);
+    if (p1.x === p2.x && (p1.y === p2.y + 1 || p1.y === p2.y - 1)) {
+      return true;
+    }
+    else if (p1.y === p2.y && (p1.x === p2.x + 1 || p1.x === p2.x - 1)) {
+      return true;
+    }
+    else { return false }
+  }

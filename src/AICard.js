@@ -45,8 +45,25 @@ return str;
 
 render(){
 
+    //monster
+    let monsterAttackDisabled = true;
+    let monsterMoveDisabled = true;
+    let getTargetDisabled = true;
+    if(this.props.targets.length === 1){
+        monsterAttackDisabled = false;
+    }
+    if(this.props.targets.length === 1 && !this.props.aiCard.noMove){
+        monsterMoveDisabled = false;
+    }
+    if(this.props.aiCard !== 0 && this.props.targets.length === 0){
+        getTargetDisabled = false;
+    }
+    let moveActive = "";
+    if(this.props.moveSelected){
+        moveActive = "button-active";
+    }
+
     const aiCard = this.props.aiCard;
-    console.log("aicard: " +aiCard.title);
 
     const triggerChar = "❂";
     let triggerDesc = "";
@@ -69,19 +86,30 @@ render(){
                 <div className="aiCard-trigger-right"><b>{name}</b>{aiCard.attack.triggerEffect.description}</div>
             </div>
     }
+
+    let moveButton = "";
+    if(aiCard.noMove){
+        console.log("no move for this ai card")
+    }
+    else{
+        moveButton = <button disabled={monsterMoveDisabled} className={moveActive} onClick={this.props.monsterMove}>Move</button>
+    }
     
     const aiCardGraphics = 
     <div>
         <div className="aiCard-target">
             <div className="card-title">{aiCard.title}</div>
             <br/>
-            <button onClick={this.props.target}>Pick target</button>
+            <button disabled={getTargetDisabled} onClick={this.props.target}>Pick target</button>
             <ul className="aiCard-target-list">{target}
             <li>No target: <b>{aiCard.noTarget.name}</b></li>
             </ul>
         </div>
         <div className="aiCard-attack">
-            <div className="card-title">Move & Attack Target</div>
+            
+            {moveButton}
+            <button disabled={monsterAttackDisabled} onClick={this.props.attack}>Attack</button>
+        
             <br/>
             <table className="aiCard-table"><tbody>
             <tr className="aiCard-table-header"><th>Speed</th><th>Accuracy</th><th>Damage</th><th className="aiCard-table-trigger-header">Trigger</th></tr>

@@ -26,7 +26,7 @@ render(){
 
     let gameLog = ""
 
-    gameLog = this.props.log.map((s, index) => <div key={index}>{s.message}</div>);
+    gameLog = this.props.log.map((s, index) => <div className={s.type} key={index}>{s.message}</div>);
 
 
     return(

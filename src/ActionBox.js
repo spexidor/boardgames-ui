@@ -20,19 +20,6 @@ export default class ActionBox extends Component {
         activateDisabled = true;
     }
 
-    //monster
-    let monsterAttackDisabled = true;
-    let monsterMoveDisabled = true;
-    let getTargetDisabled = true;
-    if(this.props.targets.length === 1){
-        monsterAttackDisabled = false;
-    }
-    if(this.props.targets.length === 1 && !this.props.aiCard.noMove){
-        monsterMoveDisabled = false;
-    }
-    if(this.props.aiCard !== 0 && this.props.targets.length === 0){
-        getTargetDisabled = false;
-    }
     let moveActive = "";
     if(this.props.moveSelected){
         moveActive = "button-active";
@@ -51,10 +38,6 @@ export default class ActionBox extends Component {
     else if(this.props.selection==="monster"){
         actionBox = 
         <div>
-        <button disabled={getTargetDisabled} onClick={this.props.target}>Get target</button>
-        <button disabled={monsterMoveDisabled} className={moveActive} onClick={this.props.monsterMove}>Move</button>
-        <button disabled={monsterAttackDisabled} onClick={this.props.attack}>Attack</button>
-        <br/><br/>
         <button onClick={this.props.changeFacing.bind(this, "UP")}>Turn up</button>
         <button onClick={this.props.changeFacing.bind(this, "DOWN")}>Turn down</button>
         <button onClick={this.props.changeFacing.bind(this, "LEFT")}>Turn left</button>

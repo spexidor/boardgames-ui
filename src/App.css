@@ -32,8 +32,19 @@
   width: 225px;
   top: -300px;
   left: 0px;
-  color: #65ff63;
   font-size: 10px;
+}
+
+.MONSTER {
+ color: red
+}
+
+.SURVIVOR {
+ color: #65ff63;
+}
+
+.GAME_INFO {
+ color: #7ea9ff
 }
 
 .aiCard {
@@ -164,6 +175,19 @@
   font-size: 10px;
 }
 
+.gear-grid {
+  color: white;
+  position: absolute;
+  border-radius: 2px;
+  left: 30%;
+  right: 30%;
+  top: 35%;
+  bottom: 35%;
+  margin: auto;
+  background: black;
+  font-size: 10px;
+}
+
 .popup {
   position: fixed;
   width: 100%;
@@ -185,7 +209,6 @@
   bottom: 35%;
   margin: auto;
   background: black;
-  background-size: 100% 200%;
-  opacity: 0.7;
+  opacity: 0.8;
   font-size: 16px;
 }

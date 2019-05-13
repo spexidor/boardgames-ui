@@ -37,19 +37,19 @@ export default class InfoBox extends Component {
     }
     else if(this.props.hover==="monster"){
       if(this.props.monster !== undefined){
-        infoBox = <div>
-        <ul>Name: {this.props.monster.statline.name}</ul>
-        <ul>Movement: {this.props.monster.statline.movement}</ul>
-        <ul>Toughness: {this.props.monster.statline.toughness}</ul>
-        <ul>Remaining AI: {this.props.aiDeck.cardsInDeck.length + this.props.aiDeck.cardsInDiscard.length}</ul>
-        <ul>Activated this turn: {this.props.monster.activatedThisTurn.toString()}</ul>
-        </div>
+        infoBox = <ul>
+        <li>Name: {this.props.monster.statline.name}</li>
+        <li>Movement: {this.props.monster.statline.movement}</li>
+        <li>Toughness: {this.props.monster.statline.toughness}</li>
+        <li>Remaining AI: {this.props.aiDeck.cardsInDeck.length + this.props.aiDeck.cardsInDiscard.length} ({this.props.aiDeck.cardsInDeck.length}+{this.props.aiDeck.cardsInDiscard.length})</li>
+        <li>Activated this turn: {this.props.monster.activatedThisTurn.toString()}</li>
+        </ul>
       }
     }
     else if(this.props.selection==="board"){
       infoBox = <div>
       Tile Status
-      <ul>Board tile selected</ul>
+      <li>Board tile selected</li>
       </div>
     }
 
