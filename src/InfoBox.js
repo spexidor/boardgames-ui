@@ -25,14 +25,14 @@ export default class InfoBox extends Component {
         status = this.props.survivor.status;
         bleed = this.props.survivor.bleed;
 
-        infoBox = <div>
-        <ul>Survivor: {name+", id=" +id}</ul>
-        <ul>Survival: {survival}</ul>
-        <ul>Bleed: {bleed}</ul>
-        <ul>Moves left: {movesLeft}</ul>
-        <ul>Activations left: {activationsLeft}</ul>
-        <ul>Status: {status}</ul>
-        </div>
+        infoBox = <ul>
+        <li>Survivor: {name+", id=" +id}</li>
+        <li>Survival: {survival}</li>
+        <li>Bleed: {bleed}</li>
+        <li>Moves left: {movesLeft}</li>
+        <li>Activations left: {activationsLeft}</li>
+        <li>Status: {status}</li>
+        </ul>
       }
     }
     else if(this.props.hover==="monster"){

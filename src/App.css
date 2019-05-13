@@ -47,8 +47,8 @@
   position: absolute;
   height: 275px;
   width: 200px;
-  top: -450px;
-  left: -350px;
+  top: -500px;
+  left: 250px;
   font-size: 12px;
 }
 
@@ -150,6 +150,20 @@
   font-size: 15px;
 }
 
+.turn-changer {
+  text-align: left;
+  padding-left: 5px;
+  border-radius: 5px;
+  background-color: #282c34;
+  position: absolute;
+  height: 40px;
+  width: 300px;
+  top: 5px; 
+  left: 375px;
+  color: #65ff63;
+  font-size: 10px;
+}
+
 .popup {
   position: fixed;
   width: 100%;
@@ -174,18 +188,4 @@
   background-size: 100% 200%;
   opacity: 0.7;
   font-size: 16px;
-}
-
-.my_box {
-  color: white;
-  position: absolute;
-  border-radius: 5px;
-  left: 10%;
-  right: 10%;
-  top: 10%;
-  bottom: 10%;
-  margin: auto;
-  background: black;
-  background-image: url("marble.png");
-  background-size: 100% 200%;
 }

@@ -55,7 +55,7 @@ render(){
     if(aiCard.attack.trigger !== null){
         let name = "";
         if(aiCard.attack.triggerEffect.name){
-            name = name + ": ";
+            name = aiCard.attack.triggerEffect.name + ": ";
         }
         if(aiCard.attack.trigger.afterHit){
             trigger = triggerChar +" After Hit";
@@ -75,7 +75,7 @@ render(){
         <div className="aiCard-target">
             <div className="card-title">{aiCard.title}</div>
             <br/>
-            Pick target
+            <button onClick={this.props.target}>Pick target</button>
             <ul className="aiCard-target-list">{target}
             <li>No target: <b>{aiCard.noTarget.name}</b></li>
             </ul>
