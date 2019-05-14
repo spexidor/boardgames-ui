@@ -64,7 +64,7 @@ export default class InfoBox extends Component {
       onStart={this.handleStart}
       onDrag={this.handleDrag}
       onStop={this.handleStop}>
-      <div className="handle" align="left" style={{borderRadius: "5px", opacity: 0.9, background: "#282c34", fontSize: "10px", color: "white", position: "absolute", height: 150, width: 250, top: 125, left: 800}}>
+      <div className="handle round-gradient" align="left" style={{fontSize: "10px", color: "white", position: "absolute", height: 150, width: 200, top: 125, left: 800}}>
           {infoBox} 
       </div>
       </Draggable>

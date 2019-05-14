@@ -1,12 +1,22 @@
 import React, { Component } from 'react';
 import './App.css';
 import Draggable from 'react-draggable';
+import GearCard from './GearCard';
 
 export default class ActionBox extends Component {
  
   render(){
 
-    let gearGrid = <div></div>
+    let gear = this.props.gearGrid.gear.map((gear, index) => <GearCard key={index} selectGear={this.props.selectGear.bind(this)} specialUseGear={this.props.specialUseGear.bind(this)} top={index*100+5} gearCard={gear}/>)
+
+    let gearGrid = 
+    <div>
+        <div className="gear-grid-left"><button onClick={this.props.showGearGrid}>Hide Grid</button>
+        </div>
+        <div className="gear-grid-right">
+        {gear}
+        </div>
+    </div>
 
     return(
         <Draggable
@@ -28,5 +38,3 @@ export default class ActionBox extends Component {
     )
   }
 }
-
-//<button disabled={true} onClick={this.props.attack}>Attack</button>

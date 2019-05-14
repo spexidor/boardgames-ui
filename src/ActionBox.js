@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
-import Draggable from 'react-draggable';
+//import Draggable from 'react-draggable';
 
 export default class ActionBox extends Component {
  
@@ -32,20 +32,21 @@ export default class ActionBox extends Component {
         <div>
         <button disabled={moveDisabled}className={moveActive} onClick={this.props.survivorMove}>Move</button>
         <button disabled={activateDisabled} onClick={this.props.activate}>Activate</button>
-        <button onClick={this.props.showGearGrid}>Gear Grid</button>
+        <button onClick={this.props.showGearGrid}>Gear</button>
         </div>
     }
     else if(this.props.selection==="monster"){
         actionBox = 
         <div>
-        <button onClick={this.props.changeFacing.bind(this, "UP")}>Turn up</button>
-        <button onClick={this.props.changeFacing.bind(this, "DOWN")}>Turn down</button>
-        <button onClick={this.props.changeFacing.bind(this, "LEFT")}>Turn left</button>
-        <button onClick={this.props.changeFacing.bind(this, "RIGHT")}>Turn right</button>
+        <button className="button" onClick={this.props.changeFacing.bind(this, "UP")}>Turn up</button>
+        <button className="button" onClick={this.props.changeFacing.bind(this, "DOWN")}>Turn down</button>
+        <button className="button" onClick={this.props.changeFacing.bind(this, "LEFT")}>Turn left</button>
+        <button className="button" onClick={this.props.changeFacing.bind(this, "RIGHT")}>Turn right</button>
         </div>
     }
     
     return(
+        /*
         <Draggable
             axis="both"
             handle=".handle"
@@ -56,12 +57,16 @@ export default class ActionBox extends Component {
             onStart={this.handleStart}
             onDrag={this.handleDrag}
             onStop={this.handleStop}>
-            <div className="handle" align="left" style={{borderRadius: "5px", opacity: 0.9, background: "#282c34", fontSize: "12px", color: "white", position: "absolute", height: 100, width: 250, top: 300, left: 800}}>   
-                {actionBox}
+            <div className="handle">   
+                <div className="action-box">
+                    {actionBox}
+                </div>
             </div>
-        </Draggable>
+        </Draggable>*/
+
+        <div className="round-gradient action-box">
+            {actionBox}
+        </div>
     )
   }
 }
-
-//<button disabled={true} onClick={this.props.attack}>Attack</button>
