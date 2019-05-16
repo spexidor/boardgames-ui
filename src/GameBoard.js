@@ -32,7 +32,12 @@ export default class GameBoard extends Component {
         hoverSurvivor: 0,
         typeSelected: "",
         typeHover: "",
-        monsterTarget: -1
+        monsterTarget: -1,
+        gear: [
+          {survivorId: this.props.showdown.survivors[0].id, selectedWeapon: 2},
+          {survivorId: this.props.showdown.survivors[1].id, selectedWeapon: 2},
+          {survivorId: this.props.showdown.survivors[2].id, selectedWeapon: 2},
+          {survivorId: this.props.showdown.survivors[3].id, selectedWeapon: 2}]
       },
       action: {
         moveSelected: false,
@@ -58,7 +63,7 @@ export default class GameBoard extends Component {
       targets: [],
       revealedAI: 0,
       revealedHL: 0,
-      showGearGrid: true,
+      showGearGrid: false,
       log: [{message: "New game started (id=" +this.props.showdown.id +")", type: "GAME_INFO"}]
     }
   }
@@ -127,6 +132,11 @@ export default class GameBoard extends Component {
    else if(event.keyCode===80){ //p
     if(this.state.revealedAI !== 0){
       this.target();
+    }
+   }
+   else if(event.keyCode===71){ //g
+    if(this.state.selection.selectedSurvivorId !== -1){
+      this.showGearGrid();
     }
    }
    else if(event.keyCode===37){ //left
@@ -593,27 +603,68 @@ deHover = () => {
   }
 
   activateSurvivor = (survivor) => {
-    let inRange = this.survivorInRange(survivor);
-    this.addLogMessage("** " +survivor.name +" activated", "SURVIVOR");
 
-    if(inRange){
+    let attackProfile = this.getSelectedAttackProfile();
+    
+    //check activation cost
+    if(this.activationPossible(survivor, attackProfile)){
+      this.payActivationCost(survivor, attackProfile);
+
+      this.addLogMessage("** " +survivor.name +" activated", "SURVIVOR");
+  
+          GetHits(this.getSpeed(), this.getToHitValue()).then(diceRoll => {
+          const numHits = this.getHits(diceRoll).length;
+  
+          this.addLogMessage(survivor.name +" scored " +numHits +" hits", "SURVIVOR");
+  
+          //Reveal HitLocations
+          this.revealHL(numHits);
+        })
+    }
+    else {
+      console.log("unable to activate");
+    }
+  }
+
+  activationPossible = (survivor, attackProfile) => {
+
+    console.log("checking activation for " +survivor.name +", attackProfile: " +attackProfile);
+    console.log("activation: " +attackProfile.activationCost.activation.toString());
+    console.log("activations avail: " +survivor.activationsLeft);
+    
+    if(attackProfile.activationCost.activation && survivor.activationsLeft > 0){
+      console.log("activationCost.activation");
+
+      let inRange = this.survivorInRange(survivor, attackProfile);
+      if(inRange){
+        this.addLogMessage(survivor.name +" in range", "SURVIVOR");
+
+        return true;
+      }
+      else{
+        console.log("survivor not in range")
+      }
+    }
+    else {
+      return false;
+    }
+  }
+  
+  payActivationCost = (survivor, attackProfile) => {
+    if(attackProfile.activationCost.activation){
       survivor.activationsLeft = survivor.activationsLeft -1;
-      this.updateSurvivor(survivor);
-
-        GetHits(this.getSpeed(), this.getToHitValue()).then(diceRoll => {
-        //const numHits = data.length;
-        //const numHits = 2; //TODO - for testing, remove
-        const numHits = this.getHits(diceRoll).length;
-
-        this.addLogMessage(survivor.name +" scored " +numHits +" hits", "SURVIVOR");
-
-        //Reveal HitLocations
-        this.revealHL(numHits);
-      })
     }
-    else{
-      console.log("survivor not in range")
+    if(attackProfile.activationCost.move){
+      survivor.movesLeft = survivor.movesLeft -1;
     }
+    if(attackProfile.activationCost.archive){
+      this.archiveGear(attackProfile);
+    }
+    this.updateSurvivor(survivor);
+  }
+
+  archiveGear(attackProfile){
+    console.log("archive gear, not implemented");
   }
 
   getHits = (diceRoll) =>{
@@ -659,12 +710,13 @@ deHover = () => {
     
     this.addLogMessage("Attempting to wound " +hlCard.title, "SURVIVOR");
     let survivor = this.state.survivor;
-    let weapon = survivor.gearGrid.gear[this.state.selectedWeapon];
+
+    let attackProfile = this.getSelectedAttackProfile();
 
     if(hlCard.trap){
       this.resolveTrap(hlCard);
     }
-    else if(!this.survivorInRange(survivor)){
+    else if(!this.survivorInRange(survivor, attackProfile)){
       this.addLogMessage("Survivor out of range, cancelling hit", "GAME_INFO");
       this.discardHLCard(hlCard);
     }
@@ -678,7 +730,7 @@ deHover = () => {
         let scoredWound = this.successfulWound(data);
 
         let critScored = false;
-        if(data.result === this.getCritValue(weapon, 0)){
+        if(data.result === this.getCritValue(attackProfile, 0)){ //0 = survivor luck
           this.addLogMessage("Crit rolled", "SURVIVOR")
           critScored = true;
         }
@@ -719,9 +771,12 @@ deHover = () => {
     }
   }
 
-  getCritValue = (weapon, luck) => {
+  getCritValue = (attackProfile, luck) => {
+    if(attackProfile.alwaysCrits){
+      return 1;
+    }
     let critValue = 10;
-    if(weapon.deadly){
+    if(attackProfile.deadly){
       console.log("weapon is deadly, increasing crit chance");
       critValue--;
     }
@@ -751,11 +806,11 @@ deHover = () => {
   }
 
   getSpeed = () => {
-    return this.getSelectedWeapon().speed;
+    return this.getSelectedAttackProfile().speed;
   }
 
   getToHitValue = () => {
-    const toHitValue = this.getSelectedWeapon().toHitValue;
+    const toHitValue = this.getSelectedAttackProfile().toHitValue;
     return Math.max(this.inBlindSpot(this.state.survivor) ? toHitValue-1 : toHitValue, 2);
   }
 
@@ -768,28 +823,59 @@ deHover = () => {
     return false;
   }
 
-  getSelectedWeapon = () => {
-    return this.state.survivor.gearGrid.gear[this.state.selectedWeapon];
+  /*
+  Returns gear eqiped by current survivor
+  */
+  getSelectedGear = () => {
+    
+    let index = this.getSelectedGearIndex();
+    let gear = this.state.survivor.gearGrid.gear[index];
+    return gear;
+  }
+
+  getSelectedAttackProfile = () => {
+    let gear = this.getSelectedGear();
+    return gear.attackProfiles[0];
+  }
+
+  getSelectedGearIndex = () => {
+    const selection = this.state.selection;
+
+    for(let n=0; n<selection.gear.length; n++){
+      if(selection.gear[n].survivorId === this.state.survivor.id){
+        return selection.gear[n].selectedWeapon;
+      }
+    }
+    return -1;
   }
   
   toWoundValue = () => {
     let t = this.state.monster.statline.toughness;
     //let s1 = this.state.survivor.strength;
     let s1 = 0;
-    let s2 = this.state.survivor.gearGrid.gear[2].strengthBonus;
+    let s2 = this.getSelectedAttackProfile().strengthBonus;
+
     console.log("t: " +t +", s1: " +s1 +", s2: " +s2);
     return Math.max(t - (s1+s2), 2); //1 to wound always fail
   }
 
-  survivorInRange = (survivor) => {
-    let inRange = false;
-    for(let i=0; i<this.state.monster.baseCoordinates.length; i++){
-      if (Adjacent(survivor.position, this.state.monster.baseCoordinates[i])) {
-        inRange = true;
-        break;
-      }
+  survivorInRange = (survivor, attackProfile) => {
+
+    if(attackProfile.infiniteReach){
+      return true;
     }
-    return inRange;
+    else {
+      let inRange = false;
+
+      //TODO: use "reach" value in gear.attackProfiles[0]
+      for(let i=0; i<this.state.monster.baseCoordinates.length; i++){
+        if (Adjacent(survivor.position, this.state.monster.baseCoordinates[i])) {
+          inRange = true;
+          break;
+        }
+      }
+      return inRange;
+    }
   }
 
   monsterInRange = (survivor, attack) => {
@@ -994,7 +1080,7 @@ deHover = () => {
       }
 
       if(attack.targetLocation !== null && typeof attack.targetLocation !== 'undefined'){
-        this.addLogMessage(survivor.name +" took AIMED damage (damage=" +damage +") at " +attack.targetLocation, "SURVIVOR")
+        this.addLogMessage(survivor.name +" took AIMED damage (damage=" +damage +") at " +attack.targetLocation, "MONSTER")
         for(let i=0; i<numHits; i++)
         {
           this.removeArmourAt(survivor, attack.targetLocation, damage);
@@ -1003,7 +1089,7 @@ deHover = () => {
       else 
       {
         GetHitlocations(numHits).then(hitLocations => {
-          this.addLogMessage(survivor.name +" took hits to " +hitLocations +" (damage=" +damage +")", "SURVIVOR");
+          this.addLogMessage(survivor.name +" took hits to " +hitLocations +" (damage=" +damage +")", "MONSTER");
         
           this.addLogMessage(survivor.name +" has " +survivor.survival +" survival", "DEBUG");
           if(survivor.survival > 0 && !survivor.doomed){
@@ -1050,16 +1136,16 @@ deHover = () => {
         if(effect.bleed > 0){
           console.log("triggerEffect: bleed " +effect.bleed)
           survivor.bleed += effect.bleed;
-          this.addLogMessage(survivor.name +" gets " +effect.bleed +" bleed tokens from trigger effect", "SURVIVOR");
+          this.addLogMessage(survivor.name +" gets " +effect.bleed +" bleed tokens from trigger effect", "MONSTER");
         }
         if(effect.brainDamage > 0){
           console.log("triggerEffect: brain damage")
           this.removeArmourAt(survivor, "BRAIN", effect.brainDamage);
-          this.addLogMessage(survivor.name +" takes " +effect.brainDamage +" brain damage from trigger effect", "SURVIVOR");
+          this.addLogMessage(survivor.name +" takes " +effect.brainDamage +" brain damage from trigger effect", "MONSTER");
         }
         if(effect.damage > 0){
           console.log("triggerEffect: damage")
-          this.addLogMessage(survivor.name +" takes " +effect.damage +" damage from trigger effect", "SURVIVOR");
+          this.addLogMessage(survivor.name +" takes " +effect.damage +" damage from trigger effect", "MONSTER");
           const normalAttack = {
             damage: effect.damage,
             trigger: {}
@@ -1068,7 +1154,7 @@ deHover = () => {
         }
         if(effect.knockDown){
           console.log("triggerEffect: knock down")
-          this.addLogMessage(survivor.name +" is knocked down from trigger effect", "SURVIVOR");
+          this.addLogMessage(survivor.name +" is knocked down from trigger effect", "MONSTER");
         
           survivor.status = "KNOCKED_DOWN";
           this.updateSurvivor(survivor);
@@ -1087,7 +1173,7 @@ deHover = () => {
         if(typeof effect.move !== 'undefined' && effect.move !== null){
           console.log("triggerEffect: move")
           console.log("triggerEffect: move direction=" +effect.move.direction)
-          this.addLogMessage("Monster moves " +effect.move.direction);
+          this.addLogMessage("Monster moves " +effect.move.direction, "GAME_INFO");
           
           GetMonsterSpecialMove(this.state.monster.id, effect.move.direction).then(data => {
   
@@ -1501,19 +1587,51 @@ deHover = () => {
     this.props.updateShowdown(showdown);
   }
 
-  showGearGrid = () => {
+  showGearGrid = (show) => {
     
     let showGearGrid = this.state.showGearGrid;
-    showGearGrid = !showGearGrid;
+    if(typeof show !== 'undefined'){ //if input exist, set state to input
+      showGearGrid = show;
+    }
+    else {
+      showGearGrid = !showGearGrid; //otherwise toggle on/off
+    }
+    
     this.setState({showGearGrid: showGearGrid});
   }
 
-  selectGear = (gear) => {
-    console.log("select gear: " +gear.name)
+  selectGear = (index, specialUse) => {
+    let selection = this.state.selection;
+    let survivor = this.state.survivor;
+    let survivorId = survivor.id;
+
+    for(let n=0; n<selection.gear.length; n++){
+      if(selection.gear[n].survivorId === survivorId){
+        selection.gear[n].selectedWeapon = index;
+        if(specialUse){
+          selection.gear[n].specialUse = true;
+        }
+      }
+    }
+
+    this.setState({selection: selection});
+
+    if(specialUse){
+      this.addLogMessage("Using ability " +this.state.survivor.gearGrid.gear[index].gearEffect.useName +" for " +this.state.survivor.name, "GAME_INFO")
+      
+      if(this.state.survivor.gearGrid.gear[index].gearEffect.activationType === "ATTACK"){
+          this.activateSurvivor(survivor);
+      }
+    }
+    else {
+      this.addLogMessage("Set " +this.state.survivor.gearGrid.gear[index].name +" as weapon for " +this.state.survivor.name, "GAME_INFO")
+    }
+    this.showGearGrid(false); //hide grid
   }
 
-  specialUseGear = (gear) => {
-    console.log("special use gear!")
+  specialUseGear = (index) => {
+    console.log("special use gear")
+    this.selectGear(index, true)
   }
 
   //DEBUG FUNCTION

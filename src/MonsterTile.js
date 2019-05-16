@@ -10,16 +10,10 @@ export default class MonsterTile extends Component {
     super(props);
 
     this.state = {
-        brightness: 100,
-        brightMod: 30,
-        hue: 0,
         facing: props.facing,
         x: this.props.positionX,
         y: this.props.positionY 
     }
-
-    this.hover = this.hover.bind(this);
-    this.dehover = this.dehover.bind(this);
   }
 
   tick(){
@@ -51,24 +45,13 @@ componentDidMount(){
   this.interval = setInterval(() => this.tick(), 30);
 }
 
-  changeBrightness(percentage){
-    let filterString = "brightness(" +percentage +"%)";
-    return {filter: filterString};
-  }
+hover = () => {
+  this.props.hoverMonster();
+}
 
-  hover(){
-    this.props.hoverMonster();
-    this.setState({
-        brightness: this.state.brightness+this.state.brightMod
-    })
-  }
-
-  dehover(){
-    this.props.deHoverMonster();
-    this.setState({
-      brightness: this.state.brightness-this.state.brightMod
-    })
-  }
+dehover = () => {
+  this.props.deHoverMonster();
+}
 
   render(){
 
@@ -104,11 +87,11 @@ componentDidMount(){
     let img = <div></div>
     //console.log("size: " +this.props.tileSize +" top: " +top +" left: " +left +" height: " +height +" width: " +width);
     if(height>0 && width >0){
-      img = <img src={monsterImg} alt={"monster_" +this.props.id} border={border} onClick={this.props.click} onMouseLeave={this.dehover} onMouseOver={this.hover} style={{transform: rotate, position: 'absolute', height: height, width: width, top: top-border, left: left-border}}/>
+      img = <img className="monster-tile" src={monsterImg} alt={"monster_" +this.props.id} border={border} onClick={this.props.click} onMouseLeave={this.dehover} onMouseOver={this.hover} style={{transform: rotate, position: 'absolute', height: height, width: width, top: top-border, left: left-border}}/>
     }
 
       return(
-        <div style={this.changeBrightness(this.state.brightness)}>{img}</div>
+        <div>{img}</div>
       )
   }
 }
