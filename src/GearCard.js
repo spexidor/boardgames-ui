@@ -33,9 +33,9 @@ specialUseGear = () => {
         gearCard = 
         <div>
             <div className="gear-card-title">{this.props.gearCard.name}</div>
-            {this.props.gearCard.attackValues[0].speed},
-            {this.props.gearCard.attackValues[0].toHitValue}+,
-            {this.props.gearCard.attackValues[0].strengthBonus}
+            {this.props.gearCard.attackProfiles[0].speed},
+            {this.props.gearCard.attackProfiles[0].toHitValue}+,
+            {this.props.gearCard.attackProfiles[0].strengthBonus}
             <br/>
             <div className="gear-card-description">{decodeURI(this.props.gearCard.description)}</div>
             <button onClick={this.selectGear} >Equip</button>

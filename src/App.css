@@ -263,6 +263,10 @@
 .gameboard-tile:hover {
   filter: brightness(1.9);
 }
+.gameboard-tile-selected {
+  filter: brightness(1.7);
+}
+
 .monster-tile:hover {
   filter: brightness(1.3);
 }

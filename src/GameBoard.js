@@ -566,6 +566,7 @@ deHover = () => {
 
   setSurvivorMoves = (id) => {
     GetSurvivorMoves(id).then(data => {
+      console.log("setting survivor moves highlits: " +data.length)
         this.setState({
           highlights: data
         })
@@ -613,7 +614,8 @@ deHover = () => {
       this.addLogMessage("** " +survivor.name +" activated", "SURVIVOR");
   
           GetHits(this.getSpeed(), this.getToHitValue()).then(diceRoll => {
-          const numHits = this.getHits(diceRoll).length;
+          //const numHits = this.getHits(diceRoll).length;
+          const numHits = 2; //TODO
   
           this.addLogMessage(survivor.name +" scored " +numHits +" hits", "SURVIVOR");
   
@@ -628,12 +630,7 @@ deHover = () => {
 
   activationPossible = (survivor, attackProfile) => {
 
-    console.log("checking activation for " +survivor.name +", attackProfile: " +attackProfile);
-    console.log("activation: " +attackProfile.activationCost.activation.toString());
-    console.log("activations avail: " +survivor.activationsLeft);
-    
     if(attackProfile.activationCost.activation && survivor.activationsLeft > 0){
-      console.log("activationCost.activation");
 
       let inRange = this.survivorInRange(survivor, attackProfile);
       if(inRange){
@@ -738,8 +735,8 @@ deHover = () => {
         let effectTriggered = false;
         this.addLogMessage("Impervious: " +hlCard.impervious, "DEBUG");
 
+        let monster = this.state.monster;
         if(scoredWound && !hlCard.impervious){
-          let monster = this.state.monster;
           monster.lastWoundedBy = survivor.id;
   
           this.updateMonster(monster);
@@ -754,10 +751,15 @@ deHover = () => {
             this.addLogMessage("Hit location is impervious, unable to wound", "GAME_INFO");
           }
           if(hlCard.failureEffect){
+            this.addLogMessage("Failed to wound, the " +monster.name +" strikes back", "MONSTER");
             effectTriggered = true;
           }
         }
-        if(hlCard.reflexEffect || effectTriggered){
+        if(hlCard.reflexEffect){
+          this.addLogMessage("Reflex action, the " +monster.name +" strikes back", "MONSTER");
+          effectTriggered = true;
+        }
+        if(effectTriggered){
           this.addTriggerEffect(survivor, hlCard.effect)
         }
   
@@ -802,7 +804,9 @@ deHover = () => {
   }
 
   setPersistantInjury = (hlCard) => {
-    console.log("setting persistant injury (no implementation yet)")
+    console.log("setting persistant injury (no implementation yet, discarding card)")
+
+    this.discardHLCard(hlCard); //TODO: set in special pile when implementing
   }
 
   getSpeed = () => {
@@ -1120,8 +1124,6 @@ deHover = () => {
 
   addTriggerEffect = (survivor, effect, hitLocations) => {
       console.log("adding triggerEffect")
-      console.log("effect: " +(typeof effect));
-      console.log("effect.condition: " +(typeof effect.condition));
 
       let triggerCondition = true;
       if(typeof effect.condition !== 'undefined' && effect.condition  !== null){
@@ -1547,6 +1549,9 @@ deHover = () => {
     this.setState({aiDeck: aiDeck});
   }
 
+  /*
+  Discards a HLcard after wound attempt, then shows the HLSelecter if cards remaining
+  */
   discardHLCard = (hlCard) => {
     console.log("discard hl card: " +hlCard.title);
     
@@ -1569,6 +1574,9 @@ deHover = () => {
     if(revealedHL.length === 0){
       action.selectHLCard = false;
       revealedHL = 0; 
+    }
+    else {
+      action.selectHLCard = true;
     }
     UpdateMonsterHL(this.state.monster.id, hlDeck);
     this.setState({

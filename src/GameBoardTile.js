@@ -7,6 +7,10 @@ export default class GameBoardTile extends Component {
 
         let src = this.props.src;
         let border = 0;
+        let tileCSS = "gameboard-tile";
+        if(this.props.highlight){
+            tileCSS = tileCSS + " gameboard-tile-selected";
+        }
         
         if(this.props.markedX===this.props.x && this.props.markedY===this.props.y)
         {
@@ -18,7 +22,7 @@ export default class GameBoardTile extends Component {
     
         return(
             <div>
-                <img className="gameboard-tile" src={src} alt={"board_" +this.props.x +"_" +this.props.y} border={border} onClick={this.props.click} style={{position: 'absolute', height: this.props.height-(border*2), width: this.props.width-(border*2), top: this.props.top, left: this.props.left}}/>
+                <img className={tileCSS} src={src} alt={"board_" +this.props.x +"_" +this.props.y} border={border} onClick={this.props.click} style={{position: 'absolute', height: this.props.height-(border*2), width: this.props.width-(border*2), top: this.props.top, left: this.props.left}}/>
             </div>
         )
     }
