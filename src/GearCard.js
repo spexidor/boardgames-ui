@@ -4,21 +4,28 @@ import './App.css';
 export default class GearCard extends Component {
  
 selectGear = () => {
-    this.props.selectGear(this.props.index, false);
+    this.props.selectGear(this.props.index, -1);
 }
 specialUseGear = () => {
-    this.props.specialUseGear(this.props.index);
+    this.props.specialUseGear(this.props.index, 1);
 }
 
   render(){
 
     let specialUse = <div></div>
     let gearCard = <div></div>
-    /*
-    if(this.props.gearCard.gearEffect !== null){
-        specialUse = <button onClick={this.specialUseGear}>{this.props.gearCard.gearEffect.useName}</button>
+    
+    let specialUseIndex = -1;
+    if(typeof this.props.gearCard.attackProfiles !== 'undefined' && this.props.gearCard.attackProfiles.length > 0){
+        
+        for(let n=0; n<this.props.gearCard.attackProfiles.length; n++){
+            if(this.props.gearCard.attackProfiles[n].useName != null){
+                specialUse = <button onClick={this.specialUseGear}>{this.props.gearCard.attackProfiles[n].useName}</button>
+                specialUseIndex = n;
+            }
+        }
     }
-    */
+    
     if(this.props.gearCard.type === "ARMOUR"){
         gearCard = 
         <div>
@@ -37,7 +44,7 @@ specialUseGear = () => {
             {this.props.gearCard.attackProfiles[0].toHitValue}+,
             {this.props.gearCard.attackProfiles[0].strengthBonus}
             <br/>
-            <div className="gear-card-description">{decodeURI(this.props.gearCard.description)}</div>
+            <div className="gear-card-description">{this.props.gearCard.description}</div>
             <button onClick={this.selectGear} >Equip</button>
             {specialUse}
         </div>

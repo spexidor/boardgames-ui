@@ -34,10 +34,10 @@ export default class GameBoard extends Component {
         typeHover: "",
         monsterTarget: -1,
         gear: [
-          {survivorId: this.props.showdown.survivors[0].id, selectedWeapon: 2},
-          {survivorId: this.props.showdown.survivors[1].id, selectedWeapon: 2},
-          {survivorId: this.props.showdown.survivors[2].id, selectedWeapon: 2},
-          {survivorId: this.props.showdown.survivors[3].id, selectedWeapon: 2}]
+          {survivorId: this.props.showdown.survivors[0].id, selectedWeapon: 2, specialUse: -1},
+          {survivorId: this.props.showdown.survivors[1].id, selectedWeapon: 2, specialUse: -1},
+          {survivorId: this.props.showdown.survivors[2].id, selectedWeapon: 2, specialUse: -1},
+          {survivorId: this.props.showdown.survivors[3].id, selectedWeapon: 2, specialUse: -1}]
       },
       action: {
         moveSelected: false,
@@ -566,7 +566,6 @@ deHover = () => {
 
   setSurvivorMoves = (id) => {
     GetSurvivorMoves(id).then(data => {
-      console.log("setting survivor moves highlits: " +data.length)
         this.setState({
           highlights: data
         })
@@ -612,13 +611,22 @@ deHover = () => {
       this.payActivationCost(survivor, attackProfile);
 
       this.addLogMessage("** " +survivor.name +" activated", "SURVIVOR");
+      console.log("getting hits with speed=" +this.getSpeed());
   
-          GetHits(this.getSpeed(), this.getToHitValue()).then(diceRoll => {
-          //const numHits = this.getHits(diceRoll).length;
-          const numHits = 2; //TODO
-  
-          this.addLogMessage(survivor.name +" scored " +numHits +" hits", "SURVIVOR");
-  
+          const toHitValueNeeded = this.getToHitValue();
+          const speed = this.getSpeed();
+          GetHits(speed, toHitValueNeeded).then(diceRoll => {
+
+          let numHits = 0;
+          if(toHitValueNeeded === 1){
+            this.addLogMessage(survivor.name +" scored " +speed +" automatic hits", "SURVIVOR");
+            numHits = speed;
+          }
+          else{
+            this.addLogMessage(survivor.name +" scored " +numHits +" hits", "SURVIVOR");
+            numHits = this.getHits(diceRoll).length;
+          }
+          
           //Reveal HitLocations
           this.revealHL(numHits);
         })
@@ -631,18 +639,24 @@ deHover = () => {
   activationPossible = (survivor, attackProfile) => {
 
     if(attackProfile.activationCost.activation && survivor.activationsLeft > 0){
-
-      let inRange = this.survivorInRange(survivor, attackProfile);
-      if(inRange){
-        this.addLogMessage(survivor.name +" in range", "SURVIVOR");
-
-        return true;
-      }
-      else{
-        console.log("survivor not in range")
-      }
+      console.log("enough activations to use this gear");
+    }
+    else if(attackProfile.activationCost.archive){
+      console.log("archive to use this gear");
     }
     else {
+      console.log("no activations remaining")
+      return false;
+    }
+
+    let inRange = this.survivorInRange(survivor, attackProfile);
+    if(inRange){
+      this.addLogMessage(survivor.name +" in range", "SURVIVOR");
+
+      return true;
+    }
+    else{
+      console.log("survivor not in range")
       return false;
     }
   }
@@ -655,13 +669,22 @@ deHover = () => {
       survivor.movesLeft = survivor.movesLeft -1;
     }
     if(attackProfile.activationCost.archive){
-      this.archiveGear(attackProfile);
+      this.archiveGear("Founding Stone");
     }
     this.updateSurvivor(survivor);
   }
 
-  archiveGear(attackProfile){
-    console.log("archive gear, not implemented");
+  archiveGear(gearName){
+    let survivor = this.state.survivor;
+    let index = -1;
+    for(let n=0; n<survivor.gearGrid.gear.length; n++){
+      if(survivor.gearGrid.gear.name === gearName){
+        index = n;
+        break;
+      }
+    }
+    survivor.gearGrid.gear.splice(index, 1);
+    this.updateSurvivorInState(survivor);
   }
 
   getHits = (diceRoll) =>{
@@ -690,12 +713,10 @@ deHover = () => {
     //console.log("roll: " +diceRoll[0].result);
 
     if(diceRoll[0].result >= sucessValue){
-      this.addLogMessage("Rolled " +diceRoll[0].result +", success", "SURVIVOR");
-      return true;
+      return {dieResult: diceRoll[0].result, sucess: true};
     }
     else {
-      this.addLogMessage("Rolled " +diceRoll[0].result +", no wound scored", "SURVIVOR");
-      return false;
+      return {dieResult: diceRoll[0].result, sucess: false};;
     }
   }
 
@@ -724,25 +745,41 @@ deHover = () => {
     else {
       GetDiceRoll(1).then(data => {
         
-        let scoredWound = this.successfulWound(data);
-
-        let critScored = false;
-        if(data.result === this.getCritValue(attackProfile, 0)){ //0 = survivor luck
-          this.addLogMessage("Crit rolled", "SURVIVOR")
-          critScored = true;
+        let woundResult = {dieResult: 0, sucess: false, crit: false};
+        if(attackProfile.alwaysCrits){
+          this.addLogMessage("Automatic crit scored", "SURVIVOR")
+          woundResult.crit = true;
+        }
+        else {
+          woundResult = this.successfulWound(data);
+          this.addLogMessage("Rolled " +woundResult.dieResult +", success=" +woundResult.sucess.toString(), "SURVIVOR");
+        
+          if(data.result >= this.getCritValue(attackProfile, 0)){ //0 = survivor luck
+            this.addLogMessage("Crit rolled", "SURVIVOR")
+            woundResult.crit = true;
+          }
+        }
+        if(hlCard.critable){
+          woundResult.sucess = true;
+        }
+        else {
+          if(woundResult.crit){
+            this.addLogMessage("No critical hits on this location :/ ", "GAME_INFO")
+          }
         }
         
         let effectTriggered = false;
         this.addLogMessage("Impervious: " +hlCard.impervious, "DEBUG");
 
         let monster = this.state.monster;
-        if(scoredWound && !hlCard.impervious){
+        if(woundResult.sucess && !hlCard.impervious){
           monster.lastWoundedBy = survivor.id;
   
           this.updateMonster(monster);
           this.removeAICard(1);
   
-          if(hlCard.woundEffect){
+          if(hlCard.woundEffect && !woundResult.crit){
+            this.addLogMessage("Wound action triggered", "MONSTER");
             effectTriggered = true;
           }
         }
@@ -750,20 +787,23 @@ deHover = () => {
           if(hlCard.impervious){
             this.addLogMessage("Hit location is impervious, unable to wound", "GAME_INFO");
           }
-          if(hlCard.failureEffect){
-            this.addLogMessage("Failed to wound, the " +monster.name +" strikes back", "MONSTER");
+          if(hlCard.failureEffect && !woundResult.crit){
+            this.addLogMessage("Failed to wound, reaction triggered", "MONSTER");
             effectTriggered = true;
           }
         }
-        if(hlCard.reflexEffect){
-          this.addLogMessage("Reflex action, the " +monster.name +" strikes back", "MONSTER");
+        if(hlCard.reflexEffect && !woundResult.crit){
+          this.addLogMessage("Reflex action triggered", "MONSTER");
           effectTriggered = true;
         }
-        if(effectTriggered){
-          this.addTriggerEffect(survivor, hlCard.effect)
+        if(effectTriggered && woundResult.crit){
+          this.addLogMessage("Monster reaction cancelled due to critical hit", "GAME_INFO");
+        }
+        else if(effectTriggered){
+          this.addTriggerEffect(survivor, hlCard.effect);
         }
   
-        if(critScored && hlCard.crit){
+        if(woundResult.crit && hlCard.critable){
           this.setPersistantInjury(hlCard);
         }
         else{
@@ -775,6 +815,7 @@ deHover = () => {
 
   getCritValue = (attackProfile, luck) => {
     if(attackProfile.alwaysCrits){
+      console.log("attack always crits, returning 1+ as needed value");
       return 1;
     }
     let critValue = 10;
@@ -814,8 +855,15 @@ deHover = () => {
   }
 
   getToHitValue = () => {
-    const toHitValue = this.getSelectedAttackProfile().toHitValue;
-    return Math.max(this.inBlindSpot(this.state.survivor) ? toHitValue-1 : toHitValue, 2);
+    const attackProfile = this.getSelectedAttackProfile();
+    if(attackProfile.alwaysHits){
+      console.log("attack always hits");
+      return 1;
+    }
+    else {
+      const toHitValue = attackProfile.toHitValue;
+      return Math.max(this.inBlindSpot(this.state.survivor) ? toHitValue-1 : toHitValue, 2);
+    }
   }
 
   inBlindSpot = (survivor) => {
@@ -831,15 +879,31 @@ deHover = () => {
   Returns gear eqiped by current survivor
   */
   getSelectedGear = () => {
-    
     let index = this.getSelectedGearIndex();
     let gear = this.state.survivor.gearGrid.gear[index];
     return gear;
   }
 
+  getSelectedSpecialUse = () => {
+    const selection = this.state.selection;
+
+    for(let n=0; n<selection.gear.length; n++){
+      if(selection.gear[n].survivorId === this.state.survivor.id){
+        return selection.gear[n].specialUse;
+      }
+    }
+    return -1;
+  }
+
   getSelectedAttackProfile = () => {
     let gear = this.getSelectedGear();
-    return gear.attackProfiles[0];
+    let index = this.getSelectedSpecialUse();
+    if(index !== -1){
+      return gear.attackProfiles[index];
+    }
+    else {
+      return gear.attackProfiles[0];
+    }
   }
 
   getSelectedGearIndex = () => {
@@ -966,7 +1030,7 @@ deHover = () => {
     if(typeof survivor !== 'undefined'){
       UpdateSurvivor(survivor).then(survivor => {
         //console.log("survivor updated in backend " +survivor.name)
-        this.updateSurvivorInState(survivor);
+        //this.updateSurvivorInState(survivor); //TODO: will disabling this lead to any bugs?
       });
     }
     else {
@@ -1608,7 +1672,7 @@ deHover = () => {
     this.setState({showGearGrid: showGearGrid});
   }
 
-  selectGear = (index, specialUse) => {
+  selectGear = (index, attackProfileIndex) => {
     let selection = this.state.selection;
     let survivor = this.state.survivor;
     let survivorId = survivor.id;
@@ -1616,20 +1680,17 @@ deHover = () => {
     for(let n=0; n<selection.gear.length; n++){
       if(selection.gear[n].survivorId === survivorId){
         selection.gear[n].selectedWeapon = index;
-        if(specialUse){
-          selection.gear[n].specialUse = true;
+        if(attackProfileIndex !== -1){
+          selection.gear[n].specialUse = attackProfileIndex;
         }
       }
     }
 
     this.setState({selection: selection});
 
-    if(specialUse){
-      this.addLogMessage("Using ability " +this.state.survivor.gearGrid.gear[index].gearEffect.useName +" for " +this.state.survivor.name, "GAME_INFO")
-      
-      if(this.state.survivor.gearGrid.gear[index].gearEffect.activationType === "ATTACK"){
-          this.activateSurvivor(survivor);
-      }
+    if(attackProfileIndex !== -1){
+      this.addLogMessage("Using ability " +this.state.survivor.gearGrid.gear[index].attackProfiles[attackProfileIndex].useName +" for " +this.state.survivor.name, "GAME_INFO")
+      this.activateSurvivor(survivor);
     }
     else {
       this.addLogMessage("Set " +this.state.survivor.gearGrid.gear[index].name +" as weapon for " +this.state.survivor.name, "GAME_INFO")
@@ -1637,9 +1698,9 @@ deHover = () => {
     this.showGearGrid(false); //hide grid
   }
 
-  specialUseGear = (index) => {
-    console.log("special use gear")
-    this.selectGear(index, true)
+  specialUseGear = (gearIndex, attackProfileIndex) => {
+    console.log("special use, gearIndex: " +gearIndex +", index2= " +attackProfileIndex)
+    this.selectGear(gearIndex, attackProfileIndex)
   }
 
   //DEBUG FUNCTION
