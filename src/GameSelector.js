@@ -23,7 +23,7 @@ export default class GameSelector extends Component {
 
     render(){
         return(
-            <div style={{borderRadius: "5px", background: "#282c34", fontSize: "12px", color: "white", position: "absolute", height: 40, width: 300, top: 5, left: 50}}>
+            <div className="round-gradient" style={{position: "absolute", height: 40, width: 300, top: 5, left: 50}}>
                 <input
                 type="text"
                 value= {this.state.input || ''}

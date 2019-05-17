@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 
-export default class DodgeSelecter extends React.Component {
+export default class TurnChanger extends React.Component {
 
     render() {
   
@@ -17,7 +17,7 @@ export default class DodgeSelecter extends React.Component {
     let actionBox = <button onClick={this.props.nextAct}>{nextAct}</button>
     
       return (
-        <div className='turn-changer'>
+        <div className="round-gradient turn-changer">
         {actionBox}
         {monsterAction}
         </div>

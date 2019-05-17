@@ -89,7 +89,7 @@ render(){
 
     let moveButton = "";
     if(aiCard.noMove){
-        console.log("no move for this ai card")
+        //console.log("no move for this ai card")
     }
     else{
         moveButton = <button disabled={monsterMoveDisabled} className={moveActive} onClick={this.props.monsterMove}>Move</button>

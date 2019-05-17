@@ -31,6 +31,8 @@ export default class GameBoard extends Component {
         selectedSurvivorId: -1,
         hoverSurvivor: 0,
         hoverGear: 0,
+        hover_x: 0,
+        hover_y: 0,
         typeSelected: "",
         typeHover: "",
         monsterTarget: -1,
@@ -72,6 +74,7 @@ export default class GameBoard extends Component {
   componentDidMount(){
     document.addEventListener("keydown", this.keyFunction, false);
     document.addEventListener("keyup", this.keyUpFunction, false);
+    //document.addEventListener("mousemove", this.mouseFunction, false);
   }
   componentWillUnmount(){
     document.removeEventListener("keydown", this.keyFunction, false);
@@ -82,6 +85,15 @@ export default class GameBoard extends Component {
     console.log("receiving new props!");
     console.log("showdown id: " +this.props.showdown.id);
   }
+
+  /*
+  mouseFunction = (event) => {
+    this.setState({
+      x_mouse: event.screenX,
+      y_mouse: event.screenY
+    })
+  }
+  */
 
   keyUpFunction = (event) => {
     if(event.keyCode===16){ //shift
@@ -207,16 +219,21 @@ export default class GameBoard extends Component {
   }
  }
 
- hoverMonster = () => {
+ hoverMonster = (x,y) => {
    let selection = this.state.selection;
    selection.typeHover = "monster";
+   selection.hover_x = x;
+   selection.hover_y = y;
    this.setState({selection: selection});
  }
- hoverSurvivor = (id) => {
+ hoverSurvivor = (id, x, y) => {
+  //console.log("x: " +x +", y: " +y);
   let selection = this.state.selection;
   selection.typeHover = "survivor";
   selection.hoverSurvivor = this.getSurvivorById(id);
   selection.hoverGear = this.getSelectedGearForSurvivorId(id);
+  selection.hover_x = x;
+  selection.hover_y = y;
   this.setState({selection: selection});
 }
 deHoverSurvivor = (id) => {
@@ -900,7 +917,6 @@ deHover = () => {
           return this.state.survivor.gearGrid.gear[0]; //fist and tooth
         }
         else {
-          console.log("found " +gear);
           return gear;
         }
       }
@@ -1046,6 +1062,7 @@ deHover = () => {
         //console.log("survivor updated in backend " +survivor.name)
         //this.updateSurvivorInState(survivor); //TODO: will disabling this lead to any bugs?
       });
+      this.updateSurvivorInState(survivor); //used to call in "then"
     }
     else {
       console.log("updateSurvivor: Input not defined");
@@ -1077,7 +1094,7 @@ deHover = () => {
       this.setState({targets: data});
       if(data.length === 1){
         console.log("single possible target!");
-        this.addLogMessage("Single possible target, " +data[0].name, "MONSTER")
+        this.addLogMessage("Single possible target, " +data[0].name, "GAME_INFO")
         let selection = this.state.selection;
         selection.monsterTarget = data[0];
       }
@@ -1368,15 +1385,15 @@ deHover = () => {
           if(survivor.hitlocations[n].type === hitlocation){
 
             if(survivor.hitlocations[n].hitpoints > 0){
-              this.addLogMessage("Removing armour at " +hitlocation, "SURVIVOR");
+              this.addLogMessage("Removing armour at " +hitlocation, "MONSTER");
               survivor.hitlocations[n].hitpoints--;
             }
             else if(!survivor.hitlocations[n].lightInjury){
-              this.addLogMessage("Adding light injury to " +hitlocation, "SURVIVOR");
+              this.addLogMessage("Adding light injury to " +hitlocation, "MONSTER");
               survivor.hitlocations[n].lightInjury = true;
             }
             else if(!survivor.hitlocations[n].heavyInjury){
-              this.addLogMessage("Adding heavy injury to " +hitlocation +". Knocked down.", "SURVIVOR");
+              this.addLogMessage("Adding heavy injury to " +hitlocation +". Knocked down.", "MONSTER");
               survivor.hitlocations[n].heavyInjury = true;
               survivor.status = "KNOCKED_DOWN";
             }
@@ -1470,7 +1487,7 @@ deHover = () => {
       if (aiDeck.cardsInDeck.length > 0) {
         let aiCard = aiDeck.cardsInDeck.shift(); 
 
-        this.addLogMessage("** New AI Card revealed: " +aiCard.title, "MONSTER");
+        this.addLogMessage("** New AI Card revealed: " +aiCard.title, "GAME_INFO");
         this.setState({
           revealedAI: aiCard,
           aiDeck: aiDeck
@@ -1805,10 +1822,10 @@ deHover = () => {
         <TurnChanger revealAI={this.clickedRevealAI} nextAct={this.nextAct} act={this.props.showdown.act}/>
         <MonsterTile deHoverMonster={this.deHoverMonster} hoverMonster={this.hoverMonster} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
         <SurvivorTiles deHoverSurvivor={this.deHoverSurvivor} hoverSurvivor={this.hoverSurvivor} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
-        <InfoBox hover={this.state.selection.typeHover} survivor={this.state.selection.hoverSurvivor} weapon={this.state.selection.hoverGear} monster={monster} aiDeck={this.state.aiDeck}/>
+        <InfoBox hover={this.state.selection.typeHover} survivor={this.state.selection.hoverSurvivor} weapon={this.state.selection.hoverGear} monster={monster} aiDeck={this.state.aiDeck} left={this.state.selection.hover_x} top={this.state.selection.hover_y} />
         <ActionBox showGearGrid={this.showGearGrid} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} selection={this.state.selection.typeSelected} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         <Gamelog log={this.state.log}/>
-        {this.state.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} gearGrid={this.state.survivor.gearGrid} showGearGrid={this.showGearGrid}/>: null }
+        {this.state.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} survivor={this.state.survivor} showGearGrid={this.showGearGrid}/>: null }
         {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} target={this.target} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}

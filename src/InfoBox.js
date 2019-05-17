@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import Draggable from 'react-draggable';
+import lantern from './images/lantern2.png';
 
 export default class InfoBox extends Component {
  
@@ -27,26 +28,34 @@ export default class InfoBox extends Component {
         bleed = this.props.survivor.bleed;
         weapon = this.props.weapon.name;
 
-        infoBox = <ul>
-        <li>Survivor: {name+", id=" +id}</li>
-        <li>Survival: {survival}</li>
-        <li>Bleed: {bleed}</li>
-        <li>Moves left: {movesLeft}</li>
-        <li>Activations left: {activationsLeft}</li>
-        <li>Status: {status}</li>
-        <li>Equiped weapon: {weapon}</li>
-        </ul>
+        infoBox = 
+        <div className="handle round-gradient info-box" style={{position: "absolute", top: this.props.top-70, left: this.props.left}}>
+          <ul className="info-box-list">
+          <li><b>{name+", id=" +id}</b></li>
+          <li>Survival: {survival}</li>
+          <li>Bleed: {bleed}</li>
+          <li>Moves left: {movesLeft}</li>
+          <li>Activations left: {activationsLeft}</li>
+          <li>Status: {status}</li>
+          <li>Equiped weapon: {weapon}</li>
+          </ul>
+          <img className="lantern-corner" src={lantern} alt="lantern"/>
+        </div>
       }
     }
     else if(this.props.hover==="monster"){
       if(this.props.monster !== undefined){
-        infoBox = <ul>
-        <li>Name: {this.props.monster.statline.name}</li>
-        <li>Movement: {this.props.monster.statline.movement}</li>
-        <li>Toughness: {this.props.monster.statline.toughness}</li>
-        <li>Remaining AI: {this.props.aiDeck.cardsInDeck.length + this.props.aiDeck.cardsInDiscard.length} ({this.props.aiDeck.cardsInDeck.length}+{this.props.aiDeck.cardsInDiscard.length})</li>
-        <li>Activated this turn: {this.props.monster.activatedThisTurn.toString()}</li>
-        </ul>
+        infoBox = 
+        <div className="handle round-gradient info-box" style={{position: "absolute", top: this.props.top-70, left: this.props.left}}>
+          <ul className="info-box-list">
+            <li><b>{this.props.monster.name}</b></li>
+            <li>Movement: {this.props.monster.statline.movement}</li>
+            <li>Toughness: {this.props.monster.statline.toughness}</li>
+            <li>Remaining AI: {this.props.aiDeck.cardsInDeck.length + this.props.aiDeck.cardsInDiscard.length} ({this.props.aiDeck.cardsInDeck.length}+{this.props.aiDeck.cardsInDiscard.length})</li>
+            <li>Lost AI: {this.props.aiDeck.cardsRemoved.length}</li>
+            <li>Activated this turn: {this.props.monster.activatedThisTurn.toString()}</li>
+          </ul>
+        </div>
       }
     }
     else if(this.props.selection==="board"){
@@ -54,6 +63,9 @@ export default class InfoBox extends Component {
       Tile Status
       <li>Board tile selected</li>
       </div>
+    }
+    else {
+
     }
 
     return(
@@ -67,9 +79,7 @@ export default class InfoBox extends Component {
       onStart={this.handleStart}
       onDrag={this.handleDrag}
       onStop={this.handleStop}>
-      <div className="handle round-gradient" align="left" style={{fontSize: "10px", color: "white", position: "absolute", height: 150, width: 200, top: 125, left: 800}}>
           {infoBox} 
-      </div>
       </Draggable>
     )
   }

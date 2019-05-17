@@ -45,8 +45,8 @@ componentDidMount(){
   this.interval = setInterval(() => this.tick(), 30);
 }
 
-hover = () => {
-  this.props.hoverMonster();
+hover = (e) => {
+  this.props.hoverMonster(e.screenX, e.screenY);
 }
 
 dehover = () => {

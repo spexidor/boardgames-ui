@@ -7,11 +7,12 @@ export default class ActionBox extends Component {
  
   render(){
 
-    let gear = this.props.gearGrid.gear.map((gear, index) => <GearCard key={index} index={index} selectGear={this.props.selectGear.bind(this)} specialUseGear={this.props.specialUseGear.bind(this)} top={index*100} gearCard={gear}/>)
+    let gear = this.props.survivor.gearGrid.gear.map((gear, index) => <GearCard key={index} index={index} selectGear={this.props.selectGear.bind(this)} specialUseGear={this.props.specialUseGear.bind(this)} top={index*100} gearCard={gear}/>)
 
     let gearGrid = 
     <div>
-        <div className="gear-grid-left"><button onClick={this.props.showGearGrid}>Hide Grid</button>
+        <div className="gear-grid-left"><button onClick={this.props.showGearGrid}>Hide Grid</button><br></br>
+        Survivor: {this.props.survivor.name}
         </div>
         <div className="gear-grid-right">
         {gear}

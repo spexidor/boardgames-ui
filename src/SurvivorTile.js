@@ -3,8 +3,9 @@ import './App.css';
 
 export default class SurvivorTile extends Component {
 
-    hover = () => {
-        this.props.hover(this.props.id);
+    hover = (e) => {
+        //console.log("hovering survivor, e_X: " +e.screenX);
+        this.props.hover(this.props.id, e.screenX, e.screenY);
     }
 
     dehover = () => {
