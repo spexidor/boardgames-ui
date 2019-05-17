@@ -30,14 +30,15 @@ export default class GameBoard extends Component {
         selectedMonsterId: -1,
         selectedSurvivorId: -1,
         hoverSurvivor: 0,
+        hoverGear: 0,
         typeSelected: "",
         typeHover: "",
         monsterTarget: -1,
-        gear: [
-          {survivorId: this.props.showdown.survivors[0].id, selectedWeapon: 2, specialUse: -1},
-          {survivorId: this.props.showdown.survivors[1].id, selectedWeapon: 2, specialUse: -1},
-          {survivorId: this.props.showdown.survivors[2].id, selectedWeapon: 2, specialUse: -1},
-          {survivorId: this.props.showdown.survivors[3].id, selectedWeapon: 2, specialUse: -1}]
+        equipedGear: [
+          {survivorId: this.props.showdown.survivors[0].id, gear: this.props.showdown.survivors[0].gearGrid.gear[2], attackProfileIndex: -1},
+          {survivorId: this.props.showdown.survivors[1].id, gear: this.props.showdown.survivors[1].gearGrid.gear[2], attackProfileIndex: -1},
+          {survivorId: this.props.showdown.survivors[2].id, gear: this.props.showdown.survivors[2].gearGrid.gear[2], attackProfileIndex: -1},
+          {survivorId: this.props.showdown.survivors[3].id, gear: this.props.showdown.survivors[3].gearGrid.gear[2], attackProfileIndex: -1}]
       },
       action: {
         moveSelected: false,
@@ -215,6 +216,7 @@ export default class GameBoard extends Component {
   let selection = this.state.selection;
   selection.typeHover = "survivor";
   selection.hoverSurvivor = this.getSurvivorById(id);
+  selection.hoverGear = this.getSelectedGearForSurvivorId(id);
   this.setState({selection: selection});
 }
 deHoverSurvivor = (id) => {
@@ -605,12 +607,17 @@ deHover = () => {
   activateSurvivor = (survivor) => {
 
     let attackProfile = this.getSelectedAttackProfile();
+    let gear = this.getSelectedGear();
     
     //check activation cost
     if(this.activationPossible(survivor, attackProfile)){
       this.payActivationCost(survivor, attackProfile);
 
-      this.addLogMessage("** " +survivor.name +" activated", "SURVIVOR");
+      let logMsg = "** " +survivor.name +" activated " +gear.name;
+      if(attackProfile.useName !== null){
+        logMsg = logMsg + "(" +attackProfile.useName +")";
+      }
+      this.addLogMessage(logMsg, "SURVIVOR");
       console.log("getting hits with speed=" +this.getSpeed());
   
           const toHitValueNeeded = this.getToHitValue();
@@ -623,8 +630,8 @@ deHover = () => {
             numHits = speed;
           }
           else{
-            this.addLogMessage(survivor.name +" scored " +numHits +" hits", "SURVIVOR");
             numHits = this.getHits(diceRoll).length;
+            this.addLogMessage(survivor.name +" scored " +numHits +" hits (" +toHitValueNeeded +"+ needed)", "SURVIVOR");
           }
           
           //Reveal HitLocations
@@ -675,6 +682,7 @@ deHover = () => {
   }
 
   archiveGear(gearName){
+    console.log("archiving gear " +gearName);
     let survivor = this.state.survivor;
     let index = -1;
     for(let n=0; n<survivor.gearGrid.gear.length; n++){
@@ -879,17 +887,34 @@ deHover = () => {
   Returns gear eqiped by current survivor
   */
   getSelectedGear = () => {
-    let index = this.getSelectedGearIndex();
-    let gear = this.state.survivor.gearGrid.gear[index];
-    return gear;
+    return this.getSelectedGearForSurvivorId(this.state.survivor.id);
+  }
+
+  getSelectedGearForSurvivorId = (id) => {
+    const selection = this.state.selection;
+
+    for(let n=0; n<selection.equipedGear.length; n++){
+      if(selection.equipedGear[n].survivorId === id){
+        const gear = selection.equipedGear[n].gear;
+        if(gear === -1){
+          return this.state.survivor.gearGrid.gear[0]; //fist and tooth
+        }
+        else {
+          console.log("found " +gear);
+          return gear;
+        }
+      }
+    }
+    console.log("ERROR: survivor id (" +id +")not found in getSelectedGearForSurvivorId()")
+    return -1;
   }
 
   getSelectedSpecialUse = () => {
     const selection = this.state.selection;
 
-    for(let n=0; n<selection.gear.length; n++){
-      if(selection.gear[n].survivorId === this.state.survivor.id){
-        return selection.gear[n].specialUse;
+    for(let n=0; n<selection.equipedGear.length; n++){
+      if(selection.equipedGear[n].survivorId === this.state.survivor.id){
+        return selection.equipedGear[n].attackProfileIndex;
       }
     }
     return -1;
@@ -906,17 +931,6 @@ deHover = () => {
     }
   }
 
-  getSelectedGearIndex = () => {
-    const selection = this.state.selection;
-
-    for(let n=0; n<selection.gear.length; n++){
-      if(selection.gear[n].survivorId === this.state.survivor.id){
-        return selection.gear[n].selectedWeapon;
-      }
-    }
-    return -1;
-  }
-  
   toWoundValue = () => {
     let t = this.state.monster.statline.toughness;
     //let s1 = this.state.survivor.strength;
@@ -1659,29 +1673,28 @@ deHover = () => {
     this.props.updateShowdown(showdown);
   }
 
-  showGearGrid = (show) => {
+  showGearGrid = () => {
     
     let showGearGrid = this.state.showGearGrid;
-    if(typeof show !== 'undefined'){ //if input exist, set state to input
-      showGearGrid = show;
-    }
-    else {
-      showGearGrid = !showGearGrid; //otherwise toggle on/off
-    }
+    showGearGrid = !showGearGrid; //otherwise toggle on/off
     
     this.setState({showGearGrid: showGearGrid});
   }
 
-  selectGear = (index, attackProfileIndex) => {
+  hideGearGrid = () => {
+    this.setState({showGearGrid: false});
+  }
+
+  selectGear = (gear, attackProfileIndex) => {
     let selection = this.state.selection;
     let survivor = this.state.survivor;
     let survivorId = survivor.id;
 
-    for(let n=0; n<selection.gear.length; n++){
-      if(selection.gear[n].survivorId === survivorId){
-        selection.gear[n].selectedWeapon = index;
+    for(let n=0; n<selection.equipedGear.length; n++){
+      if(selection.equipedGear[n].survivorId === survivorId){
+        selection.equipedGear[n].gear = gear;
         if(attackProfileIndex !== -1){
-          selection.gear[n].specialUse = attackProfileIndex;
+          selection.equipedGear[n].attackProfileIndex = attackProfileIndex;
         }
       }
     }
@@ -1689,18 +1702,18 @@ deHover = () => {
     this.setState({selection: selection});
 
     if(attackProfileIndex !== -1){
-      this.addLogMessage("Using ability " +this.state.survivor.gearGrid.gear[index].attackProfiles[attackProfileIndex].useName +" for " +this.state.survivor.name, "GAME_INFO")
+      this.addLogMessage("Using ability " +gear.attackProfiles[attackProfileIndex].useName +" for " +this.state.survivor.name, "GAME_INFO")
       this.activateSurvivor(survivor);
     }
     else {
-      this.addLogMessage("Set " +this.state.survivor.gearGrid.gear[index].name +" as weapon for " +this.state.survivor.name, "GAME_INFO")
+      this.addLogMessage("Set " +gear.name +" as weapon for " +this.state.survivor.name, "GAME_INFO")
     }
-    this.showGearGrid(false); //hide grid
+    this.hideGearGrid(); //hide grid
   }
 
-  specialUseGear = (gearIndex, attackProfileIndex) => {
-    console.log("special use, gearIndex: " +gearIndex +", index2= " +attackProfileIndex)
-    this.selectGear(gearIndex, attackProfileIndex)
+  specialUseGear = (gear, attackProfileIndex) => {
+    console.log("special use, gear: " +gear.name +", index= " +attackProfileIndex)
+    this.selectGear(gear, attackProfileIndex)
   }
 
   //DEBUG FUNCTION
@@ -1736,7 +1749,7 @@ deHover = () => {
 
   render() {
 
-    //console.log("rendering GameBoard.js");
+    //console.log("rendering GameBoard.js, gear in grid: " +this.state.survivor.gearGrid.gear.length);
 
     //general
     const size = 40;
@@ -1792,7 +1805,7 @@ deHover = () => {
         <TurnChanger revealAI={this.clickedRevealAI} nextAct={this.nextAct} act={this.props.showdown.act}/>
         <MonsterTile deHoverMonster={this.deHoverMonster} hoverMonster={this.hoverMonster} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
         <SurvivorTiles deHoverSurvivor={this.deHoverSurvivor} hoverSurvivor={this.hoverSurvivor} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
-        <InfoBox hover={this.state.selection.typeHover} survivor={this.state.selection.hoverSurvivor} monster={monster} aiDeck={this.state.aiDeck}/>
+        <InfoBox hover={this.state.selection.typeHover} survivor={this.state.selection.hoverSurvivor} weapon={this.state.selection.hoverGear} monster={monster} aiDeck={this.state.aiDeck}/>
         <ActionBox showGearGrid={this.showGearGrid} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} selection={this.state.selection.typeSelected} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         <Gamelog log={this.state.log}/>
         {this.state.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} gearGrid={this.state.survivor.gearGrid} showGearGrid={this.showGearGrid}/>: null }

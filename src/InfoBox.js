@@ -13,6 +13,7 @@ export default class InfoBox extends Component {
     let activationsLeft="";
     let status ="";
     let bleed = "";
+    let weapon = "";
     let infoBox = <div></div>
 
     if(this.props.hover==="survivor"){
@@ -24,6 +25,7 @@ export default class InfoBox extends Component {
         activationsLeft = this.props.survivor.activationsLeft;
         status = this.props.survivor.status;
         bleed = this.props.survivor.bleed;
+        weapon = this.props.weapon.name;
 
         infoBox = <ul>
         <li>Survivor: {name+", id=" +id}</li>
@@ -32,6 +34,7 @@ export default class InfoBox extends Component {
         <li>Moves left: {movesLeft}</li>
         <li>Activations left: {activationsLeft}</li>
         <li>Status: {status}</li>
+        <li>Equiped weapon: {weapon}</li>
         </ul>
       }
     }

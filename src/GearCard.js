@@ -4,10 +4,10 @@ import './App.css';
 export default class GearCard extends Component {
  
 selectGear = () => {
-    this.props.selectGear(this.props.index, -1);
+    this.props.selectGear(this.props.gearCard, -1);
 }
 specialUseGear = () => {
-    this.props.specialUseGear(this.props.index, 1);
+    this.props.specialUseGear(this.props.gearCard, 1);
 }
 
   render(){
@@ -15,13 +15,11 @@ specialUseGear = () => {
     let specialUse = <div></div>
     let gearCard = <div></div>
     
-    let specialUseIndex = -1;
     if(typeof this.props.gearCard.attackProfiles !== 'undefined' && this.props.gearCard.attackProfiles.length > 0){
         
         for(let n=0; n<this.props.gearCard.attackProfiles.length; n++){
             if(this.props.gearCard.attackProfiles[n].useName != null){
-                specialUse = <button onClick={this.specialUseGear}>{this.props.gearCard.attackProfiles[n].useName}</button>
-                specialUseIndex = n;
+                specialUse = <button className="gear-card-button" onClick={this.specialUseGear}>{this.props.gearCard.attackProfiles[n].useName}</button>
             }
         }
     }
@@ -45,7 +43,7 @@ specialUseGear = () => {
             {this.props.gearCard.attackProfiles[0].strengthBonus}
             <br/>
             <div className="gear-card-description">{this.props.gearCard.description}</div>
-            <button onClick={this.selectGear} >Equip</button>
+            <button className="gear-card-button" onClick={this.selectGear} >Equip</button>
             {specialUse}
         </div>
     }
