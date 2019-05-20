@@ -86,20 +86,116 @@
   font-size: 12px;
 }
 
+.border-box {
+  box-sizing: border-box;
+}
+
 .hlCard {
-  color: black;
-  text-align: left;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-top: 10px;
-  border-radius: 7px;
-  background-color: #adadad;
-  position: absolute;
-  height: 275px;
-  width: 200px;
+  text-align: center;
+  border-radius: 5px;
+  background-color: #fcebd5;
+  position: relative;
+  height: 350px;
+  width: 250px;
   top: -500px;
   left: 250px;
   font-size: 12px;
+  color: black;
+  box-sizing: border-box;
+}
+
+.hlCard-top{
+  background-color: #a82929;
+  color: white;
+  height: 20%;
+  width: 100%;
+  padding-top: 5%;
+  position: absolute;
+  left: 0px;
+  border-radius: 5px 5px 0 0;
+}
+.hlCard-impervious{
+  background-image: linear-gradient(#64d2fd, #4583b6);
+  position: absolute;
+  padding-top: 5px;
+  top: 20%;
+  height: 7%;
+  width: 100%;
+  color: white;
+  font-weight: bold;
+  font-size: 10px;
+  margin: 0%;
+}
+.hlCard-diamond {
+  background: black;
+  position: absolute;
+  transform: rotate(45deg);
+}
+.hlCard-diamond-lantern {
+  width: 20px;
+  height: 20px;
+  top: 60%;
+  left: 45%;
+}
+.hlCard-diamond-reflex {
+  width: 10px;
+  height: 10px;
+  top: 28%;
+  left: 6%;
+}
+.ghost {
+  height: 100%;
+  width: 100%;
+  transform: rotate(-45deg);
+}
+.hlCard-diamond-reflex-char {
+  color: white;
+  transform: rotate(0deg);
+  font-size: 8px;
+  left: 50%;
+  top: 50%;
+  text-align: center;
+}
+.hlCard-reflex {
+  text-align: left;
+  font-size: 16px;
+}
+.hlCard-description{
+  background-image: linear-gradient(to right,#eed7b8, #fcebd5, #eed7b8);
+  position: absolute;
+  width: 100%;
+  top: 20%;
+  padding: 12%;
+  
+  text-align: left;
+  font-size: 10px;
+}
+
+.hlCard-lantern-image {
+  background: black;
+  width: 8px;
+  height: 16px;
+  position: relative;
+  vertical-align: middle;
+  top: 0px
+}
+.hlCard-critical{
+  background-image: linear-gradient(to right,#eed7b8, #fcebd5, #eed7b8);
+  position: absolute;
+  width: 100%;
+  top: 60%;
+  height: 40%;
+  border-radius: 0 0 5px 5px;
+}
+.hlCard-persistant{
+  position: absolute;
+  background-image: linear-gradient(#969696, #505050);
+  color: white;
+  bottom: 0px;
+  left: 0px;
+  height: 20px;
+  width: 100%;
+  border-radius: 0 0 5px 5px;
 }
 
 .aiCard-target {

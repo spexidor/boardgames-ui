@@ -9,6 +9,7 @@ import DodgeSelecter from './DodgeSelecter'
 import HLSelecter from './HLSelecter'
 import Gamelog from './Gamelog';
 import AICard from './AICard';
+import HLCard from './HLCard';
 import TurnChanger from './TurnChanger';
 import GearGrid from './GearGrid';
 
@@ -1829,6 +1830,7 @@ deHover = () => {
         {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} target={this.target} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}
+        <HLCard/>
       </div>
     )
   }
