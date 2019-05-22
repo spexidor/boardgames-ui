@@ -7,29 +7,46 @@ export default class Gamelog extends Component {
  
 render(){
 
-    //let hlCard = this.props.hlCard;
+    //Input:
+    let hlCard = this.props.hlCard;
+    
+    /*
     let hlCard = {
         title: "Glorious Mane",
         impervious: true,
         description: "Impervious hit locations cannot be wounded. A wound or critical wound will not remove an AI card or defeat the monster.",
         critable: true,
-        persistantInjury: true,
-        reflexEffect: true,
-        failureEffect: false,
-        woundEffect: false
+        persistantInjury: false,
+        reflexEffect: false,
+        failureEffect: true,
+        woundEffect: false,
+        trap: true,
+        criticalWound: {
+            description: "Text description"
+        }
     }
+    */
+    
 
     let reflex = <div></div>
+    let reflexStr = "";
+    let reflexChar = "";
     if(hlCard.reflexEffect){
-        reflex = <div><div className="border-box hlCard-diamond hlCard-diamond-reflex"><div className="ghost"><div className="border-box  hlCard-diamond-reflex-char">R</div></div></div><div className="border-box  hlCard-reflex">Reflex</div></div>
+        reflexStr = "Reflex";
+        reflexChar = "R";
     }
     if(hlCard.failureEffect){
-        reflex = <div className="border-box  hlCard-reflex">(F) Failure</div>
+        reflexStr = "Failure";
+        reflexChar = "F";
     }
     if(hlCard.woundEffect){
-        reflex = <div className="border-box  hlCard-reflex">(W) Wound</div>
+        reflexStr = "Wound";
+        reflexChar = "W";
     }
-
+    if(reflexStr.length !== 0){
+        reflex = <div><div className="border-box hlCard-diamond hlCard-diamond-reflex"><div className="ghost"><div className="border-box  hlCard-diamond-reflex-char">{reflexChar}</div></div></div><div className="border-box  hlCard-reflex">{reflexStr}</div></div>
+    }
+    
     let description = <div className="border-box hlCard-description">{reflex}{hlCard.description}</div>
 
     let impervious = <div></div>
@@ -41,19 +58,30 @@ render(){
         persistantInjury = <div className="border-box hlCard-persistant">Persistant Injury | Keep in Play</div>
     }
     let crit = <div></div>
+    //console.log("hlCard: " +hlCard.title);
     if(hlCard.critable){
         crit = 
-        <div>
-        <div className="border-box hlCard-critical"><br/><br/>Critical Wound</div>
-        <div className="border-box hlCard-diamond hlCard-diamond-lantern"><div className="border-box ghost"><img className="border-box hlCard-lantern-image" src={lantern} alt="border-box lantern"/></div></div>
-        {persistantInjury}
+        <div className="border-box hlCard-critical">
+        <br/><br/>
+        <b>Critical Wound</b><br/><br/>
+            <div className="border-box hlCard-diamond hlCard-diamond-lantern"><div className="border-box ghost"><img className="border-box hlCard-lantern-image" src={lantern} alt="border-box lantern"/></div></div>
+            {hlCard.criticalWound.description}
+            {persistantInjury}
         </div>
     }
+    let titleClassName = "border-box hlCard-top";
+    if(hlCard.trap){
+        titleClassName = titleClassName +" hlCard-top-trap";
+    }
+    let title = <div className={titleClassName}>{hlCard.title}</div>
     
+    let top = this.props.top;
+    let left = this.props.left;
+
     const hlCardGraphics = 
-    <div className="border-box hlCard">
+    <div className="border-box hlCard" style={{position: "absolute", top: top, left: left}}>
         {description}
-        <div className="border-box hlCard-top">{hlCard.title}</div>
+        {title}
         {impervious}
         
         {crit}

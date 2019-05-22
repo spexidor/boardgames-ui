@@ -90,15 +90,18 @@
   box-sizing: border-box;
 }
 
+/*
+Height: 3.5   1.75   1.4   0.7
+Width:  2.5   1.25   1.0   0.5
+        => 
+*/
 .hlCard {
   text-align: center;
   border-radius: 5px;
-  background-color: #fcebd5;
+  background-image: linear-gradient(to right,#eed7b8, #fcebd5, #eed7b8);
   position: relative;
-  height: 350px;
-  width: 250px;
-  top: -500px;
-  left: 250px;
+  height: 175px;
+  width: 125px;
   font-size: 12px;
   color: black;
   box-sizing: border-box;
@@ -109,21 +112,23 @@
   color: white;
   height: 20%;
   width: 100%;
-  padding-top: 5%;
+  padding-top: 3%;
   position: absolute;
   left: 0px;
   border-radius: 5px 5px 0 0;
 }
+.hlCard-top-trap{
+  background-color: #1d1d1d;
+}
 .hlCard-impervious{
   background-image: linear-gradient(#64d2fd, #4583b6);
   position: absolute;
-  padding-top: 5px;
-  top: 20%;
+  top: 17%;
   height: 7%;
   width: 100%;
   color: white;
   font-weight: bold;
-  font-size: 10px;
+  font-size: 0.6vw;
   margin: 0%;
 }
 .hlCard-diamond {
@@ -132,16 +137,16 @@
   transform: rotate(45deg);
 }
 .hlCard-diamond-lantern {
-  width: 20px;
-  height: 20px;
-  top: 60%;
+  width: 1.1vw;
+  height: 1.1vw;
+  top: -10%;
   left: 45%;
 }
 .hlCard-diamond-reflex {
-  width: 10px;
-  height: 10px;
-  top: 28%;
-  left: 6%;
+  width: 0.7vw;
+  height: 0.7vw;
+  top: 49%;
+  left: 8%;
 }
 .ghost {
   height: 100%;
@@ -151,41 +156,46 @@
 .hlCard-diamond-reflex-char {
   color: white;
   transform: rotate(0deg);
-  font-size: 8px;
-  left: 50%;
-  top: 50%;
+  font-size: 0.5vw;
+  position: relative;
+  left: 5%;
+  top: 6%;
   text-align: center;
 }
 .hlCard-reflex {
   text-align: left;
-  font-size: 16px;
+  padding-left: 10%;
+  font-size: 1.0vw;
 }
 .hlCard-description{
   background-image: linear-gradient(to right,#eed7b8, #fcebd5, #eed7b8);
   position: absolute;
   width: 100%;
   top: 20%;
-  padding: 12%;
+  padding-top: 7%;
+  padding-left: 10%;
+  padding-right: 10%;
   
   text-align: left;
-  font-size: 10px;
+  font-size: 0.5vw;
 }
 
 .hlCard-lantern-image {
   background: black;
-  width: 8px;
-  height: 16px;
+  width: 0.45vw;
+  height: 0.94vw;
   position: relative;
   vertical-align: middle;
   top: 0px
 }
 .hlCard-critical{
-  background-image: linear-gradient(to right,#eed7b8, #fcebd5, #eed7b8);
+  background-image: linear-gradient(to right, #eed7b8, #fcebd5, #eed7b8);
   position: absolute;
   width: 100%;
-  top: 60%;
-  height: 40%;
+  height: 50%;
+  bottom: 0%;
   border-radius: 0 0 5px 5px;
+  font-size: 0.5vw;
 }
 .hlCard-persistant{
   position: absolute;
@@ -193,10 +203,13 @@
   color: white;
   bottom: 0px;
   left: 0px;
-  height: 20px;
+  height: 15%;
   width: 100%;
+  padding-top: 2%;
   border-radius: 0 0 5px 5px;
 }
+
+
 
 .aiCard-target {
   border-radius: 7px;
@@ -436,12 +449,13 @@
   color: white;
   position: absolute;
   border-radius: 10px;
-  left: 30%;
-  right: 30%;
+  padding-left: 20px;
+  left: 35%;
+  right: 45%;
   top: 35%;
-  bottom: 35%;
+  bottom: 30%;
   margin: auto;
   background: black;
   opacity: 0.8;
-  font-size: 16px;
+  font-size: 14px;
 }

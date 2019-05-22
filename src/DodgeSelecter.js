@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import Draggable from 'react-draggable';
 
 export default class DodgeSelecter extends React.Component {
 
@@ -38,18 +39,25 @@ export default class DodgeSelecter extends React.Component {
       let radioButtons = <MapRadioButtons data={hitLocations}/>
   
       return (
-        <div className='popup'>
-          <div className='popup_inner'>
+        <Draggable
+        axis="both"
+        handle=".handle"
+        defaultPosition={{x: 0, y: 0}}
+        position={null}
+        grid={[1, 1]}
+        scale={1}
+        onStart={this.handleStart}
+        onDrag={this.handleDrag}
+        onStop={this.handleStop}>
+        <div className="handle popup_inner">
             <h2>Dodge hits?</h2>
-  
             {radioButtons}
-            
               <div>
                 <button onClick={this.dododge} >Dodge</button>
                 <button onClick={this.dontdodge}>Skip</button>
               </div>
           </div>
-        </div>
+        </Draggable>
       );
     }
   }

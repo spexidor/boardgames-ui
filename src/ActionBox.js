@@ -13,10 +13,10 @@ export default class ActionBox extends Component {
     //survivor
     let activateDisabled = false;
     let moveDisabled = false;
-    if(this.props.survivor.movesLeft < 1 || this.deadOrKnockedDown()){
+    if(this.props.survivor.movesLeft < 1 || this.deadOrKnockedDown() || this.props.act === "MONSTERS"){
         moveDisabled = true;
     }
-    if(this.props.survivor.activationsLeft < 1 || this.deadOrKnockedDown()){
+    if(this.props.survivor.activationsLeft < 1 || this.deadOrKnockedDown() || this.props.act === "MONSTERS"){
         activateDisabled = true;
     }
 

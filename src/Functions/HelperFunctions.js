@@ -79,7 +79,7 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
     return null;
   }
 
-  function SurvivorInPosition (position, survivors) {
+  export const SurvivorInPosition = (position, survivors) => {
     //console.log("checking if survivor in " +position.x +"," +position.y);
     //console.log(survivors.length +" survivors to check");
     for(let n=0; n<survivors.length; n++){
@@ -101,4 +101,10 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
       return true;
     }
     else { return false }
+  }
+
+  export const GetDiceRoll = (min, max) => {
+    let myDiceRoll =  Math.floor(Math.random() * (max-min +1) +min); 
+    console.log("myDiceRoll: " +myDiceRoll)
+    return myDiceRoll;
   }

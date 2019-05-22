@@ -9,14 +9,14 @@ import DodgeSelecter from './DodgeSelecter'
 import HLSelecter from './HLSelecter'
 import Gamelog from './Gamelog';
 import AICard from './AICard';
-import HLCard from './HLCard';
 import TurnChanger from './TurnChanger';
 import GearGrid from './GearGrid';
+import AllHLCards from './AllHLCards';
 
 import { UpdateSurvivor, DeleteSurvivor, GetHitlocations, GetSurvivorMoves, GetInjury} from './RestServices/Survivor';
 import { UpdateMonster , UpdateMonsterAI, UpdateMonsterHL, GetTargets, GetMonsterMoves, GetMonsterSpecialMove } from './RestServices/Monster';
-import { GetHits , GetDiceRoll} from './RestServices/Dice'
-import { PositionsEqual, EmptySpaceInFrontOfMonster, Adjacent } from './Functions/HelperFunctions'
+import { GetHits } from './RestServices/Dice'
+import { PositionsEqual, EmptySpaceInFrontOfMonster, Adjacent, GetDiceRoll } from './Functions/HelperFunctions'
 
 
 export default class GameBoard extends Component {
@@ -68,7 +68,12 @@ export default class GameBoard extends Component {
       revealedAI: 0,
       revealedHL: 0,
       showGearGrid: false,
-      log: [{message: "New game started (id=" +this.props.showdown.id +")", type: "GAME_INFO"}]
+      log: [{message: "New game started (id=" +this.props.showdown.id +")", type: "GAME_INFO"}],
+
+      debug: {
+        showAllHLcards: false,
+        hlCard: this.props.showdown.monster.hlDeck.cardsInDeck[0]
+      }
     }
   }
 
@@ -638,8 +643,10 @@ deHover = () => {
       this.addLogMessage(logMsg, "SURVIVOR");
       console.log("getting hits with speed=" +this.getSpeed());
   
-          const toHitValueNeeded = this.getToHitValue();
+          const toHitValueNeeded = this.getToHitValue(); //TODO: debug
+          //let toHitValueNeeded = 1;
           const speed = this.getSpeed();
+
           GetHits(speed, toHitValueNeeded).then(diceRoll => {
 
           let numHits = 0;
@@ -738,11 +745,11 @@ deHover = () => {
     const sucessValue = this.toWoundValue();
     //console.log("roll: " +diceRoll[0].result);
 
-    if(diceRoll[0].result >= sucessValue){
-      return {dieResult: diceRoll[0].result, sucess: true};
+    if(diceRoll >= sucessValue){
+      return {dieResult: diceRoll, sucess: true};
     }
     else {
-      return {dieResult: diceRoll[0].result, sucess: false};;
+      return {dieResult: diceRoll, sucess: false};;
     }
   }
 
@@ -769,73 +776,76 @@ deHover = () => {
       this.discardHLCard(hlCard);
     }
     else {
-      GetDiceRoll(1).then(data => {
+
+      let diceRoll = GetDiceRoll(1,10);
         
-        let woundResult = {dieResult: 0, sucess: false, crit: false};
-        if(attackProfile.alwaysCrits){
-          this.addLogMessage("Automatic crit scored", "SURVIVOR")
+      let woundResult = {dieResult: 0, sucess: false, crit: false};
+      if(attackProfile.alwaysCrits){
+        this.addLogMessage("Automatic crit scored", "SURVIVOR")
+        woundResult.crit = true;
+      }
+      else {
+        woundResult = this.successfulWound(diceRoll);
+        this.addLogMessage("Rolled " +woundResult.dieResult +", success=" +woundResult.sucess.toString(), "SURVIVOR");
+      
+        if(diceRoll >= this.getCritValue(attackProfile, 0)){ //0 = survivor luck
+          this.addLogMessage("Crit rolled", "SURVIVOR")
           woundResult.crit = true;
         }
-        else {
-          woundResult = this.successfulWound(data);
-          this.addLogMessage("Rolled " +woundResult.dieResult +", success=" +woundResult.sucess.toString(), "SURVIVOR");
-        
-          if(data.result >= this.getCritValue(attackProfile, 0)){ //0 = survivor luck
-            this.addLogMessage("Crit rolled", "SURVIVOR")
-            woundResult.crit = true;
-          }
+      }
+      if(hlCard.critable){
+        woundResult.sucess = true;
+      }
+      else {
+        if(woundResult.crit){
+          this.addLogMessage("No critical hits on this location :/ ", "GAME_INFO")
         }
-        if(hlCard.critable){
-          woundResult.sucess = true;
-        }
-        else {
-          if(woundResult.crit){
-            this.addLogMessage("No critical hits on this location :/ ", "GAME_INFO")
-          }
-        }
-        
-        let effectTriggered = false;
-        this.addLogMessage("Impervious: " +hlCard.impervious, "DEBUG");
+      }
+      
+      let effectTriggered = false;
+      this.addLogMessage("Impervious: " +hlCard.impervious, "DEBUG");
 
-        let monster = this.state.monster;
-        if(woundResult.sucess && !hlCard.impervious){
-          monster.lastWoundedBy = survivor.id;
-  
-          this.updateMonster(monster);
-          this.removeAICard(1);
-  
-          if(hlCard.woundEffect && !woundResult.crit){
-            this.addLogMessage("Wound action triggered", "MONSTER");
-            effectTriggered = true;
-          }
-        }
-        else{
-          if(hlCard.impervious){
-            this.addLogMessage("Hit location is impervious, unable to wound", "GAME_INFO");
-          }
-          if(hlCard.failureEffect && !woundResult.crit){
-            this.addLogMessage("Failed to wound, reaction triggered", "MONSTER");
-            effectTriggered = true;
-          }
-        }
-        if(hlCard.reflexEffect && !woundResult.crit){
-          this.addLogMessage("Reflex action triggered", "MONSTER");
+      let monster = this.state.monster;
+      if(woundResult.sucess && !hlCard.impervious){
+        monster.lastWoundedBy = survivor.id;
+
+        this.updateMonster(monster);
+        this.removeAICard(1);
+
+        if(hlCard.woundEffect && !woundResult.crit){
+          this.addLogMessage("Wound action triggered", "MONSTER");
           effectTriggered = true;
         }
-        if(effectTriggered && woundResult.crit){
-          this.addLogMessage("Monster reaction cancelled due to critical hit", "GAME_INFO");
+      }
+      else{
+        if(hlCard.impervious){
+          this.addLogMessage("Hit location is impervious, unable to wound", "GAME_INFO");
         }
-        else if(effectTriggered){
-          this.addTriggerEffect(survivor, hlCard.effect);
+        if(hlCard.failureEffect && !woundResult.crit){
+          this.addLogMessage("Failed to wound, reaction triggered", "MONSTER");
+          effectTriggered = true;
         }
-  
-        if(woundResult.crit && hlCard.critable){
-          this.setPersistantInjury(hlCard);
-        }
-        else{
-          this.discardHLCard(hlCard);
-        }
-      })
+      }
+      if(hlCard.reflexEffect && !woundResult.crit){
+        this.addLogMessage("Reflex action triggered", "MONSTER");
+        effectTriggered = true;
+      }
+      if(effectTriggered && woundResult.crit){
+        this.addLogMessage("Monster reaction cancelled due to critical hit", "GAME_INFO");
+      }
+      else if(effectTriggered && monster.status === "KNOCKED_DOWN"){
+        this.addLogMessage("Monster is knocked down and unable to react", "GAME_INFO");
+      }
+      else if(effectTriggered){
+        this.addTriggerEffect(survivor, hlCard.effect);
+      }
+
+      if(woundResult.crit && hlCard.critable){
+        this.setCriticalWound(survivor, hlCard);
+      }
+      else{
+        this.discardHLCard(hlCard);
+      }
     }
   }
 
@@ -870,6 +880,36 @@ deHover = () => {
       revealedHL: 0});
   }
 
+  setCriticalWound = (survivor, hlCard) => {
+    console.log("setting critical wound")
+    this.addLogMessage(hlCard.criticalWound.description, "SURVIVOR");
+    let monster = this.state.monster;
+
+    if(hlCard.criticalWound.negativeToken){
+      console.log("Adding negative token " +hlCard.criticalWound.negativeToken +" to monster");
+      monster.negativeTokens.push(hlCard.criticalWound.negativeToken);
+      this.updateMonster(monster);
+    }
+    if(hlCard.criticalWound.hlCardTableResult !== null){
+      console.log("Rolling on critical result table ");
+      const diceRoll = GetDiceRoll(1,10);
+      console.log("Rolled " +diceRoll);
+
+      const index = hlCard.criticalWound.hlCardTableResult.tableIndexes[diceRoll-1];
+      const cardEffect = hlCard.criticalWound.hlCardTableResult.cardEffects[index];
+
+      console.log("Effect from table: " +cardEffect.description +" (NOT IMPLEMENTED?)")
+      this.addTriggerEffect(survivor, cardEffect);
+    }
+
+    if(hlCard.persistantInjury){
+      this.setPersistantInjury(hlCard);
+    }
+    else {
+      this.discardHLCard(hlCard);
+    }
+  }
+
   setPersistantInjury = (hlCard) => {
     console.log("setting persistant injury (no implementation yet, discarding card)")
 
@@ -885,6 +925,10 @@ deHover = () => {
     if(attackProfile.alwaysHits){
       console.log("attack always hits");
       return 1;
+    }
+    else if(this.state.monster.status === "KNOCKED_DOWN"){
+      this.addLogMessage("Monster is knocked down, hitting on 3+", "GAME_INFO");
+      return 3;
     }
     else {
       const toHitValue = attackProfile.toHitValue;
@@ -1011,6 +1055,7 @@ deHover = () => {
     let survivors = this.state.survivors;
 
     if(showdown.act === "MONSTERS"){
+
       showdown.act = "SURVIVORS";
 
       for (let n = 0; n < survivors.length; n++) {
@@ -1020,6 +1065,15 @@ deHover = () => {
         }
       }
       this.updateSurvivors(survivors);
+
+      if(this.state.monster.status === "DIES_NEXT_TURN"){
+        let monster = this.state.monster;
+        monster.status = "DIES_THIS_TURN";
+        this.updateMonster(monster);
+      }
+      else if(this.state.monster.status === "DIES_THIS_TURN"){
+        this.gameWon();
+      }
     }
     else{
       showdown.act = "MONSTERS";
@@ -1030,6 +1084,18 @@ deHover = () => {
         survivors[n].activationsLeft = 1;
       }
       this.updateSurvivors(survivors);
+
+      if(this.state.monster.status === "DIES_NEXT_TURN"){
+        let monster = this.state.monster;
+        monster.status = "DIES_THIS_TURN";
+        this.updateMonster(monster);
+      }
+      else if(this.state.monster.status === "KNOCKED_DOWN"){
+        let monster = this.state.monster;
+        monster.status = "STANDING";
+        this.addLogMessage("The monster stands up", "GAME_INFO");
+        this.updateMonster(monster);
+      }
     }
     this.addLogMessage("------------------------", "GAME_INFO");
     this.addLogMessage("** Proceeding to " +showdown.act +" act **", "GAME_INFO");
@@ -1219,14 +1285,19 @@ deHover = () => {
   }
 
   addTriggerEffect = (survivor, effect, hitLocations) => {
-      console.log("adding triggerEffect")
+      console.log("adding triggerEffect");
+      let monster = this.state.monster;
+      let monsterUpdated = false;
 
       let triggerCondition = true;
       if(typeof effect.condition !== 'undefined' && effect.condition  !== null){
         console.log("condition on effect (implemented?)")
-        if(typeof hitLocations !== 'undefined' && effect.condition.minHits < hitLocations.length){
+        if(typeof hitLocations !== 'undefined' && hitLocations.length < effect.condition.minHits){
           triggerCondition = false;
           console.log("to few hits for trigger effect to happen");
+        }
+        else{
+          console.log("triggerCondition true. hitlocation length= " +hitLocations.length +", minHits required=" +effect.condition.minHits);
         }
       }
 
@@ -1267,6 +1338,16 @@ deHover = () => {
         if(effect.priorityToken){
           survivor.priorityTarget = true;
         }
+        if(effect.monsterKnockDown){
+          console.log("setting monster knock down");
+          monster.status = "KNOCKED_DOWN";
+          monsterUpdated = true;
+        }
+        if(effect.monsterDiesNextTurn){
+          console.log("setting monster death next turn");
+          monster.status = "DIES_NEXT_TURN";
+          monsterUpdated = true;
+        }
         
         if(typeof effect.move !== 'undefined' && effect.move !== null){
           console.log("triggerEffect: move")
@@ -1304,9 +1385,14 @@ deHover = () => {
         }
   
         if(effect.drawAI > 0){
+          console.log("triggerEffect: draw AI")
           this.clickedRevealAI(); //cant draw more than 1 AI right now
         }
-      }
+
+        if(monsterUpdated){
+          this.updateMonster(monster);
+        }
+      }//trigger condition
   }
 
   grabSurvivor = (survivor) => { //grab = knock down + damage(monster level) +in front of monster
@@ -1502,6 +1588,10 @@ deHover = () => {
     else {
       console.log("ai card already revealed");
     }
+
+    let monster = this.state.monster;
+    monster.activatedThisTurn = true;
+    this.updateMonster(monster);
   }
 
   /*
@@ -1820,17 +1910,17 @@ deHover = () => {
     return (
       <div>
         <TileRenderer targets={this.state.targets} tileSizeX={size} tileSizeY={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
-        <TurnChanger revealAI={this.clickedRevealAI} nextAct={this.nextAct} act={this.props.showdown.act}/>
+        <TurnChanger activatedThisTurn={this.state.monster.activatedThisTurn} revealAI={this.clickedRevealAI} nextAct={this.nextAct} act={this.props.showdown.act}/>
         <MonsterTile deHoverMonster={this.deHoverMonster} hoverMonster={this.hoverMonster} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
         <SurvivorTiles deHoverSurvivor={this.deHoverSurvivor} hoverSurvivor={this.hoverSurvivor} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
-        <InfoBox hover={this.state.selection.typeHover} survivor={this.state.selection.hoverSurvivor} weapon={this.state.selection.hoverGear} monster={monster} aiDeck={this.state.aiDeck} left={this.state.selection.hover_x} top={this.state.selection.hover_y} />
-        <ActionBox showGearGrid={this.showGearGrid} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} selection={this.state.selection.typeSelected} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
+        <InfoBox hover={this.state.selection.typeHover} survivor={this.state.selection.hoverSurvivor} weapon={this.state.selection.hoverGear} monster={monster} hlDeck={this.state.hlDeck} aiDeck={this.state.aiDeck} left={this.state.selection.hover_x} top={this.state.selection.hover_y} />
+        <ActionBox act={this.props.showdown.act} showGearGrid={this.showGearGrid} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} selection={this.state.selection.typeSelected} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         <Gamelog log={this.state.log}/>
-        {this.state.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} survivor={this.state.survivor} showGearGrid={this.showGearGrid}/>: null }
+        {this.state.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} survivor={this.state.survivor} showGearGrid={this.showGearGrid} act={this.props.showdown.act}/>: null }
         {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} target={this.target} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}
-        <HLCard/>
+        {this.state.debug.showAllHLcards ? <AllHLCards hlCards = {this.state.hlDeck.cardsInDeck}/> : null }
       </div>
     )
   }

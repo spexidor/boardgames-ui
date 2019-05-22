@@ -12,7 +12,7 @@ export default class TurnChanger extends React.Component {
     }
     else{
         nextAct = "Go to Survivors act";
-        monsterAction = <button onClick={this.props.revealAI}>New AI</button>;
+        monsterAction = <button disabled={this.props.activatedThisTurn} onClick={this.props.revealAI}>New AI</button>;
     }
     let actionBox = <button onClick={this.props.nextAct}>{nextAct}</button>
     

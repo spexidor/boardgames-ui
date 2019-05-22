@@ -19,7 +19,7 @@ specialUseGear = () => {
         
         for(let n=0; n<this.props.gearCard.attackProfiles.length; n++){
             if(this.props.gearCard.attackProfiles[n].useName != null){
-                specialUse = <button className="gear-card-button" onClick={this.specialUseGear}>{this.props.gearCard.attackProfiles[n].useName}</button>
+                specialUse = <button className="gear-card-button" disabled={this.props.act === "MONSTERS"} onClick={this.specialUseGear}>{this.props.gearCard.attackProfiles[n].useName}</button>
             }
         }
     }

@@ -10,8 +10,10 @@ export const GetHits = (numDice, toHitValue) => {
   }
 }
 
+/*
 export const GetDiceRoll = (numDice) => {
   const url = 'http://localhost:8083/dice?numDice=' +numDice + '&diceSides=10';
  
   return fetch(url).then(response => response.json());
 }
+*/

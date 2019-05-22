@@ -16,11 +16,14 @@ export const UpdateMonster = (monster) => {
       body: JSON.stringify({
           id: monster.id,
           lastWoundedBy: monster.lastWoundedBy,
+          status: monster.status,
           position: {
             x: parseInt(monster.position.x),
             y: parseInt(monster.position.y)
           },
-          facing: monster.facing
+          facing: monster.facing,
+          negativeTokens: monster.negativeTokens,
+          activatedThisTurn: monster.activatedThisTurn
         }),
       }).then(response => response.json());
     }

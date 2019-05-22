@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import HLCard from './HLCard';
 
 export default class HLSelecter extends React.Component {
 
@@ -103,6 +104,8 @@ export default class HLSelecter extends React.Component {
       else if(this.props.hlCards.length === 1){
         resolveDisabled = false;
       }
+
+      let cards = this.props.hlCards.map((hlCard, index) => <HLCard key={index} hlCard={hlCard}/>)
   
       return (
         <div className='popup'>
@@ -110,6 +113,7 @@ export default class HLSelecter extends React.Component {
             <h2>{title}</h2>
   
             {radioButtons}
+            {cards}
             
               <div>
                 <button disabled={resolveDisabled} onClick={this.woundLocation}>Resolve</button>
