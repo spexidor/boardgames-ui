@@ -91,6 +91,55 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
     return false;
   }
 
+  export const SurvivorInRange = (monster, survivor, attackProfile) => {
+
+    if(attackProfile.infiniteReach){
+      return true;
+    }
+    else {
+      let inRange = false;
+
+      //TODO: use "reach" value in attackProfile
+      for(let i=0; i<monster.baseCoordinates.length; i++){
+        if (Adjacent(survivor.position, monster.baseCoordinates[i])) {
+          inRange = true;
+          break;
+        }
+      }
+      return inRange;
+    }
+  }
+
+  export const MonsterInRange = (monster, survivor, attack) => {
+    let inRange = false;
+    console.log("checking if monster is in range. monster pos: " +monster.position.x +"," +monster.position.y);
+    const baseCoordinates = GetBaseCoordinates(monster);;
+    for(let i=0; i<baseCoordinates.length; i++){
+      if (Adjacent(survivor.position, baseCoordinates[i])) {
+        inRange = true;
+        break;
+      }
+    }
+    if(attack.reach === -1){
+      inRange = true;
+    }
+    console.log("monster in range: " +inRange.toString());
+    return inRange;
+  }
+
+  export const GetBaseCoordinates = (monster) => {
+    let baseCoordinates = [];
+    let x = monster.position.x;
+    let y = monster.position.y;
+  
+    for(let i=0;i<monster.statline.width; i++){
+        for(let j=0;j<monster.statline.height; j++){
+            baseCoordinates.push({x: x+i, y: y+j});
+        }
+    }
+    return baseCoordinates;
+  }
+
   export const Adjacent = (p1, p2) => {
     //console.log("p1: x=" + p1.x + ", y=" + p1.y);
     //console.log("p2: x=" + p2.x + ", y=" + p2.y);
