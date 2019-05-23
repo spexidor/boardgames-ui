@@ -1,8 +1,10 @@
-export const PositionsEqual = (p1, p2) => {
+import {Position, Monster, Survivor, AttackProfile} from './Interfaces'
+
+export const PositionsEqual = (p1: Position, p2: Position) => {
     return (p1.x===p2.x && p1.y===p2.y)
 }
 
-export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
+export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor[]) => {
 
     if(monster.facing === "UP"){
       const pos1 = {
@@ -79,7 +81,7 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
     return null;
   }
 
-  export const SurvivorInPosition = (position, survivors) => {
+  export const SurvivorInPosition = (position: Position, survivors: Survivor[]) => {
     //console.log("checking if survivor in " +position.x +"," +position.y);
     //console.log(survivors.length +" survivors to check");
     for(let n=0; n<survivors.length; n++){
@@ -91,7 +93,7 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
     return false;
   }
 
-  export const SurvivorInRange = (monster, survivor, attackProfile) => {
+  export const SurvivorInRange = (monster: Monster, survivor: Survivor, attackProfile: AttackProfile) => {
 
     if(attackProfile.infiniteReach){
       return true;
@@ -110,7 +112,7 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
     }
   }
 
-  export const MonsterInRange = (monster, survivor, attack) => {
+  export const MonsterInRange = (monster: Monster, survivor: Survivor, attack: AttackProfile) => {
     let inRange = false;
     console.log("checking if monster is in range. monster pos: " +monster.position.x +"," +monster.position.y);
     const baseCoordinates = GetBaseCoordinates(monster);;
@@ -127,7 +129,7 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
     return inRange;
   }
 
-  export const GetBaseCoordinates = (monster) => {
+  export const GetBaseCoordinates = (monster: Monster) => {
     let baseCoordinates = [];
     let x = monster.position.x;
     let y = monster.position.y;
@@ -140,7 +142,7 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
     return baseCoordinates;
   }
 
-  export const Adjacent = (p1, p2) => {
+  export const Adjacent = (p1: Position, p2: Position) => {
     //console.log("p1: x=" + p1.x + ", y=" + p1.y);
     //console.log("p2: x=" + p2.x + ", y=" + p2.y);
     if (p1.x === p2.x && (p1.y === p2.y + 1 || p1.y === p2.y - 1)) {
@@ -152,7 +154,7 @@ export const EmptySpaceInFrontOfMonster = (monster, survivors) => {
     else { return false }
   }
 
-  export const GetDiceRoll = (min, max) => {
+  export const GetDiceRoll = (min: number, max: number) => {
     let myDiceRoll =  Math.floor(Math.random() * (max-min +1) +min); 
     console.log("myDiceRoll: " +myDiceRoll)
     return myDiceRoll;
