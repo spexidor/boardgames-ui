@@ -13,9 +13,9 @@ import TurnChanger from './TurnChanger';
 import GearGrid from './GearGrid';
 import AllHLCards from './AllHLCards';
 
-import { UpdateSurvivor, DeleteSurvivor, GetHitlocations, GetSurvivorMoves, GetInjury} from './RestServices/Survivor';
-import { UpdateMonster , UpdateMonsterAI, UpdateMonsterHL, GetTargets, GetMonsterMoves, GetMonsterSpecialMove } from './RestServices/Monster';
-import { GetHits } from './RestServices/Dice'
+import { UpdateSurvivor, DeleteSurvivor, GetHitlocations, GetSurvivorMoves, GetInjury} from './Functions/RestServices/Survivor';
+import { UpdateMonster , UpdateMonsterAI, UpdateMonsterHL, GetTargets, GetMonsterMoves, GetMonsterSpecialMove } from './Functions/RestServices/Monster';
+import { GetHits } from './Functions/RestServices/Dice'
 import { PositionsEqual, EmptySpaceInFrontOfMonster, SurvivorInRange, MonsterInRange, GetBaseCoordinates, GetDiceRoll } from './Functions/HelperFunctions'
 
 
@@ -63,11 +63,14 @@ export default class GameBoard extends Component {
       hlDeck: this.props.showdown.monster.hlDeck,
       highlights: [],
       
+      popUp: {
+        showGearGrid: false
+      },
+
       selectedWeapon: 2, //index in gear grid
       targets: [],
       revealedAI: 0,
       revealedHL: 0,
-      showGearGrid: false,
       log: [{message: "New game started (id=" +this.props.showdown.id +")", type: "GAME_INFO"}],
 
       debug: {
@@ -265,7 +268,7 @@ export default class GameBoard extends Component {
       action.survivorGrabbed = false;
 
       if(this.state.selection.monsterTarget !== -1 && typeof this.state.selection.monsterTarget !== 'undefined'){
-        this.grabSurvivor(this.state.selection.monsterTarget);
+        this.grabSurvivor(monster, this.state.selection.monsterTarget);
       }
       else{
         console.log("ERROR: Monster target not set")
@@ -772,7 +775,6 @@ deHover = () => {
     else {
 
       const sucessValue = this.toWoundValue();
-      this.addLogMessage("Attempting to wound " +hlCard.title +" (" +sucessValue +"+ needed)", "SURVIVOR");
       let diceRoll = GetDiceRoll(1,10);
         
       let woundResult = {dieResult: 0, sucess: false, crit: false};
@@ -781,7 +783,7 @@ deHover = () => {
         woundResult.crit = true;
       }
       else {
-
+        this.addLogMessage("Attempting to wound " +hlCard.title +" (" +sucessValue +"+ needed)", "SURVIVOR");
         woundResult = this.successfulWound(diceRoll, sucessValue);
 
         this.addLogMessage("Rolled " +woundResult.dieResult +", success=" +woundResult.sucess.toString(), "SURVIVOR");
@@ -891,9 +893,16 @@ deHover = () => {
     this.addLogMessage(hlCard.criticalWound.description, "SURVIVOR");
     let monster = this.state.monster;
 
-    if(hlCard.criticalWound.negativeToken){ //TODO: tokens moved to card effect
-      console.log("Adding negative token " +hlCard.criticalWound.negativeToken +" to monster");
-      monster.negativeTokens.push(hlCard.criticalWound.negativeToken);
+    if(hlCard.criticalWound.cardEffect.monsterNegativeToken){
+      console.log("Adding negative token " +hlCard.criticalWound.cardEffect.monsterNegativeToken +" to monster");
+      monster.negativeTokens.push(hlCard.criticalWound.cardEffect.monsterNegativeToken);
+      this.addLogMessage("The monster gained -1 " +hlCard.criticalWound.cardEffect.monsterNegativeToken);
+      this.updateMonster(monster);
+    }
+    if(hlCard.criticalWound.cardEffect.monsterPositiveToken){
+      console.log("Adding positive token " +hlCard.criticalWound.cardEffect.monsterPositiveToken +" to monster");
+      monster.positiveTokens.push(hlCard.criticalWound.cardEffect.monsterPositiveToken);
+      this.addLogMessage("The monster gained +1 " +hlCard.criticalWound.cardEffect.monsterPositiveToken);
       this.updateMonster(monster);
     }
     if(hlCard.criticalWound.hlCardTableResult !== null){
@@ -908,7 +917,8 @@ deHover = () => {
       this.addTriggerEffect(survivor, cardEffect);
     }
 
-    if(hlCard.persistantInjury){
+    console.log("DEBUG3: " +hlCard.criticalWound.persistantInjury.toString());
+    if(hlCard.criticalWound.persistantInjury){
       this.setPersistantInjury(hlCard);
     }
     else {
@@ -1026,10 +1036,6 @@ deHover = () => {
     let monster = this.state.monster;
     monster.activatedThisTurn = false;
 
-    this.addLogMessage("------------------------", "GAME_INFO");
-    this.addLogMessage("** " +showdown.act +" act finished **", "GAME_INFO");
-    
-
     if(showdown.act === "MONSTERS"){
 
       showdown.act = "SURVIVORS";
@@ -1129,11 +1135,14 @@ deHover = () => {
     if(!this.state.revealedAI.noMove){
       this.setMonsterMoves(this.props.showdown.monster.id);
     }
-    GetTargets(this.state.monster.id, this.state.revealedAI.id).then(data => {
+    GetTargets(this.state.monster.id, this.state.revealedAI.id).then(data => { //returns array of survivors
       this.setState({targets: data});
       if(data.length === 1){
         console.log("single possible target!");
-        this.addLogMessage("Single possible target, " +data[0].name, "GAME_INFO")
+        this.addLogMessage("Single possible target, " +data[0].name, "GAME_INFO");
+        if(data[0].priorityTarget){
+          data[0].priorityTarget = false; //GAME RULE: Priority target goes away after being targetted
+        }
         let selection = this.state.selection;
         selection.monsterTarget = data[0];
       }
@@ -1180,7 +1189,7 @@ deHover = () => {
         let action = this.state.action;
         action.selectMonsterTarget = false;
         this.deselect();
-        this.damageSurvivor(survivor, numHits, aiCard.attack);
+        this.damageSurvivor(monster, survivor, numHits, aiCard.attack);
 
         this.moveAI();
         this.setState({
@@ -1208,11 +1217,12 @@ deHover = () => {
     this.attack(monster, aiCard, survivor);
   }
 
-  damageSurvivor = (survivor, numHits, attack) => {
+  damageSurvivor = (monster, survivor, numHits, attack) => {
 
     if(numHits > 0)
     {
-      let damage = attack.damage;
+      let damage = attack.damage + this.getDamageBonus(monster);
+      attack.damage = damage;
 
       if(attack.trigger && attack.trigger.afterHit){
         console.log("triggered afterHit effect");
@@ -1228,7 +1238,7 @@ deHover = () => {
       }
       else 
       {
-        GetHitlocations(numHits).then(hitLocations => {
+        GetHitlocations(numHits).then(hitLocations => { //Roll to get hitlocations
           this.addLogMessage(survivor.name +" took hits to " +hitLocations +" (damage=" +damage +")", "MONSTER");
         
           this.addLogMessage(survivor.name +" has " +survivor.survival +" survival", "DEBUG");
@@ -1243,12 +1253,32 @@ deHover = () => {
     }
   }
 
+  getDamageBonus = (monster) => {
+    let bonus = 0;
+    for(let n=0; n<monster.negativeTokens.length; n++){
+      if(monster.negativeTokens[n] === "DAMAGE"){
+        console.log("-1 damage from token");
+        bonus = bonus-1;
+      }
+    }
+    for(let n=0; n<monster.positiveTokens.length; n++){
+      if(monster.positiveTokens[n] === "DAMAGE"){
+        console.log("+1 damage from token");
+        bonus = bonus+1;
+      }
+    }
+    return bonus;
+  }
+
   /*
   Removes armour or damages survivor. Happens after option to dodge.
   */
   removeArmourWrapper = (hitLocations, survivor, attack) => {
     //console.log("removeArmourWrapper! data=" +data +"survivor=" +survivor +"damage=" +damage)
-    const damage = attack.damage;
+    let damage = attack.damage;
+    if(damage < 0){
+      damage = 1;
+    }
     for(let i=0; i<hitLocations.length; i++)
     {
         this.removeArmourAt(survivor, hitLocations[i], damage);
@@ -1293,9 +1323,9 @@ deHover = () => {
             damage: effect.damage,
             trigger: {}
           }
-          this.damageSurvivor(survivor, 1, normalAttack);
+          this.damageSurvivor(monster, survivor, 1, normalAttack);
         }
-        if(effect.knockDown){
+        if(effect.survivorKnockDown){
           console.log("triggerEffect: knock down")
           this.addLogMessage(survivor.name +" is knocked down from trigger effect", "MONSTER");
         
@@ -1311,6 +1341,9 @@ deHover = () => {
         }
         if(effect.priorityToken){
           survivor.priorityTarget = true;
+        }
+        if(effect.permanentPriorityToken){
+          survivor.permanentPriorityTarget = true;
         }
         if(effect.monsterKnockDown){
           console.log("setting monster knock down");
@@ -1354,7 +1387,7 @@ deHover = () => {
         else {
           if(effect.grab){ //grab = knock down + damage (monster lv) + place in front
             console.log("triggerEffect: grab")
-            this.grabSurvivor(survivor);
+            this.grabSurvivor(monster, survivor);
           }
         }
   
@@ -1369,7 +1402,7 @@ deHover = () => {
       }//trigger condition
   }
 
-  grabSurvivor = (survivor) => { //grab = knock down + damage(monster level) +in front of monster
+  grabSurvivor = (monster, survivor) => { //grab = knock down + damage(monster level) +in front of monster
 
     console.log(survivor.name +" has been grabbed")
     this.addLogMessage(survivor.name +" has been grabbed", "SURVIVOR");
@@ -1386,7 +1419,7 @@ deHover = () => {
       }
 
       this.updateSurvivor(survivor);
-      this.damageSurvivor(survivor, 1, attack);
+      this.damageSurvivor(monster, survivor, 1, attack);
     }
     else{
       console.log("no empty space in front of monster");
@@ -1776,14 +1809,17 @@ deHover = () => {
 
   showGearGrid = () => {
     
-    let showGearGrid = this.state.showGearGrid;
-    showGearGrid = !showGearGrid; //otherwise toggle on/off
+    let popUp = this.state.popUp;
+    popUp.showGearGrid = !popUp.showGearGrid; //toggle on/off
     
-    this.setState({showGearGrid: showGearGrid});
+    this.setState({popUp: popUp});
   }
 
   hideGearGrid = () => {
-    this.setState({showGearGrid: false});
+    let popUp = this.state.popUp;
+    popUp.showGearGrid = false;
+    
+    this.setState({popUp: popUp});
   }
 
   selectGear = (gear, attackProfileIndex) => {
@@ -1909,7 +1945,7 @@ deHover = () => {
         <InfoBox hover={this.state.selection.typeHover} survivor={this.state.selection.hoverSurvivor} weapon={this.state.selection.hoverGear} monster={monster} hlDeck={this.state.hlDeck} aiDeck={this.state.aiDeck} left={this.state.selection.hover_x} top={this.state.selection.hover_y} />
         <ActionBox act={this.props.showdown.act} showGearGrid={this.showGearGrid} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} selection={this.state.selection.typeSelected} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         <Gamelog log={this.state.log}/>
-        {this.state.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} survivor={this.state.survivor} showGearGrid={this.showGearGrid} act={this.props.showdown.act}/>: null }
+        {this.state.popUp.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} survivor={this.state.survivor} showGearGrid={this.showGearGrid} act={this.props.showdown.act}/>: null }
         {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} target={this.target} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './App.css';
-import Draggable from 'react-draggable';
 import lantern from './images/lantern2.png';
 
 export default class InfoBox extends Component {
@@ -64,10 +63,29 @@ export default class InfoBox extends Component {
       }
     }
     else if(this.props.hover==="monster"){
-      if(this.props.monster !== undefined){
+      let monster = this.props.monster;
+      if(monster !== undefined){
         let trapRisk1 = this.riskOfTrapDrawMany(this.props.hlDeck.cardsInDeck.length, 1)*100;
         let trapRisk2 = this.riskOfTrapDrawMany(this.props.hlDeck.cardsInDeck.length, 2)*100;
         let trapRisk3 = this.riskOfTrapDrawMany(this.props.hlDeck.cardsInDeck.length, 3)*100;
+
+        let negativeTokens = <li></li>;
+        if(monster.negativeTokens !== null && monster.negativeTokens.length > 0){
+          negativeTokens = <li>Negative tokens: {monster.negativeTokens}</li>;
+        }
+        let positiveTokens = <li></li>;
+        if(monster.positiveTokens !== null && monster.positiveTokens.length > 0){
+          positiveTokens = <li>Positive tokens: {monster.positiveTokens}</li>;
+        }
+
+        let persistantInjuries0 = null;
+        let persistantInjuries1 = null;
+        let persistantInjuries2 = null;
+        if(monster.hlDeck.cardsRemoved && monster.hlDeck.cardsRemoved.length > 0){
+          persistantInjuries0 = <li>_ _ _ _ _ _ _ _ _ _ _ _ _ _ </li> 
+          persistantInjuries1 = <li><b>Persistant Injuries:</b></li> 
+          persistantInjuries2 = monster.hlDeck.cardsRemoved.map((card, index) => <li key={index} >{card.criticalWound.cardEffect.description}</li>)
+        }
 
         let trapRiskStr = "(" +trapRisk1.toFixed(0) +"/" +trapRisk2.toFixed(0) +"/" +trapRisk3.toFixed(0) +"% risk of trap)"
         infoBox = 
@@ -81,6 +99,11 @@ export default class InfoBox extends Component {
             <li>Lost AI: {this.props.aiDeck.cardsRemoved.length}</li>
             <li>Remaining HL cards: {this.props.hlDeck.cardsInDeck.length} {trapRiskStr}</li>
             <li>Activated this turn: {this.props.monster.activatedThisTurn.toString()}</li>
+            {negativeTokens}
+            {positiveTokens}
+            {persistantInjuries0}
+            {persistantInjuries1}
+            {persistantInjuries2}
           </ul>
         </div>
       }
@@ -96,18 +119,9 @@ export default class InfoBox extends Component {
     }
 
     return(
-      <Draggable
-      axis="both"
-      handle=".handle"
-      defaultPosition={{x: 0, y: 0}}
-      position={null}
-      grid={[1, 1]}
-      scale={1}
-      onStart={this.handleStart}
-      onDrag={this.handleDrag}
-      onStop={this.handleStop}>
-          {infoBox} 
-      </Draggable>
+      <div>
+        {infoBox} 
+      </div>
     )
   }
 }

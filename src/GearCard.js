@@ -31,7 +31,6 @@ specialUseGear = () => {
             <div className="gear-card-armour">{this.props.gearCard.hitpoints}</div>
             <br/>
             <div className="gear-card-description">{this.props.gearCard.description}</div>
-            
         </div>
     }
     else if(this.props.gearCard.type === "WEAPON"){
@@ -49,7 +48,7 @@ specialUseGear = () => {
     }
 
     return(
-        <div className="gear-card">  
+        <div className="gear-card border-box">  
             {gearCard}
         </div>
     )

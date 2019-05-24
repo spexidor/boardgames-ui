@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import GameBoard from './GameBoard';
 import GameSelector from './GameSelector'
-import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './RestServices/Showdown';
+import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/RestServices/Showdown';
 
  export default class Game extends Component {
  

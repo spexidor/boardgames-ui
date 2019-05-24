@@ -1,4 +1,4 @@
-export const GetHits = (numDice, toHitValue) => {
+export const GetHits = (numDice: number, toHitValue: number) => {
   const url = 'http://localhost:8083/dice?numDice=' +numDice + '&diceSides=10&toHitValue=' +toHitValue;
   console.log(numDice +" dice, hitting on " +toHitValue +"+");
   if(typeof numDice !== 'undefined'){

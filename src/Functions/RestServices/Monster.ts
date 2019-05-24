@@ -1,4 +1,7 @@
-export const UpdateMonster = (monster) => {
+import {Monster, HlDeck, AiDeck} from './../Interfaces'
+
+export const UpdateMonster = (monster: Monster) => {
+//export function UpdateMonster<T>(monster: Monster): Promise<T> {
 
     const id = monster.id;
     const url = 'http://localhost:8083/monster/' +id;
@@ -7,7 +10,7 @@ export const UpdateMonster = (monster) => {
   
       console.log("updating monster in backend");
       return fetch(url, {
-      crossDomain:true,
+      //crossDomain: true,
       method: 'PUT',
       headers: {
           'Accept': 'application/json',
@@ -18,14 +21,15 @@ export const UpdateMonster = (monster) => {
           lastWoundedBy: monster.lastWoundedBy,
           status: monster.status,
           position: {
-            x: parseInt(monster.position.x),
-            y: parseInt(monster.position.y)
+            x: monster.position.x,
+            y: monster.position.y
           },
           facing: monster.facing,
           negativeTokens: monster.negativeTokens,
+          positiveTokens: monster.positiveTokens,
           activatedThisTurn: monster.activatedThisTurn
         }),
-      }).then(response => response.json());
+      }).then((response: { json: () => void; }) => response.json());
     }
     else{
       console.log("Monster id not defined: " +url);
@@ -33,14 +37,14 @@ export const UpdateMonster = (monster) => {
     }
   }
 
-  export const UpdateMonsterAI = (monsterId, aiDeck) => {
+  export const UpdateMonsterAI = (monsterId: number, aiDeck: AiDeck) => {
 
     const url = 'http://localhost:8083/monster/' +monsterId +'/ai';
   
     if(typeof monsterId !== 'undefined'){
   
       return fetch(url, {
-      crossDomain:true,
+      //crossDomain: true,
       method: 'PUT',
       headers: {
           'Accept': 'application/json',
@@ -53,21 +57,21 @@ export const UpdateMonster = (monster) => {
           cardsRemoved: aiDeck.cardsRemoved,
           basicAction: aiDeck.basicAction
         }),
-      }).then(response => response.json());
+      }).then((response: { json: () => void; }) => response.json());
     }
     else{
       console.log("Id not defined: " +url);
     }
   }
 
-  export const UpdateMonsterHL = (monsterId, hlDeck) => {
+  export const UpdateMonsterHL = (monsterId:number, hlDeck: HlDeck) => {
 
     const url = 'http://localhost:8083/monster/' +monsterId +'/hl';
   
     if(typeof monsterId !== 'undefined'){
   
       return fetch(url, {
-      crossDomain:true,
+      //crossDomain:true,
       method: 'PUT',
       headers: {
           'Accept': 'application/json',
@@ -79,7 +83,7 @@ export const UpdateMonster = (monster) => {
           cardsInDiscard: hlDeck.cardsInDiscard,
           cardsRemoved: hlDeck.cardsRemoved,
         }),
-      }).then(response => response.json());
+      }).then((response: { json: () => void; }) => response.json());
     }
     else{
       console.log("Id not defined: " +url);
@@ -87,29 +91,29 @@ export const UpdateMonster = (monster) => {
   }
 
 
-export const GetAiDeck = (monsterId) => {
+export const GetAiDeck = (monsterId: number) => {
     const url = 'http://localhost:8083/monster/' +monsterId +'/ai';
     return fetch(url).then(response => response.json());
 }
 
-export const UpdateAiDeck = (monsterId, aiDeck) => {
+export const UpdateAiDeck = (monsterId: number, aiDeck: AiDeck) => {
 
 }
 
 /*
  * Returns list of survivors
  */
-export const GetTargets = (monsterId, cardId) => {
+export const GetTargets = (monsterId: number, cardId: number) => {
     const url = 'http://localhost:8083/monster/' +monsterId +'/ai/' +cardId +'/targets';
     return fetch(url).then(response => response.json());
 }
 
-export const GetMonsterMoves = (id) => {
+export const GetMonsterMoves = (id: number) => {
     const url = "http://localhost:8083/monster/" + id + "/openMoves";
     return fetch(url).then(response => response.json());
   }
 
-export const GetMonsterSpecialMove = (id, direction) => {
+export const GetMonsterSpecialMove = (id: number, direction: string) => {
   let length = 5;
   const url = "http://localhost:8083/monster/" + id + "/specificMove?direction=" +direction +"&length=" +length;
   return fetch(url).then(response => response.json());

@@ -7,17 +7,16 @@ export default class ActionBox extends Component {
  
   render(){
 
-    let gear = this.props.survivor.gearGrid.gear.map((gear, index) => <GearCard key={index} index={index} act={this.props.act} selectGear={this.props.selectGear.bind(this)} specialUseGear={this.props.specialUseGear.bind(this)} top={index*100} gearCard={gear}/>)
+    let gear = this.props.survivor.gearGrid.gear.map((gear, index) => <GearCard key={index} index={index} act={this.props.act} selectGear={this.props.selectGear.bind(this)} specialUseGear={this.props.specialUseGear.bind(this)} gearCard={gear}/>)
 
-    let gearGrid = 
-    <div>
+    let gearGridLeft = 
         <div className="gear-grid-left"><button onClick={this.props.showGearGrid}>Hide Grid</button><br></br>
         Survivor: {this.props.survivor.name}
         </div>
-        <div className="gear-grid-right">
+        
+    let gearGridRight = <div className="gear-grid-right">
         {gear}
         </div>
-    </div>
 
     return(
         <Draggable
@@ -30,10 +29,9 @@ export default class ActionBox extends Component {
             onStart={this.handleStart}
             onDrag={this.handleDrag}
             onStop={this.handleStop}>
-            <div className="handle">
-                <div className="gear-grid">  
-                    {gearGrid}
-                </div>
+            <div className="handle gear-grid">
+                    {gearGridLeft}
+                    {gearGridRight}
             </div>
         </Draggable>
     )

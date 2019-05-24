@@ -40,13 +40,10 @@ render(){
       onStart={this.handleStart}
       onDrag={this.handleDrag}
       onStop={this.handleStop}>
-            <div className="handle"><div className="game-log">
-            {gameLog}
-            </div></div> 
-  
+            <div className="handle game-log" >
+                {gameLog}
+            </div>
       </Draggable>
     )
   }
 }
-
-//<div align="left" style={{paddingLeft: 15, overflow:"auto", borderRadius: "5px", opacity: 0.9, background: "#282c34", fontSize: "10px", color: "#65ff63", position: "absolute", height: 150, width: 250, top: 100, left: 500}}>

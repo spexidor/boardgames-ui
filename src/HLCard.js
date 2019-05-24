@@ -16,13 +16,16 @@ render(){
         impervious: true,
         description: "Impervious hit locations cannot be wounded. A wound or critical wound will not remove an AI card or defeat the monster.",
         critable: true,
-        persistantInjury: false,
         reflexEffect: false,
         failureEffect: true,
         woundEffect: false,
         trap: true,
         criticalWound: {
-            description: "Text description"
+            description: "Text description",
+            persistantInjury: true
+            cardEffect: {
+                description: "Lost Ding Dong"
+            }
         }
     }
     */
@@ -54,7 +57,7 @@ render(){
         impervious = <div className="border-box hlCard-impervious">Impervious</div>
     }
     let persistantInjury = <div></div>
-    if(hlCard.persistantInjury){
+    if(hlCard.critable && hlCard.criticalWound.persistantInjury !== null){
         persistantInjury = <div className="border-box hlCard-persistant">Persistant Injury | Keep in Play</div>
     }
     let crit = <div></div>
