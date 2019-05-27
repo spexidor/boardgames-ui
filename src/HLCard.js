@@ -4,7 +4,11 @@ import Draggable from 'react-draggable';
 import lantern from './images/lantern_white.png';
 
 export default class Gamelog extends Component {
- 
+
+woundLocation = () => {
+    this.props.woundLocation(this.props.hlCard);
+}
+
 render(){
 
     //Input:
@@ -47,29 +51,48 @@ render(){
         reflexChar = "W";
     }
     if(reflexStr.length !== 0){
-        reflex = <div><div className="border-box hlCard-diamond hlCard-diamond-reflex"><div className="ghost"><div className="border-box  hlCard-diamond-reflex-char">{reflexChar}</div></div></div><div className="border-box  hlCard-reflex">{reflexStr}</div></div>
+        reflex = 
+        <div className="hlCard-reflex">
+            <div className="border-box hlCard-diamond hlCard-diamond-reflex">
+                <div className="ghost">
+                    <div className="border-box  hlCard-diamond-reflex-char">{reflexChar}</div>
+                </div>
+            </div>
+            <div className="border-box hlCard-reflex-title">{reflexStr}</div>
+        </div>
     }
     
-    let description = <div className="border-box hlCard-description">{reflex}{hlCard.description}</div>
+    let description = <div className="border-box hlCard-description">{hlCard.description}</div>
 
     let impervious = <div></div>
     if(hlCard.impervious){
         impervious = <div className="border-box hlCard-impervious">Impervious</div>
     }
-    let persistantInjury = <div></div>
-    if(hlCard.critable && hlCard.criticalWound.persistantInjury !== null){
-        persistantInjury = <div className="border-box hlCard-persistant">Persistant Injury | Keep in Play</div>
+    let persistantInjuryFooter = <div></div>
+    let persistantInjuryDescription = <div></div>
+    if(hlCard.critable && hlCard.criticalWound && hlCard.criticalWound.persistantInjury){
+        persistantInjuryDescription = <div className="border-box hlCard-persistant-title">💀Persistant Injury - {hlCard.criticalWound.cardEffect.name}</div>
+        persistantInjuryFooter = <div className="border-box hlCard-persistant">Persistant Injury | Keep in Play</div>
     }
-    let crit = <div></div>
+    let crit1 = <div></div>
+    let crit2 = <div></div>
+    let crit3 = <div></div>
     //console.log("hlCard: " +hlCard.title);
-    if(hlCard.critable){
-        crit = 
+    if(hlCard.critable && hlCard.criticalWound){
+        crit1 = 
         <div className="border-box hlCard-critical">
-        <br/><br/>
-        <b>Critical Wound</b><br/><br/>
-            <div className="border-box hlCard-diamond hlCard-diamond-lantern"><div className="border-box ghost"><img className="border-box hlCard-lantern-image" src={lantern} alt="border-box lantern"/></div></div>
+        <b>Critical Wound</b>
+        </div>
+        crit2 = 
+        <div className="hlCard-diamond hlCard-diamond-lantern">
+            <div className="border-box ghost">
+                <img className="border-box hlCard-lantern-image" src={lantern} alt="border-box lantern"/>
+            </div>
+        </div>
+            
+        crit3 = 
+        <div className="hlCard-critical-description">
             {hlCard.criticalWound.description}
-            {persistantInjury}
         </div>
     }
     let titleClassName = "border-box hlCard-top";
@@ -78,34 +101,18 @@ render(){
     }
     let title = <div className={titleClassName}>{hlCard.title}</div>
     
-    let top = this.props.top;
-    let left = this.props.left;
-
-    const hlCardGraphics = 
-    <div className="border-box hlCard" style={{position: "absolute", top: top, left: left}}>
-        {description}
+   return(
+    <div className="border-box hlCard" onClick={this.woundLocation}>
         {title}
         {impervious}
-        
-        {crit}
+        {reflex}
+        {description}
+        {crit2}
+        {crit1}
+        {persistantInjuryDescription}
+        {crit3}
+        {persistantInjuryFooter}
     </div>
-
-    return(
-      <Draggable
-      axis="both"
-      handle=".handle"
-      defaultPosition={{x: 0, y: 0}}
-      position={null}
-      grid={[1, 1]}
-      scale={1}
-      onStart={this.handleStart}
-      onDrag={this.handleDrag}
-      onStop={this.handleStop}>
-            <div className="handle">
-                {hlCardGraphics}
-            </div>
-  
-      </Draggable>
     )
   }
 }

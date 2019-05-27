@@ -4,14 +4,7 @@ import HLCard from './HLCard';
 
 export default class HLSelecter extends React.Component {
 
-    constructor(props){
-      super(props);
-  
-      this.state = {
-        selectedHitLocation: ""
-      }
-    }
-  
+  /*
     woundLocation = () => {
       let hlCard = 0;
 
@@ -58,9 +51,10 @@ export default class HLSelecter extends React.Component {
         selectedHitLocation: chosenLocation
       });
     }
-  
+  */
     render() {
   
+      /*
       let radioButtonData = [];
       let trapIndex = -1;
       let resolveDisabled = true;
@@ -104,49 +98,13 @@ export default class HLSelecter extends React.Component {
       else if(this.props.hlCards.length === 1){
         resolveDisabled = false;
       }
-
-      let cards = this.props.hlCards.map((hlCard, index) => <HLCard key={index} hlCard={hlCard}/>)
+*/
+      let cards = this.props.hlCards.map((hlCard, index) => <HLCard key={index} hlCard={hlCard} woundLocation={this.props.woundLocation} />)
   
       return (
           <div className='hl-selecter'>
-            <h2>{title}</h2>
-  
-            {radioButtons}
             {cards}
-            
-              <div>
-                <button disabled={resolveDisabled} onClick={this.woundLocation}>Resolve</button>
-              </div>
           </div>
       );
-    }
-  }
-  
-  function MapRadioButtons(props){
-   
-    return(
-      props.data.map((s, index) => 
-          <RadioButtonOption disabled={s.disabled} checked={s.checked} value={s.value} onChange={s.onChange} key={index}/>
-      ))
-  }
-  
-  class RadioButtonOption extends React.Component {
-    render(){
-      return(
-        <div>
-          <label>
-            <input
-              type="radio"
-              name="react-tips"
-              defaultChecked={this.props.checked}
-              disabled={this.props.disabled}
-              value={this.props.value}
-              onChange={this.props.onChange}
-              className="form-check-input"
-            />
-            {this.props.value}
-          </label>
-          </div>
-      )
     }
   }

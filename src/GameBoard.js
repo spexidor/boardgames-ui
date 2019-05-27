@@ -6,7 +6,7 @@ import SurvivorTiles from './SurvivorTiles';
 import InfoBox from './InfoBox';
 import ActionBox from './ActionBox';
 import DodgeSelecter from './DodgeSelecter'
-import HLSelecter from './HLSelecter'
+import HLSelecter from './HLSelecter2'
 import Gamelog from './Gamelog';
 import AICard from './AICard';
 import TurnChanger from './TurnChanger';
@@ -70,6 +70,7 @@ export default class GameBoard extends Component {
       selectedWeapon: 2, //index in gear grid
       targets: [],
       revealedAI: 0,
+      //revealedHL: [this.props.showdown.monster.hlDeck.cardsInDeck[0], this.props.showdown.monster.hlDeck.cardsInDeck[1]],
       revealedHL: 0,
       log: [{message: "New game started (id=" +this.props.showdown.id +")", type: "GAME_INFO"}],
 
@@ -756,13 +757,14 @@ deHover = () => {
     let action = this.state.action;
     let monster = this.state.monster;
     let survivor = this.state.survivor;
+    console.log("wounding with survivor " +survivor.name);
     let attackProfile = this.getSelectedAttackProfile();
 
     action.selectHLCard = false;
     this.setState({action: action}); //Temporary hide HL card popup to show game
     
     if(hlCard.trap){
-      this.resolveTrap(hlCard);
+      this.resolveTrap(hlCard, survivor, monster);
     }
     else if(!SurvivorInRange(monster, survivor, attackProfile)){
       this.addLogMessage("Survivor out of range, cancelling hit", "GAME_INFO");
@@ -774,7 +776,7 @@ deHover = () => {
     }
     else {
 
-      const sucessValue = this.toWoundValue();
+      const sucessValue = this.toWoundValue(monster);
       let diceRoll = GetDiceRoll(1,10);
         
       let woundResult = {dieResult: 0, sucess: false, crit: false};
@@ -870,14 +872,14 @@ deHover = () => {
     return critValue-luck;
   }
 
-  resolveTrap = (trapCard) => {
+  resolveTrap = (trapCard, survivor, monster) => {
     this.addLogMessage("Resolving trap", "GAME_INFO");
+    console.log("resolve trap, survivor=" +survivor.name);
 
-    let survivor = this.state.survivor;
     let hlDeck = this.state.hlDeck;
 
     survivor.doomed = true;
-    this.attack(this.state.aiDeck.basicAction, survivor);
+    this.attack(monster, this.state.aiDeck.basicAction, survivor);
 
     hlDeck = this.shuffleHL(hlDeck);
     let action = this.state.action;
@@ -1008,8 +1010,8 @@ deHover = () => {
     }
   }
 
-  toWoundValue = () => {
-    let t = this.state.monster.statline.toughness;
+  toWoundValue = (monster) => {
+    let t = this.state.monster.statline.toughness + this.getTokenBonus(monster, "TOUGHNESS");
     //let s1 = this.state.survivor.strength;
     let s1 = 0;
     let s2 = this.getSelectedAttackProfile().strengthBonus;
@@ -1181,7 +1183,7 @@ deHover = () => {
     if(MonsterInRange(monster, survivor, aiCard.attack) && typeof aiCard !== 'undefined'){
       this.turnMonsterToSurvivor(survivor);
 
-      GetHits(aiCard.attack.speed, aiCard.attack.toHitValue).then(data => {
+      GetHits(aiCard.attack.speed, this.getMonsterToHitValue(monster, aiCard.attack)).then(data => {
         console.log("hits: " +data.length);
         this.addLogMessage("The monster scored " +data.length +" hits", "MONSTER");
         const numHits = data.length;
@@ -1208,6 +1210,17 @@ deHover = () => {
 
   }
 
+  getMonsterToHitValue = (monster, attack) => {
+    const toHit = attack.toHitValue + this.getTokenBonus(monster, "ACCURACY");
+    if (toHit < 2){
+      return 2;
+    }
+    else if (toHit > 10){
+      return 10;
+    }
+    else return toHit;
+  }
+
   clickedAttack = () => {
     let aiCard = this.state.revealedAI;
     let survivor = this.state.selection.monsterTarget;
@@ -1221,7 +1234,7 @@ deHover = () => {
 
     if(numHits > 0)
     {
-      let damage = attack.damage + this.getDamageBonus(monster);
+      let damage = attack.damage + this.getTokenBonus(monster, "DAMAGE");
       attack.damage = damage;
 
       if(attack.trigger && attack.trigger.afterHit){
@@ -1253,20 +1266,32 @@ deHover = () => {
     }
   }
 
-  getDamageBonus = (monster) => {
-    let bonus = 0;
+  getNegativeTokens = (monster, tokenType) => {
+    let counter = 0;
     for(let n=0; n<monster.negativeTokens.length; n++){
-      if(monster.negativeTokens[n] === "DAMAGE"){
-        console.log("-1 damage from token");
-        bonus = bonus-1;
+      if(monster.negativeTokens[n] === tokenType){
+        console.log("-1 " +tokenType +" from token");
+        counter++;
       }
     }
+    return counter;
+  }
+  getPositiveTokens = (monster, tokenType) => {
+    let counter = 0;
     for(let n=0; n<monster.positiveTokens.length; n++){
-      if(monster.positiveTokens[n] === "DAMAGE"){
-        console.log("+1 damage from token");
-        bonus = bonus+1;
+      if(monster.positiveTokens[n] === tokenType){
+        console.log("+1 " +tokenType +" from token");
+        counter++;
       }
     }
+    return counter;
+  }
+
+  getTokenBonus = (monster, tokenType) => {
+    let bonus = 0;
+    bonus -= this.getNegativeTokens(monster, tokenType);
+    bonus += this.getPositiveTokens(monster, tokenType);
+    
     return bonus;
   }
 
@@ -1300,8 +1325,25 @@ deHover = () => {
           triggerCondition = false;
           console.log("to few hits for trigger effect to happen");
         }
+        if(effect.condition.diceRolld10 !== 0){
+          const diceRoll = GetDiceRoll(1,10);
+          if(diceRoll < effect.condition.diceRolld10){
+            console.log("rolled " +diceRoll +", condition not triggered");
+            triggerCondition = false;
+          }
+          else {
+            console.log("rolled " +diceRoll +", condition triggered");
+          }
+        }
         else{
           console.log("triggerCondition true. hitlocation length= " +hitLocations.length +", minHits required=" +effect.condition.minHits);
+        }
+        if(survivor.unerstanding < effect.minUnderstanding){
+          triggerCondition = false;
+          console.log("to low understanding to trigger effect");
+        }
+        else{
+          console.log("understanding high enough to trigger effect");
         }
       }
 
@@ -1337,7 +1379,7 @@ deHover = () => {
           console.log("extra damage: " +effect.attackExtraDamage);
           let aiCardBasic = this.state.aiDeck.basicAction;
           aiCardBasic.attack.damage = aiCardBasic.attack.damage + effect.attackExtraDamage;
-          this.attack(aiCardBasic, survivor);
+          this.attack(monster, aiCardBasic, survivor);
         }
         if(effect.priorityToken){
           survivor.priorityTarget = true;
@@ -1354,6 +1396,11 @@ deHover = () => {
           console.log("setting monster death next turn");
           monster.status = "DIES_NEXT_TURN";
           monsterUpdated = true;
+        }
+        if(effect.survivorGainSurvival > 0){
+          survivor.survival +=effect.survivorGainSurvival;
+          this.addLogMessage(survivor.name +" gains " +effect.survivorGainSurvival +" survival from effect", "GAME_INFO");
+          this.updateSurvivor(survivor);
         }
         
         if(typeof effect.move !== 'undefined' && effect.move !== null){
@@ -1676,12 +1723,7 @@ deHover = () => {
     hlDeck.cardsInDeck = this.shuffle(hlDeck.cardsInDeck);
     hlDeck.cardsInDeck = this.setOrderInDeck(hlDeck.cardsInDeck);
 
-    if(hlDeck.cardsInDeck.length !== 8){
-      console.log("ERROR - UNEXPEXTED HL DECK LENGTH")
-    }
-    else {
-      UpdateMonsterHL(this.state.monster.id, hlDeck);
-    }
+    UpdateMonsterHL(this.state.monster.id, hlDeck);
 
     return hlDeck;
   }
@@ -1949,6 +1991,7 @@ deHover = () => {
         {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} target={this.target} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}
+        
         {this.state.debug.showAllHLcards ? <AllHLCards hlCards = {this.state.hlDeck.cardsInDeck}/> : null }
       </div>
     )

@@ -10,10 +10,10 @@ export default class AllHLCards extends Component {
 
     const columns = 8;
     const rows = 3;
-    const hlCards = this.props.hlCards.map((hlCard, index) => <HLCard key={index} top={180*(index%rows)+100} left={130*(index%columns)+100} hlCard={hlCard}/>)
+    const hlCards = this.props.hlCards.map((hlCard, index) => <HLCard key={index} hlCard={hlCard}/>)
 
     return(
-        <div style={{position: "absolute", top: 0, left: 0}}>  
+        <div className="all-hl-cards">  
             {hlCards}
         </div>
     )

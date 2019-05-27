@@ -84,7 +84,7 @@ export default class InfoBox extends Component {
         if(monster.hlDeck.cardsRemoved && monster.hlDeck.cardsRemoved.length > 0){
           persistantInjuries0 = <li>_ _ _ _ _ _ _ _ _ _ _ _ _ _ </li> 
           persistantInjuries1 = <li><b>Persistant Injuries:</b></li> 
-          persistantInjuries2 = monster.hlDeck.cardsRemoved.map((card, index) => <li key={index} >{card.criticalWound.cardEffect.description}</li>)
+          persistantInjuries2 = monster.hlDeck.cardsRemoved.map((card, index) => <li key={index} >{card.criticalWound.cardEffect.name}</li>)
         }
 
         let trapRiskStr = "(" +trapRisk1.toFixed(0) +"/" +trapRisk2.toFixed(0) +"/" +trapRisk3.toFixed(0) +"% risk of trap)"

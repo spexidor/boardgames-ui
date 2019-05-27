@@ -16,11 +16,15 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
   
   componentDidMount(){
     GetLatestShowdown(this.state.id).then(data => {
-      this.setState({
-        loaded: true,
-        showdown: data});
-    });
+      console.log("data: " +data);
+      if(data !== null){
+        this.setState({
+          loaded: true,
+          showdown: data});
+      }
+      })
   }
+  
 
   updateShowdown = (showdown) => {
     console.log("updating showdown state, turn=" +showdown.turn);
@@ -35,7 +39,8 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
     CreateShowdown(e).then(data => {
       console.log("new game: " +data.id)
       this.setState({
-      showdown: data,
+        loaded: true,
+        showdown: data
       })
     });
   }
@@ -48,6 +53,7 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
         ids[n] = this.state.showdown.survivors[n].id;
       }
     }
+    console.log("rendering Game.js");
 
     let gameBoard = <div></div>;
     if(this.state.loaded){
