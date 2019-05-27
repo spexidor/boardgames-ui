@@ -46,7 +46,10 @@ export default class TileRenderer extends Component
         let tiles = <div></div>;
 
         if(tilePositions.length > 0){
-            tiles = <div><MapTable data={tilePositions} sizeY={this.props.tileSizeY} sizeX={this.props.tileSizeX} click={this.props.click} markedX={this.props.markedX} markedY={this.props.markedY}/></div>
+            tiles = 
+            <div>
+              <MapTable data={tilePositions} sizeY={this.props.tileSizeY} sizeX={this.props.tileSizeX} click={this.props.click} markedX={this.props.markedX} markedY={this.props.markedY}/>
+            </div>
         }
 
         return(

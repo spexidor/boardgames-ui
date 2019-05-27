@@ -37,11 +37,7 @@ export default class GameBoard extends Component {
         typeSelected: "",
         typeHover: "",
         monsterTarget: -1,
-        equipedGear: [
-          {survivorId: this.props.showdown.survivors[0].id, gear: this.props.showdown.survivors[0].gearGrid.gear[2], attackProfileIndex: -1},
-          {survivorId: this.props.showdown.survivors[1].id, gear: this.props.showdown.survivors[1].gearGrid.gear[2], attackProfileIndex: -1},
-          {survivorId: this.props.showdown.survivors[2].id, gear: this.props.showdown.survivors[2].gearGrid.gear[2], attackProfileIndex: -1},
-          {survivorId: this.props.showdown.survivors[3].id, gear: this.props.showdown.survivors[3].gearGrid.gear[2], attackProfileIndex: -1}]
+        equipedGear: this.initGear(),
       },
       action: {
         moveSelected: false,
@@ -62,6 +58,7 @@ export default class GameBoard extends Component {
       aiDeck: this.props.showdown.monster.aiDeck,
       hlDeck: this.props.showdown.monster.hlDeck,
       highlights: [],
+      monsterMoves: [],
       
       popUp: {
         showGearGrid: false
@@ -79,6 +76,15 @@ export default class GameBoard extends Component {
         hlCard: this.props.showdown.monster.hlDeck.cardsInDeck[0]
       }
     }
+  }
+
+  initGear = () => {
+    
+    let gearArr = [];
+    for (let n=0; n<this.props.showdown.survivors.length; n++){
+      gearArr.push({survivorId: this.props.showdown.survivors[n].id, gear: this.props.showdown.survivors[n].gearGrid.gear[2], attackProfileIndex: -1});
+    }
+    return gearArr;
   }
 
   componentDidMount(){
@@ -600,7 +606,7 @@ deHover = () => {
   setMonsterMoves = (id) => {
     GetMonsterMoves(id).then(data => {
       this.setState({
-        highlights: data
+        monsterMoves: data
       })
     })
   }
@@ -756,6 +762,7 @@ deHover = () => {
 
     let action = this.state.action;
     let monster = this.state.monster;
+    console.log("loaded monster " +monster.name +" from state")
     let survivor = this.state.survivor;
     console.log("wounding with survivor " +survivor.name);
     let attackProfile = this.getSelectedAttackProfile();
@@ -776,7 +783,10 @@ deHover = () => {
     }
     else {
 
-      const sucessValue = this.toWoundValue(monster);
+      console.log("action: " +action);
+      
+      let monster2 = this.state.monster;
+      const sucessValue = this.toWoundValue(monster2);
       let diceRoll = GetDiceRoll(1,10);
         
       let woundResult = {dieResult: 0, sucess: false, crit: false};
@@ -919,7 +929,6 @@ deHover = () => {
       this.addTriggerEffect(survivor, cardEffect);
     }
 
-    console.log("DEBUG3: " +hlCard.criticalWound.persistantInjury.toString());
     if(hlCard.criticalWound.persistantInjury){
       this.setPersistantInjury(hlCard);
     }
@@ -1325,6 +1334,7 @@ deHover = () => {
           triggerCondition = false;
           console.log("to few hits for trigger effect to happen");
         }
+
         if(effect.condition.diceRolld10 !== 0){
           const diceRoll = GetDiceRoll(1,10);
           if(diceRoll < effect.condition.diceRolld10){
@@ -1335,15 +1345,10 @@ deHover = () => {
             console.log("rolled " +diceRoll +", condition triggered");
           }
         }
-        else{
-          console.log("triggerCondition true. hitlocation length= " +hitLocations.length +", minHits required=" +effect.condition.minHits);
-        }
+
         if(survivor.unerstanding < effect.minUnderstanding){
           triggerCondition = false;
           console.log("to low understanding to trigger effect");
-        }
-        else{
-          console.log("understanding high enough to trigger effect");
         }
       }
 
@@ -1543,12 +1548,12 @@ deHover = () => {
               console.log("query for injury");
               
               GetInjury(hitlocation).then(data => {
-                this.addLogMessage("Took severe injury " +data.title, "SURVIVOR");
+                this.addLogMessage("Took severe injury " +data.title, "MONSTER");
                 if(data.dead){
                   survivor.status = "DEAD";
                 }
                 if(data.bleed > 0){
-                  this.addLogMessage(survivor.name +" get bleed " +data.bleed, "SURVIVOR");
+                  this.addLogMessage(survivor.name +" get bleed " +data.bleed, "MONSTER");
                   survivor.bleed = survivor.bleed+data.bleed;
                   if(survivor.bleed > 5){
                     console.log(survivor.name +" bled to death.")
@@ -1557,7 +1562,7 @@ deHover = () => {
                 }
 
                 if(survivor.status === "DEAD"){
-                  this.addLogMessage(survivor.name +" was killed.", "SURVIVOR");
+                  this.addLogMessage(survivor.name +" was killed.", "GAME_INFO");
                   this.survivorKilled(survivor);
                 }
                 else if(data.knockedDown){
@@ -1980,10 +1985,15 @@ deHover = () => {
 
     return (
       <div>
-        <TileRenderer targets={this.state.targets} tileSizeX={size} tileSizeY={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
+
         <TurnChanger activatedThisTurn={this.state.monster.activatedThisTurn} revealAI={this.clickedRevealAI} nextAct={this.nextAct} act={this.props.showdown.act}/>
-        <MonsterTile deHoverMonster={this.deHoverMonster} hoverMonster={this.hoverMonster} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
-        <SurvivorTiles deHoverSurvivor={this.deHoverSurvivor} hoverSurvivor={this.hoverSurvivor} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
+        
+        <div className="gameboard-normal">
+          <TileRenderer targets={this.state.targets} tileSizeX={size} tileSizeY={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
+          <MonsterTile deHoverMonster={this.deHoverMonster} hoverMonster={this.hoverMonster} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
+          <SurvivorTiles deHoverSurvivor={this.deHoverSurvivor} hoverSurvivor={this.hoverSurvivor} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
+        </div>
+        
         <InfoBox hover={this.state.selection.typeHover} survivor={this.state.selection.hoverSurvivor} weapon={this.state.selection.hoverGear} monster={monster} hlDeck={this.state.hlDeck} aiDeck={this.state.aiDeck} left={this.state.selection.hover_x} top={this.state.selection.hover_y} />
         <ActionBox act={this.props.showdown.act} showGearGrid={this.showGearGrid} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} selection={this.state.selection.typeSelected} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         <Gamelog log={this.state.log}/>

@@ -13,10 +13,25 @@ export default class ActionBox extends Component {
     //survivor
     let activateDisabled = false;
     let moveDisabled = false;
-    if(this.props.survivor.movesLeft < 1 || this.deadOrKnockedDown() || this.props.act === "MONSTERS"){
+    let moveDisabledReasonStr = "";
+    let activateDisabledReasonStr = "";
+    if(this.props.survivor.movesLeft < 1){
         moveDisabled = true;
+        moveDisabledReasonStr = "No moves left";
     }
-    if(this.props.survivor.activationsLeft < 1 || this.deadOrKnockedDown() || this.props.act === "MONSTERS"){
+    else if(this.deadOrKnockedDown()){
+        moveDisabled = true;
+        moveDisabledReasonStr = "Knocked down";
+    }
+    else if(this.props.act === "MONSTERS"){
+        moveDisabled = true;
+        moveDisabledReasonStr = "Waiting for survivors turn";
+    }
+    if(this.props.survivor.activationsLeft < 1){
+        activateDisabled = true;
+        activateDisabledReasonStr = "No activations left";
+    }
+    else if(this.deadOrKnockedDown() || this.props.act === "MONSTERS"){
         activateDisabled = true;
     }
 
@@ -30,9 +45,13 @@ export default class ActionBox extends Component {
 
         actionBox = 
         <div>
-        <button disabled={moveDisabled}className={moveActive} onClick={this.props.survivorMove}>Move</button>
+        <button disabled={moveDisabled} className={moveActive} onClick={this.props.survivorMove}>Move</button>
         <button disabled={activateDisabled} onClick={this.props.activate}>Activate</button>
         <button onClick={this.props.showGearGrid}>Gear</button>
+        <br/>
+        {moveDisabled ? <i>{moveDisabledReasonStr}</i>: null}
+        <br/>
+        {activateDisabled ? <i>{activateDisabledReasonStr}</i>: null}
         </div>
     }
     else if(this.props.selection==="monster"){

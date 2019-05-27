@@ -24,6 +24,14 @@ export default class InfoBox extends Component {
     }
   }
 
+  printTokens = (negativeTokens) => {
+    let tokenStr = "";
+    for(let n=0; n<negativeTokens.length; n++){
+      tokenStr = tokenStr + negativeTokens[n] +","
+    }
+    return tokenStr.substring(0, tokenStr.length - 1);
+  }
+
   render(){
 
     let name ="";
@@ -48,7 +56,7 @@ export default class InfoBox extends Component {
         weapon = this.props.weapon.name;
 
         infoBox = 
-        <div className="handle round-gradient info-box" style={{position: "absolute", top: this.props.top-70, left: this.props.left}}>
+        <div className="handle round-gradient info-box" style={{position: "absolute", top: this.props.top-75, left: this.props.left+25}}>
           <ul className="info-box-list">
           <li><b>{name+", id=" +id}</b></li>
           <li>Survival: {survival}</li>
@@ -71,11 +79,11 @@ export default class InfoBox extends Component {
 
         let negativeTokens = <li></li>;
         if(monster.negativeTokens !== null && monster.negativeTokens.length > 0){
-          negativeTokens = <li>Negative tokens: {monster.negativeTokens}</li>;
+          negativeTokens = <li>Negative tokens: {this.printTokens(monster.negativeTokens)}</li>;
         }
         let positiveTokens = <li></li>;
         if(monster.positiveTokens !== null && monster.positiveTokens.length > 0){
-          positiveTokens = <li>Positive tokens: {monster.positiveTokens}</li>;
+          positiveTokens = <li>Positive tokens: {this.printTokens(monster.positiveTokens)}</li>;
         }
 
         let persistantInjuries0 = null;

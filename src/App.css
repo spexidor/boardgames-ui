@@ -1,6 +1,6 @@
 .App {
   background-color: black;
-  min-height: 110vh;
+  min-height: 100vh;
 }
 
 .button{
@@ -43,11 +43,12 @@
 .action-box {
   text-align: left;
   position: absolute;
+  color: #505050;
   height: 3vw;
   width: 17vw;
   top: 5px;
   left: 700px;
-  font-size: 0.8vw;
+  font-size: 10px;
 }
 
 .MONSTER {
@@ -345,7 +346,7 @@ Width:  2.5   1.25   1.0   0.5
   width: 300px;
   top: 5px; 
   left: 375px;
-  color: #65ff63;
+  color: #505050;
   font-size: 10px;
 }
 
@@ -417,6 +418,14 @@ Width:  2.5   1.25   1.0   0.5
   transform: rotateX(60deg) rotateY(0deg) rotateZ(-45deg);
 }
 
+.gameboard-normal{
+}
+.gameboard-iso{
+  transform: rotateX(60deg) rotateY(0deg) rotateZ(-45deg);
+  position: absolute;
+  left: -3%;
+  top: 55%;
+}
 .gameboard-tile:hover {
   filter: brightness(1.9);
 }

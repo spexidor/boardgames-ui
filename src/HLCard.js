@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
-import Draggable from 'react-draggable';
 import lantern from './images/lantern_white.png';
 
-export default class Gamelog extends Component {
+export default class HLCard extends Component {
 
 woundLocation = () => {
     this.props.woundLocation(this.props.hlCard);
