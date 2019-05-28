@@ -72,10 +72,10 @@
   border-radius: 7px;
   background-color: #adadad;
   position: absolute;
-  height: 275px;
-  width: 200px;
-  top: 0;
-  left: 55vw;
+  height: 21vw;
+  width: 15vw;
+  top: 3vw;
+  right: 3vw;
   font-size: 12px;
 }
 

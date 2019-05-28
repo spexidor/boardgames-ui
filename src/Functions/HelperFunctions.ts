@@ -159,3 +159,56 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
     console.log("myDiceRoll: " +myDiceRoll)
     return myDiceRoll;
   }
+
+  export const GetMonsterDirectionMarks = (monsterPosition: Position, direction: string) => {
+
+    let monsterMoveHighlights: never[] | { x: number; y: number; }[] | { x: number; y: number; }[] | { x: number; y: number; }[] | { x: number; y: number; }[] = [];
+    
+    if(direction === "DOWN"){
+      monsterMoveHighlights = 
+      [{x: monsterPosition.x,
+        y: monsterPosition.y+2},
+       {x: monsterPosition.x+1,
+        y: monsterPosition.y+2}]
+    }
+    else if(direction === "UP"){
+      monsterMoveHighlights = 
+      [{x: monsterPosition.x,
+        y: monsterPosition.y-1},
+       {x: monsterPosition.x+1,
+        y: monsterPosition.y-1}]
+    }
+    else if(direction === "LEFT"){
+      monsterMoveHighlights = 
+      [{x: monsterPosition.x-1,
+        y: monsterPosition.y},
+       {x: monsterPosition.x-1,
+        y: monsterPosition.y+1}]
+    }
+    else if(direction === "RIGHT"){
+      monsterMoveHighlights = 
+      [{x: monsterPosition.x+2,
+        y: monsterPosition.y},
+       {x: monsterPosition.x+2,
+        y: monsterPosition.y+1}]
+    }
+    return monsterMoveHighlights;
+   }
+
+   export const DirectionsAgainstSurvivor = (monsterPosition: Position, survivorPosition: Position) => {
+
+    let directions = [];
+    if(monsterPosition.y > (survivorPosition.y)){ //UP
+      directions.push("UP");
+    }
+    if((monsterPosition.y+1) < survivorPosition.y){ //DOWN
+      directions.push("DOWN");
+    }
+    if(monsterPosition.x > survivorPosition.x){ //LEFT
+      directions.push("LEFT");
+    }
+    if((monsterPosition.x+1) < survivorPosition.x){ //RIGHT
+      directions.push("RIGHT");
+    }
+    return directions;
+   }

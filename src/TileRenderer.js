@@ -24,6 +24,12 @@ export default class TileRenderer extends Component
                     break;
                   }
               }
+              for(let n=0; n<this.props.monsterMoveHighlights.length; n++){
+                if(x===this.props.monsterMoveHighlights[n].x && y===this.props.monsterMoveHighlights[n].y){
+                  highlight=true;
+                  break;
+                }
+            }
               for(let n=0; n<this.props.targets.length; n++){
                 if(x===this.props.targets[n].position.x && y===this.props.targets[n].position.y){
                   target=true;

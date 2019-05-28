@@ -59,7 +59,7 @@ render(){
         getTargetDisabled = false;
     }
     let moveActive = "";
-    if(this.props.moveSelected){
+    if(this.props.monsterMoveSelected){
         moveActive = "button-active";
     }
 

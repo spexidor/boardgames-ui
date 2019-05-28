@@ -16,7 +16,7 @@ import AllHLCards from './AllHLCards';
 import { UpdateSurvivor, DeleteSurvivor, GetHitlocations, GetSurvivorMoves, GetInjury} from './Functions/RestServices/Survivor';
 import { UpdateMonster , UpdateMonsterAI, UpdateMonsterHL, GetTargets, GetMonsterMoves, GetMonsterSpecialMove } from './Functions/RestServices/Monster';
 import { GetHits } from './Functions/RestServices/Dice'
-import { PositionsEqual, EmptySpaceInFrontOfMonster, SurvivorInRange, MonsterInRange, GetBaseCoordinates, GetDiceRoll } from './Functions/HelperFunctions'
+import { PositionsEqual, EmptySpaceInFrontOfMonster, SurvivorInRange, MonsterInRange, GetBaseCoordinates, GetDiceRoll, GetMonsterDirectionMarks, DirectionsAgainstSurvivor} from './Functions/HelperFunctions'
 
 
 export default class GameBoard extends Component {
@@ -57,8 +57,11 @@ export default class GameBoard extends Component {
       monster: this.props.showdown.monster,
       aiDeck: this.props.showdown.monster.aiDeck,
       hlDeck: this.props.showdown.monster.hlDeck,
+      hlCard: 0,
       highlights: [],
       monsterMoves: [],
+      remainingMonsterMove: 0,
+      monsterMoveHighlights: [],
       
       popUp: {
         showGearGrid: false
@@ -182,31 +185,128 @@ export default class GameBoard extends Component {
    }
  }
 
- moveMonsterInDirection = (direction) => { //TODO: add border limits
+ clickedAttack = () => {
+  let aiCard = this.state.revealedAI;
+  let survivor = this.state.selection.monsterTarget;
+  let monster = this.state.monster;
+
+  let action = this.state.action;
+  action.monsterMoveSelected = false;
+
+  this.setState({action: action});
+
+  console.log("monster attacking, fetching aiCard=" +aiCard.title +" from state");
+  this.attack(monster, aiCard, survivor);
+}
+
+  /*
+  * Handles a click on the board
+  */
+ click = (props) => {
+
+  let identifier = props.target.alt.split("_")[0];
+  let x = parseInt(props.target.alt.split("_")[1]);
+  let y = parseInt(props.target.alt.split("_")[2]);
+
+  if (identifier === "survivor") { //clicked a survivor
+    this.selectSurvivor(x);
+  }
+  else if (identifier === "monster") { //clicked monster
+    this.selectMonster();
+  }
+  else if ((identifier === "board")) { //clicked board
+    this.clickedBoard(x, y);
+  }
+}
+
+/*
+ * Deselects survivor/monster
+ */
+deselect = () => {
+  let selection = this.state.selection;
+  selection.typeSelected = "";
+  selection.markedX = -1;
+  selection.markedY = -1;
+  selection.selectedSurvivorId = -1;
+  selection.selectedMonsterId = -1;
+  
+  let action = this.state.action;
+  action.moveSelected = false;
+
+  this.setState({
+    selection: selection,
+    highlights: [],
+    action: action
+  })
+}
+
+ moveMonsterInDirection = (direction) => {
   if(this.state.action.monsterMoveSelected){
+
+    let target = this.state.selection.monsterTarget; //survivor
     let monster = this.state.monster;
+    let survivors = this.state.survivors;
+    let attack = {reach: 1};
+    let remainingMonsterMove = this.state.remainingMonsterMove;
+
     if(!this.state.keyDown.shift){
-      if(direction === "DOWN"){
-        monster.position.y++;
+
+      if(MonsterInRange(monster, target, attack)){
+        console.log("already in range, no move needed!")
       }
-      else if(direction === "UP"){
-        monster.position.y--;
+      else if(remainingMonsterMove === 0){
+        console.log("no monster movement left");
       }
-      else if(direction === "LEFT"){
-        monster.position.x--;
-      }
-      else if(direction === "RIGHT"){
-        monster.position.x++;
+      else {
+        console.log("not in range, moving " +direction);
+
+        if(direction === "DOWN"){
+          if(monster.position.y<17 && monster.position.y < (target.position.y-1)){ //TODO: get from state
+            monster.position.y++;
+            remainingMonsterMove--;
+          }
+        }
+        else if(direction === "UP"){
+          if(monster.position.y>0 && monster.position.y > target.position.y){
+            monster.position.y--;
+            remainingMonsterMove--;
+          }
+        }
+        else if(direction === "LEFT"){
+          if(monster.position.x>0 && monster.position.x > target.position.x){
+            monster.position.x--;
+            remainingMonsterMove--;
+          }
+        }
+        else if(direction === "RIGHT"){
+          if(monster.position.x<20 && monster.position.x < (target.position.x-1)){ //TODO: get from state
+            monster.position.x++;
+            remainingMonsterMove--;
+          }
+        }
+        else {
+          console.log("not moving, only able to move closer to target");
+        }
+        this.checkCollisions(monster, survivors);
       }
     }
     monster.facing = direction;
-    this.setState({monster: monster});
+
+    if(MonsterInRange(monster, target, attack)){
+      this.unMarkMonsterMoves();
+      this.checkKnockBack(monster, survivors);
+    }
+    else {
+      this.markDirectionsAgainstSurvivor(monster, target); 
+    }
+    
+    this.updateMonster(monster);
+    this.setState({remainingMonsterMove: remainingMonsterMove});
   }
  }
 
- moveMonster = (x,y) => {
+ moveMonsterToValidPosition = (x,y) => {
 
-  console.log("moving monster!");
   let monster = this.state.monster;
   let survivors = this.state.survivors;
 
@@ -226,65 +326,92 @@ export default class GameBoard extends Component {
       monster.position.y--;
     }
 
-    /*
-    All survivors passed over are knocked down
-    */
-    const collisions = this.monsterOnSurvivor(monster, survivors);
-    for(let n=0; n<collisions.length; n++)
-    {
-      let survivor_n = this.getSurvivorById(collisions[n]);
-      survivor_n.status = "KNOCKED_DOWN";
-      console.log("set knock down for " +survivor_n.name);
-      this.addLogMessage(survivor_n.name +" was run over and knocked down by the monster", "MONSTER");
-
-      this.updateSurvivor(survivor_n);
-    }
-
+    this.checkCollisions(monster, survivors);
     counter++;
   }
 
-  /*
-  All survivors under monster gets knockback
-  */
+  this.checkKnockBack(monster, survivors);
+  this.addGrab(monster);
+  this.updateMonster(this.state.monster);
+
+  if(this.state.revealedHL !== 0 && this.state.revealedHL.length > 0){
+    let action = this.state.action;
+    action.selectHLCard = true;
+    this.setState({action: action});
+  }
+}
+
+markDirectionsAgainstSurvivor = (monster, survivor) => {
+  let directions = DirectionsAgainstSurvivor(monster.position, survivor.position);
+
+  let coordinates = [];
+  for(let n=0; n<directions.length; n++){
+    let newCoord = GetMonsterDirectionMarks(monster.position, directions[n]);
+    for(let m=0; m<newCoord.length; m++){
+      coordinates.push(newCoord[m]);
+    }
+  }
+  this.setState({monsterMoveHighlights: coordinates});
+}
+
+unMarkMonsterMoves = () => {
+  let action = this.state.action;
+  action.monsterMoveSelected = false;
+  this.setState({
+    monsterMoveHighlights: [],
+    action: action
+  });
+}
+
+ addGrab = (monster) => {
+  if(this.state.action.survivorGrabbed){
+    console.log("waiting for grab, placing survivor")
+    let action = this.state.action;
+    action.survivorGrabbed = false;
+
+    if(this.state.selection.monsterTarget !== -1 && typeof this.state.selection.monsterTarget !== 'undefined'){
+      this.grabSurvivor(monster, this.state.selection.monsterTarget);
+    }
+    else{
+      console.log("ERROR: Monster target not set")
+    }
+
+    this.setState({
+      action: action
+    });
+}
+ }
+
+ checkCollisions = (monster, survivors) => {
+    /*
+    All survivors passed over are knocked down
+    */
    const collisions = this.monsterOnSurvivor(monster, survivors);
    for(let n=0; n<collisions.length; n++)
    {
      let survivor_n = this.getSurvivorById(collisions[n]);
      survivor_n.status = "KNOCKED_DOWN";
      console.log("set knock down for " +survivor_n.name);
+     this.addLogMessage(survivor_n.name +" was run over and knocked down by the monster", "MONSTER");
 
-     survivor_n = this.addKnockback(survivor_n, 6);
      this.updateSurvivor(survivor_n);
    }
+ }
 
-  monster.activatedThisTurn = true;
-  
-  let selection = this.state.selection;
-  selection.selectedMonsterId = -1;
+ checkKnockBack = (monster, survivors) => {
+    /*
+      All survivors under monster gets knockback
+      */
+    const collisions = this.monsterOnSurvivor(monster, survivors);
+    for(let n=0; n<collisions.length; n++)
+    {
+      let survivor_n = this.getSurvivorById(collisions[n]);
+      survivor_n.status = "KNOCKED_DOWN";
+      console.log("set knock down for " +survivor_n.name);
 
-  this.setState({
-    monster: monster,
-    selection: selection,
-    highlights: []
-  })
-  this.updateMonster(this.state.monster);
-
-  if(this.state.action.survivorGrabbed){
-      console.log("waiting for grab, placing survivor")
-      let action = this.state.action;
-      action.survivorGrabbed = false;
-
-      if(this.state.selection.monsterTarget !== -1 && typeof this.state.selection.monsterTarget !== 'undefined'){
-        this.grabSurvivor(monster, this.state.selection.monsterTarget);
-      }
-      else{
-        console.log("ERROR: Monster target not set")
-      }
-
-      this.setState({
-        action: action
-      });
-  }
+      survivor_n = this.addKnockback(survivor_n, 6);
+      this.updateSurvivor(survivor_n);
+    }
  }
 
  survivorAlive = (id) => {
@@ -394,25 +521,24 @@ deHover = () => {
     }
  }
 
- selectBoard = (x,y) => {
+ clickedBoard = (x,y) => {
   if (x === this.state.selection.markedX && y === this.state.selection.markedY) { //deselect if click same tile twice
     this.deselect();
   }
   else {
     if (this.state.action.moveSelected === true) {         //MOVEMENT
-      if (this.validMove(x, y)) {
         if (this.state.selection.typeSelected === "survivor") {  //MOVE SURVIVOR
-          this.moveSurvivor(x,y);
-        }
-        else if (this.state.selection.typeSelected === "monster") { //MOVE MONSTER
-          this.moveMonster(x,y);
+          if(this.survivorValidMove(x, y)){
+            this.moveSurvivor(x,y);
+          }
         }
         let action = this.state.action;
         action.moveSelected = false;
         this.setState({ action: action })
-      }
-      else {
-        console.log("Invalid move selected");
+    }
+    else if(this.state.action.monsterMoveSelected === true){
+      if(this.monsterValidMove(x,y)){ //MOVE MONSTER
+        this.moveMonsterToValidPosition(x,y);
       }
     }
     else {
@@ -429,10 +555,6 @@ deHover = () => {
         highlights: [],
       })
     }
-
-    //let action = this.state.action;
-    //action.moveSelected = false;
-    //this.setState({ action: action })
   }
 
   if(this.state.revealedHL !== 0 && this.state.revealedHL.length > 0){
@@ -538,57 +660,20 @@ deHover = () => {
     }
  }
 
-
- /*
-  * Handles a click on the board
-  */
-  click = (props) => {
-
-    if (typeof this.state.monster.id === 'undefined') {
-      console.log("DEPRECATED: setting monster in props, remove!")
-      this.setState({ monster: this.props.showdown.monster })
-    }
-
-    let identifier = props.target.alt.split("_")[0];
-    let x = parseInt(props.target.alt.split("_")[1]);
-    let y = parseInt(props.target.alt.split("_")[2]);
-
-    if (identifier === "survivor") { //clicked a survivor
-      this.selectSurvivor(x);
-    }
-    else if (identifier === "monster") { //clicked monster
-      this.selectMonster();
-    }
-    else if ((identifier === "board")) { //clicked board
-      this.selectBoard(x, y);
-    }
-  }
-
-  /*
-   * Deselects survivor/monster
-   */
-  deselect = () => {
-    let selection = this.state.selection;
-    selection.typeSelected = "";
-    selection.markedX = -1;
-    selection.markedY = -1;
-    selection.selectedSurvivorId = -1;
-    selection.selectedMonsterId = -1;
-    
-    let action = this.state.action;
-    action.moveSelected = false;
-
-    this.setState({
-      selection: selection,
-      highlights: [],
-      action: action
-    })
-  }
-
-  validMove(x, y) {
+  survivorValidMove(x, y) {
     let validMove = false;
     for (let n = 0; n < this.state.highlights.length; n++) {
       if (this.state.highlights[n].x === x && this.state.highlights[n].y === y) {
+        validMove = true;
+      }
+    }
+    return validMove;
+  }
+
+  monsterValidMove(x, y) {
+    let validMove = false;
+    for (let n = 0; n < this.state.monsterMoveHighlights.length; n++) {
+      if (this.state.monsterMoveHighlights[n].x === x && this.state.monsterMoveHighlights[n].y === y) {
         validMove = true;
       }
     }
@@ -603,7 +688,7 @@ deHover = () => {
       })
   }
 
-  setMonsterMoves = (id) => {
+  setMonsterMoves = (id) => { //DEPRECATED
     GetMonsterMoves(id).then(data => {
       this.setState({
         monsterMoves: data
@@ -623,9 +708,14 @@ deHover = () => {
     let action = this.state.action;
     action.moveSelected = !action.moveSelected;
     action.monsterMoveSelected = !action.monsterMoveSelected;
-    console.log("monster move: " +action.monsterMoveSelected);
+    let remainingMonsterMove = this.state.monster.statline.movement;
+    console.log("monster move remaining: " +remainingMonsterMove);
+    this.addLogMessage("Use arrow keys to move monster into position. Hold shift to change facing.", "GAME_INFO");
+    this.markDirectionsAgainstSurvivor(this.state.monster, this.state.selection.monsterTarget);
+
     this.setState({
-      action: action
+      action: action,
+      remainingMonsterMove: remainingMonsterMove
     })
   }
 
@@ -650,8 +740,8 @@ deHover = () => {
       this.addLogMessage(logMsg, "SURVIVOR");
       console.log("getting hits with speed=" +this.getSpeed());
   
-          const toHitValueNeeded = this.getToHitValue(); //TODO: debug
-          //let toHitValueNeeded = 1;
+          //const toHitValueNeeded = this.getToHitValue(); //TODO: debug
+          let toHitValueNeeded = 1;
           const speed = this.getSpeed();
 
           GetHits(speed, toHitValueNeeded).then(diceRoll => {
@@ -760,6 +850,8 @@ deHover = () => {
 
   woundLocation = (hlCard) => {
 
+    this.stashHlCard(hlCard);
+
     let action = this.state.action;
     let monster = this.state.monster;
     console.log("loaded monster " +monster.name +" from state")
@@ -786,7 +878,7 @@ deHover = () => {
       console.log("action: " +action);
       
       let monster2 = this.state.monster;
-      const sucessValue = this.toWoundValue(monster2);
+      const sucessValue = this.toWoundValue(monster2); //why can´t I access let 'monster' here?
       let diceRoll = GetDiceRoll(1,10);
         
       let woundResult = {dieResult: 0, sucess: false, crit: false};
@@ -867,6 +959,10 @@ deHover = () => {
         this.discardHLCard(hlCard);
       }
     }
+  }
+
+  stashHlCard = (hlCard) => {
+    this.setState({hlCard: hlCard});
   }
 
   getCritValue = (attackProfile, luck) => {
@@ -1230,15 +1326,6 @@ deHover = () => {
     else return toHit;
   }
 
-  clickedAttack = () => {
-    let aiCard = this.state.revealedAI;
-    let survivor = this.state.selection.monsterTarget;
-    let monster = this.state.monster;
-
-    console.log("monster attacking, fetching aiCard=" +aiCard.title +" from state");
-    this.attack(monster, aiCard, survivor);
-  }
-
   damageSurvivor = (monster, survivor, numHits, attack) => {
 
     if(numHits > 0)
@@ -1387,9 +1474,11 @@ deHover = () => {
           this.attack(monster, aiCardBasic, survivor);
         }
         if(effect.priorityToken){
+          console.log("survivor gets priority target token");
           survivor.priorityTarget = true;
         }
         if(effect.permanentPriorityToken){
+          console.log("survivor gets permanent priority target token");
           survivor.permanentPriorityTarget = true;
         }
         if(effect.monsterKnockDown){
@@ -1416,13 +1505,13 @@ deHover = () => {
           GetMonsterSpecialMove(this.state.monster.id, effect.move.direction).then(data => {
   
             let action = this.state.action;
-            action.moveSelected = true;
+            action.monsterMoveSelected = true;
             action.selectedMonsterId = this.state.monster.id;
             let selection = this.state.selection;
             selection.typeSelected = "monster"; 
   
             this.setState({
-              highlights: data,
+              monsterMoveHighlights: data,
               action: action,
               selection: selection
             });
@@ -1793,7 +1882,12 @@ deHover = () => {
   Discards a HLcard after wound attempt, then shows the HLSelecter if cards remaining
   */
   discardHLCard = (hlCard) => {
-    this.moveHLCard(hlCard, "DISCARD"); 
+    if(!this.state.action.monsterMoveSelected){
+      this.moveHLCard(hlCard, "DISCARD"); 
+    }
+    else {
+      console.log("UNABLE TO DISCARD HL CARD; WAITING FOR PLAYER INPUT");
+    }
   }
 
   /*
@@ -1840,7 +1934,8 @@ deHover = () => {
     this.setState({
       revealedHL: revealedHL,
       hlDeck: hlDeck,
-      action: action
+      action: action,
+      hlCard: 0
     });
   }
 
@@ -1989,7 +2084,7 @@ deHover = () => {
         <TurnChanger activatedThisTurn={this.state.monster.activatedThisTurn} revealAI={this.clickedRevealAI} nextAct={this.nextAct} act={this.props.showdown.act}/>
         
         <div className="gameboard-normal">
-          <TileRenderer targets={this.state.targets} tileSizeX={size} tileSizeY={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
+          <TileRenderer targets={this.state.targets} tileSizeX={size} tileSizeY={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} monsterMoveHighlights={this.state.monsterMoveHighlights} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
           <MonsterTile deHoverMonster={this.deHoverMonster} hoverMonster={this.hoverMonster} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
           <SurvivorTiles deHoverSurvivor={this.deHoverSurvivor} hoverSurvivor={this.hoverSurvivor} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
         </div>
@@ -1998,7 +2093,7 @@ deHover = () => {
         <ActionBox act={this.props.showdown.act} showGearGrid={this.showGearGrid} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} selection={this.state.selection.typeSelected} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         <Gamelog log={this.state.log}/>
         {this.state.popUp.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} survivor={this.state.survivor} showGearGrid={this.showGearGrid} act={this.props.showdown.act}/>: null }
-        {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} target={this.target} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
+        {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} monsterMoveSelected={this.state.action.monsterMoveSelected} target={this.target} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}
         

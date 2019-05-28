@@ -15,17 +15,17 @@ export default class ActionBox extends Component {
     let moveDisabled = false;
     let moveDisabledReasonStr = "";
     let activateDisabledReasonStr = "";
-    if(this.props.survivor.movesLeft < 1){
+    if(this.props.act === "MONSTERS"){
+        moveDisabled = true;
+        moveDisabledReasonStr = "Waiting for survivors turn";
+    }
+    else if(this.props.survivor.movesLeft < 1){
         moveDisabled = true;
         moveDisabledReasonStr = "No moves left";
     }
     else if(this.deadOrKnockedDown()){
         moveDisabled = true;
         moveDisabledReasonStr = "Knocked down";
-    }
-    else if(this.props.act === "MONSTERS"){
-        moveDisabled = true;
-        moveDisabledReasonStr = "Waiting for survivors turn";
     }
     if(this.props.survivor.activationsLeft < 1){
         activateDisabled = true;
@@ -65,24 +65,6 @@ export default class ActionBox extends Component {
     }
     
     return(
-        /*
-        <Draggable
-            axis="both"
-            handle=".handle"
-            defaultPosition={{x: 0, y: 0}}
-            position={null}
-            grid={[1, 1]}
-            scale={1}
-            onStart={this.handleStart}
-            onDrag={this.handleDrag}
-            onStop={this.handleStop}>
-            <div className="handle">   
-                <div className="action-box">
-                    {actionBox}
-                </div>
-            </div>
-        </Draggable>*/
-
         <div className="round-gradient action-box">
             {actionBox}
         </div>
