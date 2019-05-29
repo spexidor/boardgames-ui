@@ -11,7 +11,7 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
         x: monster.position.x,
         y: monster.position.y-1
       }
-      if(!SurvivorInPosition(pos1, survivors))
+      if(!SurvivorInPosition(pos1, survivors) && PositionOnBoard(pos1))
       {
         return pos1;
       }
@@ -19,7 +19,7 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
         x: monster.position.x+1,
         y: monster.position.y-1
       }
-      if(!SurvivorInPosition(pos2, survivors))
+      if(!SurvivorInPosition(pos2, survivors) && PositionOnBoard(pos2))
       {
         return pos2;
       }
@@ -29,7 +29,7 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
         x: monster.position.x,
         y: monster.position.y+2
       }
-      if(!SurvivorInPosition(pos1, survivors))
+      if(!SurvivorInPosition(pos1, survivors) && PositionOnBoard(pos1))
       {
         return pos1;
       }
@@ -37,7 +37,7 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
         x: monster.position.x+1,
         y: monster.position.y+2
       }
-      if(!SurvivorInPosition(pos2, survivors))
+      if(!SurvivorInPosition(pos2, survivors) && PositionOnBoard(pos2))
       {
         return pos2;
       }
@@ -47,7 +47,7 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
         x: monster.position.x-1,
         y: monster.position.y
       }
-      if(!SurvivorInPosition(pos1, survivors))
+      if(!SurvivorInPosition(pos1, survivors) && PositionOnBoard(pos1))
       {
         return pos1;
       }
@@ -55,7 +55,7 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
         x: monster.position.x-1,
         y: monster.position.y+1
       }
-      if(!SurvivorInPosition(pos2, survivors))
+      if(!SurvivorInPosition(pos2, survivors) && PositionOnBoard(pos2))
       {
         return pos2;
       }
@@ -65,7 +65,7 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
         x: monster.position.x+2,
         y: monster.position.y
       }
-      if(!SurvivorInPosition(pos1, survivors))
+      if(!SurvivorInPosition(pos1, survivors) && PositionOnBoard(pos1))
       {
         return pos1;
       }
@@ -73,7 +73,7 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
         x: monster.position.x+2,
         y: monster.position.y+1
       }
-      if(!SurvivorInPosition(pos2, survivors))
+      if(!SurvivorInPosition(pos2, survivors) && PositionOnBoard(pos2))
       {
         return pos2;
       }
@@ -82,11 +82,8 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
   }
 
   export const SurvivorInPosition = (position: Position, survivors: Survivor[]) => {
-    //console.log("checking if survivor in " +position.x +"," +position.y);
-    //console.log(survivors.length +" survivors to check");
     for(let n=0; n<survivors.length; n++){
       if(survivors[n].position.x === position.x && survivors[n].position.y === position.y){
-        //console.log("survivor in position " +position.x +","+position.y)
         return true;
       }
     }
@@ -125,7 +122,7 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
     if(attack.reach === -1){
       inRange = true;
     }
-    console.log("monster in range: " +inRange.toString());
+    //console.log("monster in range: " +inRange.toString());
     return inRange;
   }
 
@@ -212,3 +209,50 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
     }
     return directions;
    }
+
+ /*
+ Returns array with id of survivors collided with
+ */
+ export const MonsterOnSurvivor = (monster: Monster, survivors: Survivor[]) => {
+
+  let collisions = []
+  let baseCoordinates = GetBaseCoordinates(monster);
+
+  for(let n=0; n<baseCoordinates.length; n++){
+    for(let m=0; m<survivors.length; m++){
+      if(survivors[m].position.x === baseCoordinates[n].x && survivors[m].position.y === baseCoordinates[n].y){
+          console.log("collision in (" +survivors[m].position.x +"," +survivors[m].position.y+")")
+          collisions.push(survivors[m].id);
+        }
+    }
+  }
+  return collisions; 
+ }
+
+ export const AddArmourAt = (survivor: Survivor, hitlocation: string, armour: number) => {
+  console.log("addArmourAt: armour=" +armour +", survivor=" +survivor +", hitLocation=" +hitlocation);
+    for(let n=0; n<survivor.hitlocations.length; n++){
+      if(survivor.hitlocations[n].type === hitlocation){
+          console.log("Adding armour at " +hitlocation);
+          survivor.hitlocations[n].hitpoints+=armour;
+        }
+        break; //Matching hit location processed
+    }
+    return survivor;
+}
+
+export const PositionOnBoard = (pos: Position) => {
+  if(pos.x < 0){
+    return false;
+  }
+  else if (pos.y < 0){
+    return false;
+  }
+  else if(pos.x > 21){
+    return false;
+  }
+  else if(pos.y > 17){
+    return false;
+  }
+  return true;
+}

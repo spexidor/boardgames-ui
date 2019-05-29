@@ -4,14 +4,10 @@ import Draggable from 'react-draggable';
 
 export default class Gamelog extends Component {
  
-/*
-scrollToBottom = () => {
-    this.messagesEnd.scrollIntoView({ behavior: "smooth" });
-}
 
-    <div style={{ float:"left", clear: "both" }}
-        ref={(el) => { this.messagesEnd = el; }}>
-    </div>
+scrollToBottom = () => {
+    this.messagesEnd.scrollIntoView({ behavior: "smooth", block: 'nearest', inline: 'start' });
+}
 
 componentDidMount = () => {
     this.scrollToBottom();
@@ -20,13 +16,16 @@ componentDidMount = () => {
 componentDidUpdate = () => {
     this.scrollToBottom();
 }
-*/
+
     
 render(){
 
     let gameLog = ""
 
-    gameLog = this.props.log.map((s, index) => <div className={s.type} key={index}>{s.message}</div>);
+    gameLog = this.props.log.map((s, index) => 
+    <div ref={(el) => { this.messagesEnd = el; }} className={s.type} key={index}>
+        {s.message}
+    </div>);
 
 
     return(

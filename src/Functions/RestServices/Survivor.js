@@ -61,8 +61,7 @@ export const DeleteSurvivor = (survivor) => {
   
   export const GetInjury = (hitlocation) => {
     console.log("fetching injury from table " +hitlocation)
-    //const url = 'http://localhost:8083/survivor/injury?table=' +hitlocation;
-    const url = 'http://localhost:8083/survivor/injury?table=head';
+    const url = 'http://localhost:8083/survivor/injury?table=' +hitlocation;
     
     return fetch(url).then(response => response.json());
   }

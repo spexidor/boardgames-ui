@@ -16,7 +16,6 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
   
   componentDidMount(){
     GetLatestShowdown(this.state.id).then(data => {
-      console.log("data: " +data);
       if(data !== null){
         this.setState({
           loaded: true,
@@ -53,7 +52,6 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
         ids[n] = this.state.showdown.survivors[n].id;
       }
     }
-    console.log("rendering Game.js");
 
     let gameBoard = <div></div>;
     if(this.state.loaded){

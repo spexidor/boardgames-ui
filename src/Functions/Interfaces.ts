@@ -36,6 +36,15 @@ export interface Position {
     survival: number;
     bleed: number;
     priorityTarget: boolean;
+    hitlocations: Hitlocation[];
+  }
+
+  export interface Hitlocation {
+    id: number;
+    type: string;
+    lightInjury: boolean;
+    heavyInjury: boolean;
+    hitpoints: number;
   }
   
   export interface AttackProfile {
