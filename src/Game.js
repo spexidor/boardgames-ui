@@ -60,8 +60,8 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
     
     return(
       <div>
-        <GameSelector createGame={this.createGame}/>
         {gameBoard}
+        <GameSelector createGame={this.createGame}/>
       </div>)
   }
 }

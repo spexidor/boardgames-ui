@@ -11,6 +11,9 @@ export default class GameBoardTile extends Component {
         if(this.props.highlight){
             tileCSS = tileCSS + " gameboard-tile-selected";
         }
+        if(this.props.inMonsterRange){
+            tileCSS = tileCSS + " gameboard-tile-monster-range";
+        }
         
         if(this.props.markedX===this.props.x && this.props.markedY===this.props.y)
         {

@@ -13,27 +13,6 @@ render(){
     //Input:
     let hlCard = this.props.hlCard;
     
-    /*
-    let hlCard = {
-        title: "Glorious Mane",
-        impervious: true,
-        description: "Impervious hit locations cannot be wounded. A wound or critical wound will not remove an AI card or defeat the monster.",
-        critable: true,
-        reflexEffect: false,
-        failureEffect: true,
-        woundEffect: false,
-        trap: true,
-        criticalWound: {
-            description: "Text description",
-            persistantInjury: true
-            cardEffect: {
-                description: "Lost Ding Dong"
-            }
-        }
-    }
-    */
-    
-
     let reflex = <div></div>
     let reflexStr = "";
     let reflexChar = "";

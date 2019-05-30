@@ -25,6 +25,54 @@
   opacity: 0.9;
 }
 
+.menu-hidden {
+  height: 2.0vw;
+  width: 2.5vw;
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #282c34;
+  border-bottom-left-radius: 0.2vw;
+  padding: 0.3vw;
+}
+.menu-hidden-bar {
+  height: 0.35vw;
+  width: 100%;
+  background-color: #5a5b5c;
+  margin: 0.2vw 0;
+}
+.menu-hidden:hover {
+  filter: brightness(1.5);
+}
+.menu-shown {
+  height: 30vw;
+  width: 15vw;
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #65ff63;
+  border-bottom-left-radius: 0.2vw;
+}
+.menu-hide {
+  height: 1.5vw;
+  width: 1.5vw;
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #5a5b5c;
+}
+.arrow-up {
+  width: 0; 
+  height: 0;
+  position: relative;
+  left: 30%;
+  top: 40%;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  
+  border-bottom: 6px solid black;
+} 
+
 .game-log {
   text-align: left;
   padding-left: 15px;
@@ -36,7 +84,7 @@
   height: 15vw;
   width: 15vw;
   top: 6.8%;
-  left: 72%;
+  right: 1%;
   font-size: 0.8vw;
 }
 
@@ -237,6 +285,7 @@ Width:  2.5   1.25   1.0   0.5
 .hlCard-persistant-title{
   font-size: 0.5vw;
   font-weight: bold;
+  letter-spacing: -0.02rem;
 }
 .aiCard-target {
   border-radius: 7px;
@@ -431,6 +480,9 @@ Width:  2.5   1.25   1.0   0.5
 }
 .gameboard-tile-selected {
   filter: brightness(1.7);
+}
+.gameboard-tile-monster-range {
+  filter: sepia(0.3) hue-rotate(320deg);;
 }
 
 .info-box {

@@ -157,6 +157,15 @@ export const EmptySpaceInFrontOfMonster = (monster: Monster, survivors: Survivor
     return myDiceRoll;
   }
 
+  export const GetDiceRolls = (min: number, max: number, dice: number) => {
+    let result = [];
+    for(let n=0; n<dice; n++){
+      result.push(Math.floor(Math.random() * (max-min +1) +min)); 
+    }
+    console.log("myDiceRoll: " +result)
+    return result;
+  }
+
   export const GetMonsterDirectionMarks = (monsterPosition: Position, direction: string) => {
 
     let monsterMoveHighlights: never[] | { x: number; y: number; }[] | { x: number; y: number; }[] | { x: number; y: number; }[] | { x: number; y: number; }[] = [];

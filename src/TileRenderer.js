@@ -18,6 +18,7 @@ export default class TileRenderer extends Component
       
               let highlight = false;
               let target = false;
+              let inMonsterRange = false;
               for(let n=0; n<this.props.highlights.length; n++){
                   if(x===this.props.highlights[n].x && y===this.props.highlights[n].y){
                     highlight=true;
@@ -29,7 +30,13 @@ export default class TileRenderer extends Component
                   highlight=true;
                   break;
                 }
-            }
+              }
+              for(let n=0; n<this.props.monsterMoves.length; n++){
+                if(x===this.props.monsterMoves[n].x && y===this.props.monsterMoves[n].y){
+                  inMonsterRange=true;
+                  break;
+                }
+              }
               for(let n=0; n<this.props.targets.length; n++){
                 if(x===this.props.targets[n].position.x && y===this.props.targets[n].position.y){
                   target=true;
@@ -44,7 +51,8 @@ export default class TileRenderer extends Component
                   x: x,
                   y: y,
                   highlight: highlight,
-                  target: target
+                  target: target,
+                  inMonsterRange: inMonsterRange
                 });
             }
           }
@@ -70,6 +78,6 @@ function MapTable(props){
  
     return(
       props.data.map((s, index) => 
-          <GameBoardTile target={s.target} highlight={s.highlight} click={props.click} key={index} markedX={props.markedX} markedY={props.markedY}  src={skulls} height={props.sizeY} width={props.sizeX} top={s.topPx} left={s.leftPx} x={s.x} y={s.y}/>
+          <GameBoardTile inMonsterRange={s.inMonsterRange} target={s.target} highlight={s.highlight} click={props.click} key={index} markedX={props.markedX} markedY={props.markedY}  src={skulls} height={props.sizeY} width={props.sizeX} top={s.topPx} left={s.leftPx} x={s.x} y={s.y}/>
       ))
   }

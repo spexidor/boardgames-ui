@@ -8,6 +8,7 @@ export default class GameSelector extends Component {
         super (props)
         this.state = {
            input: 'Game name',
+           hidden: true
         }
       }
 
@@ -21,9 +22,27 @@ export default class GameSelector extends Component {
         })
       }
 
+      toggleHide = () => {
+        this.setState({hidden: !this.state.hidden});
+      }
+
     render(){
-        return(
-            <div className="round-gradient" style={{position: "absolute", height: 40, width: 300, top: 5, left: 50}}>
+
+      let menu = <div></div>
+      if(this.state.hidden){
+        menu = 
+        <div className="menu-hidden" onClick={this.toggleHide}>
+            <div className="menu-hidden-bar"></div>
+            <div className="menu-hidden-bar"></div>
+            <div className="menu-hidden-bar"></div>
+        </div>
+      }
+      else {
+        menu = 
+<           div className="menu-shown">
+                <div className="menu-hide" onClick={this.toggleHide}>
+                  <div className="arrow-up"></div>
+                </div>
                 <input
                 type="text"
                 value= {this.state.input || ''}
@@ -32,6 +51,10 @@ export default class GameSelector extends Component {
                 />
                 <button onClick={this.newGame}>New Game</button>
             </div>
+      }
+
+        return(
+          <div>{menu}</div>
         )
     }
 }       

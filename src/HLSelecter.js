@@ -4,6 +4,9 @@ import HLCard from './HLCard';
 
 export default class HLSelecter extends React.Component {
 
+  /*
+  Replaced with HLSelecter2.js
+  */
     constructor(props){
       super(props);
   
