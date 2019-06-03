@@ -53,6 +53,7 @@ export default class GameBoard extends Component {
       },
       survivor: this.props.showdown.survivors[0],
       survivors: this.props.showdown.survivors,
+      survivorIds: this.initSurvivorIds(),
       monster: this.props.showdown.monster,
       aiDeck: this.props.showdown.monster.aiDeck,
       hlDeck: this.props.showdown.monster.hlDeck,
@@ -88,6 +89,14 @@ export default class GameBoard extends Component {
       gearArr.push({survivorId: this.props.showdown.survivors[n].id, gear: this.props.showdown.survivors[n].gearGrid.gear[2], attackProfileIndex: -1});
     }
     return gearArr;
+  }
+
+  initSurvivorIds = () => {
+    let idsArr = [];
+    for (let n=0; n<this.props.showdown.survivors.length; n++){
+      idsArr.push(this.props.showdown.survivors[n].id);
+    }
+    return idsArr;
   }
 
   componentDidMount(){
@@ -133,15 +142,15 @@ export default class GameBoard extends Component {
     }
 
    if(event.keyCode===49){ //1
-    this.selectSurvivor(this.props.survivorIds[0]);
+    this.selectSurvivor(this.state.survivorIds[0]);
    }else if(event.keyCode===50){ //2
-    this.selectSurvivor(this.props.survivorIds[1]);
+    this.selectSurvivor(this.state.survivorIds[1]);
    }
    else if(event.keyCode===51){ //3
-    this.selectSurvivor(this.props.survivorIds[2]);
+    this.selectSurvivor(this.state.survivorIds[2]);
    }
    else if(event.keyCode===52){ //4
-    this.selectSurvivor(this.props.survivorIds[3]);
+    this.selectSurvivor(this.state.survivorIds[3]);
    }
    else if(event.keyCode===53){ //5
     this.selectMonster();
@@ -248,7 +257,7 @@ clickedActivate = () => {
 
 clickedBoard = (x,y) => {
 
-  //this.addLogMessage("CLICKED TILE " +x +"," +y, "GAME_INFO");
+  this.addLogMessage("CLICKED TILE " +x +"," +y, "GAME_INFO");
 
   if (x === this.state.selection.markedX && y === this.state.selection.markedY) { //deselect if click same tile twice
     this.deselect();
@@ -806,8 +815,13 @@ deHover = () => {
 
   addLogMessage = (newMessage, type) => {
     let log = this.state.log;
-    log.push({message: newMessage, type: type}); //unshift to add to front of array
-    this.setState({log: log});
+    if(log[log.length-1].message !== newMessage){
+      log.push({message: newMessage, type: type}); //unshift to add to front of array
+      this.setState({log: log});
+    }
+    else {
+      console.log("ignoring writing message to log: " +newMessage);
+    }
   }
 
   successfulWound = (diceRoll, sucessValue) => {
@@ -817,6 +831,15 @@ deHover = () => {
     }
     else {
       return {dieResult: diceRoll, sucess: false};;
+    }
+  }
+
+  isInsane = (survivor) => {
+    if(this.getArmourAt(survivor, "BRAIN") >= 3){
+      return true;
+    }
+    else {
+      return false;
     }
   }
 
@@ -859,8 +882,13 @@ deHover = () => {
         this.addLogMessage("Attempting to wound " +hlCard.title +" (" +sucessValue +"+ needed)", "SURVIVOR");
         woundResult = this.successfulWound(diceRoll, sucessValue);
 
-        this.addLogMessage("Rolled " +woundResult.dieResult +", success=" +woundResult.sucess.toString(), "SURVIVOR");
-      
+        if(woundResult.sucess){
+          this.addLogMessage("Rolled " +woundResult.dieResult +", success!", "SURVIVOR");
+        }
+        else {
+          this.addLogMessage("Rolled " +woundResult.dieResult +", failed to wound.", "SURVIVOR");
+        }
+        
         if(diceRoll >= this.getCritValue(attackProfile, 0)){ //0 = survivor luck
           this.addLogMessage("Crit rolled", "SURVIVOR")
           woundResult.crit = true;
@@ -1266,7 +1294,7 @@ deHover = () => {
       let action = this.state.action;
       action.selectMonsterTarget = false;
       this.deselect();
-      this.damageSurvivor(monster, survivor, hits, aiCard.attack);
+      this.damageSurvivor(monster, survivor, hits.length, aiCard.attack);
 
       this.moveAI();
       this.setState({
@@ -1310,6 +1338,7 @@ deHover = () => {
 
   damageSurvivor = (monster, survivor, numHits, attack) => {
 
+    console.log("damageSurvivor: survivor: " +survivor.name +", numHits: " +numHits);
     if(numHits > 0)
     {
       let damage = attack.damage + this.getTokenBonus(monster, "DAMAGE");
@@ -1419,6 +1448,10 @@ deHover = () => {
           triggerCondition = false;
           console.log("to low understanding to trigger effect");
         }
+        if(this.getArmourAt(survivor, "BRAIN") < effect.minInsanity ){
+          triggerCondition = false;
+          console.log("to low insanity to trigger effect");
+        }
       }
 
       if(triggerCondition){
@@ -1483,6 +1516,14 @@ deHover = () => {
         if(effect.survivorGainInsanity > 0){
           survivor = this.addArmourAt(survivor, "BRAIN", effect.survivorGainInsanity);
           this.addLogMessage(survivor.name +" gains " +effect.survivorGainInsanity +" insanity from effect", "GAME_INFO");
+        }
+        if(effect.survivorPositiveToken !== null && typeof effect.survivorPositiveToken !== 'undefined'){
+          survivor.positiveTokens.push(effect.survivorPositiveToken);
+          this.addLogMessage(survivor.name +" gained +1 " +effect.survivorPositiveToken +" token", "GAME_INFO");
+        }
+        if(effect.survivorNegativeToken !== null && typeof effect.survivorPositiveToken !== 'undefined'){
+          survivor.negativeTokens.push(effect.survivorNegativeToken);
+          this.addLogMessage(survivor.name +" gained -1 " +effect.survivorNegativeToken +" token", "GAME_INFO");
         }
         
         if(typeof effect.move !== 'undefined' && effect.move !== null){
@@ -1652,6 +1693,25 @@ deHover = () => {
       damage--;
       this.updateSurvivor(survivor);
     }
+  }
+
+  addArmourAt = (survivor, hitlocation, armour) => {
+    for(let n=0; n<survivor.hitlocations.length; n++){
+      if(survivor.hitlocations[n].type === hitlocation){
+        survivor.hitlocations[n].hitpoints += armour;
+        break; //Matching hit location processed
+      }
+    }
+    return survivor;
+  }
+
+  getArmourAt = (survivor, hitlocation) => {
+    for(let n=0; n<survivor.hitlocations.length; n++){
+      if(survivor.hitlocations[n].type === hitlocation){
+        return survivor.hitlocations[n].hitpoints;
+      }
+    }
+    return -1;
   }
 
   survivorKilled = (survivor) => {

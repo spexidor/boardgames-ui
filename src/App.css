@@ -61,6 +61,9 @@
   right: 0;
   background-color: #5a5b5c;
 }
+.menu-hide:hover {
+  filter: brightness(1.5)
+}
 .arrow-up {
   width: 0; 
   height: 0;

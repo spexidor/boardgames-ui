@@ -15,11 +15,11 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
   }
   
   componentDidMount(){
-    GetLatestShowdown(this.state.id).then(data => {
-      if(data !== null){
+    GetLatestShowdown(this.state.id).then(showdown => {
+      if(showdown !== null){
         this.setState({
           loaded: true,
-          showdown: data});
+          showdown: showdown});
       }
       })
   }
@@ -45,6 +45,7 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
   }
 
   render(){
+    /*
     let ids = [-1, -1, -1, -1];
     
     if(typeof this.state.showdown !== 'undefined'){
@@ -52,10 +53,11 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
         ids[n] = this.state.showdown.survivors[n].id;
       }
     }
+    */
 
     let gameBoard = <div></div>;
     if(this.state.loaded){
-      gameBoard = <GameBoard showdown={this.state.showdown} survivorIds={ids} updateShowdown={this.updateShowdown}/>
+      gameBoard = <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown}/>
     }
     
     return(
