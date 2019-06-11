@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './App.css';
-//import {CreateShowdown} from './RestServices/Showdown'
 
 export default class GameSelector extends Component {
 
@@ -23,6 +22,9 @@ export default class GameSelector extends Component {
       }
 
       toggleHide = () => {
+        //const wrapper = document.getElementById('wrapper');
+        //wrapper.classList.toggle('is-nav-open');
+  
         this.setState({hidden: !this.state.hidden});
       }
 
@@ -39,7 +41,7 @@ export default class GameSelector extends Component {
       }
       else {
         menu = 
-<           div className="menu-shown">
+            <div className="menu-shown">
                 <div className="menu-hide" onClick={this.toggleHide}>
                   <div className="arrow-up"></div>
                 </div>
@@ -54,10 +56,7 @@ export default class GameSelector extends Component {
       }
 
         return(
-          <div>{menu}</div>
+          <div id="wrapper" className="wrapper">{menu}</div>
         )
     }
 }       
-
-          //<div alt={"survivor_" +this.props.id} onClick={this.props.click} onMouseLeave={this.dehover} onMouseOver={this.hover}  style={{borderRadius: "10px", background: "lightgreen", fontSize: "16px", color: "black", width: "20%", position: "absolute", height: 45, width: 45, top: this.props.top, left: this.props.left}}>{this.props.name}</div>
-            

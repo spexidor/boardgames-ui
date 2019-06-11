@@ -25,6 +25,19 @@
   opacity: 0.9;
 }
 
+.wrapper {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: margin 0.5s;
+  margin: 0 0 0 0;
+}
+
+.wrapper.is-nav-open {
+  margin-left: 0;
+}
+
+
 .menu-hidden {
   height: 2.0vw;
   width: 2.5vw;
@@ -45,14 +58,16 @@
   filter: brightness(1.5);
 }
 .menu-shown {
+  position: absolute;
   height: 30vw;
   width: 15vw;
-  position: absolute;
   top: 0;
   right: 0;
+  transition: right 0.5s;
   background-color: #65ff63;
   border-bottom-left-radius: 0.2vw;
 }
+
 .menu-hide {
   height: 1.5vw;
   width: 1.5vw;

@@ -55,6 +55,7 @@ export default class GameBoard extends Component {
       survivors: this.props.showdown.survivors,
       survivorIds: this.initSurvivorIds(),
       monster: this.props.showdown.monster,
+      monsterInRange: false,
       aiDeck: this.props.showdown.monster.aiDeck,
       hlDeck: this.props.showdown.monster.hlDeck,
       hlCard: 0,
@@ -374,7 +375,7 @@ deselect = () => {
     }
     monster.facing = direction;
 
-    if(MonsterInRange(monster, target, attack)){
+    if(MonsterInRange(monster, target, attack) || remainingMonsterMove === 0){
       this.unMarkMonsterMoves();
       this.checkKnockBack(monster, survivors);
     }
@@ -461,13 +462,13 @@ unMarkMonsterMoves = () => {
     this.setState({
       action: action
     });
-}
+  }
  }
 
  checkCollisions = (monster, survivors) => {
-    /*
-    All survivors passed over are knocked down
-    */
+   /*
+   All survivors passed over are knocked down
+   */
    const collisions = MonsterOnSurvivor(monster, survivors);
    for(let n=0; n<collisions.length; n++)
    {
@@ -482,8 +483,8 @@ unMarkMonsterMoves = () => {
 
  checkKnockBack = (monster, survivors) => {
     /*
-      All survivors under monster gets knockback
-      */
+    All survivors under monster gets knockback
+    */
     const collisions = MonsterOnSurvivor(monster, survivors);
     for(let n=0; n<collisions.length; n++)
     {
@@ -1448,6 +1449,9 @@ deHover = () => {
           triggerCondition = false;
           console.log("to low understanding to trigger effect");
         }
+        else{
+          console.log("survivor understanding: " +survivor.understanding +", needed for effect: " +effect.minUnderstanding);
+        }
         if(this.getArmourAt(survivor, "BRAIN") < effect.minInsanity ){
           triggerCondition = false;
           console.log("to low insanity to trigger effect");
@@ -2104,15 +2108,6 @@ deHover = () => {
     let survivors = this.state.survivors;
 
     monster = this.state.monster;
-    
-    /*
-    if(this.state.survivors.length === 0){
-      survivors = this.props.showdown.survivors;
-    }
-    else{
-      survivors = this.state.survivors;
-    }
-    */
 
     monsterPosX = monster.position.x;
     monsterPosY = monster.position.y;

@@ -23,7 +23,6 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
       }
       })
   }
-  
 
   updateShowdown = (showdown) => {
     console.log("updating showdown state, turn=" +showdown.turn);
@@ -45,15 +44,6 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
   }
 
   render(){
-    /*
-    let ids = [-1, -1, -1, -1];
-    
-    if(typeof this.state.showdown !== 'undefined'){
-      for(let n=0; n<this.state.showdown.survivors.length; n++){
-        ids[n] = this.state.showdown.survivors[n].id;
-      }
-    }
-    */
 
     let gameBoard = <div></div>;
     if(this.state.loaded){

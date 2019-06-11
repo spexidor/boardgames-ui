@@ -61,6 +61,7 @@ render(){
     let moveActive = "";
     if(this.props.monsterMoveSelected){
         moveActive = "button-active";
+        monsterMoveDisabled = false;
     }
 
     const aiCard = this.props.aiCard;
