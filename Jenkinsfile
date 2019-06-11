@@ -6,9 +6,9 @@ pipeline {
         }
     }
     stages {
-        stage('Build') { 
+        stage('Docker container') { 
             steps {
-                sh 'npm install' 
+                sh './jenkins/deploy.sh'
             }
         }
     }
