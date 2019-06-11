@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Docker container') { 
             steps {
-                sh 'sudo ./jenkins/deploy.sh'
+                sh './jenkins/deploy.sh'
             }
         }
     }
