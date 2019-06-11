@@ -1,9 +1,9 @@
 echo "starting awesome react docker deployment script"
 echo "start by building new image"
 
-sudo docker stop kdm-frontend
+docker stop kdm-frontend
 
-sudo docker build -t kdm-frontend .
+docker build -t kdm-frontend .
 
 echo "starting new container"
 
