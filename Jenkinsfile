@@ -1,8 +1,8 @@
 pipeline {
     agent {
         docker {
-            image 'node:6-alpine' 
-            args '-p 3000:3000' 
+            image 'jenkinsci/blueocean'
+            args '-v /root/.m2:/root/.m2 -v jenkins_data:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=""'
         }
     }
     stages {
