@@ -8,6 +8,7 @@ pipeline {
     stages {
         stage('Docker container') { 
             steps {
+                sh 'whoami'
                 sh './jenkins/deploy.sh'
             }
         }
