@@ -18,5 +18,6 @@ JENKINS_NODE_COOKIE=dontkillme docker run -d  \
   -v ${PWD}:/usr/src/app \
   -v /usr/src/app/node_modules \
   -p 5000:5000 \
+  --privilleged \
   --rm \
   kdm-frontend-dc
