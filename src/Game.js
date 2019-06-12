@@ -15,6 +15,7 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
   }
   
   componentDidMount(){
+    /*
     GetLatestShowdown(this.state.id).then(showdown => {
       if(showdown !== null){
         this.setState({
@@ -22,6 +23,7 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
           showdown: showdown});
       }
       })
+      */
   }
 
   updateShowdown = (showdown) => {
@@ -46,14 +48,34 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
   render(){
 
     let gameBoard = <div></div>;
+    let newGameScreen = <div></div>;
+    let menu = <div>;</div>
     if(this.state.loaded){
-      gameBoard = <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown}/>
+      gameBoard = <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown}/>;
+      menu = <GameSelector createGame={this.createGame}/>;
+    }
+    else {
+      newGameScreen = 
+      <div>
+        <div className="new-game">
+        <button onClick={this.createGame}>New Game</button>
+        </div>
+        <div className="bug-list">
+        Known bugs:
+        <p>
+          <li>Grab on multiple run over survivors not implemented</li>
+          <li>Sniff not implemented</li>
+          <li> + to many to list :) </li>
+        </p>
+        </div>
+      </div>
     }
     
     return(
       <div>
+        {newGameScreen}
         {gameBoard}
-        <GameSelector createGame={this.createGame}/>
+        {menu}
       </div>)
   }
 }
