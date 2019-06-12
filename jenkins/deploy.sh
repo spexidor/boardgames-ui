@@ -1,7 +1,7 @@
 echo "starting awesome react docker deployment script"
 
 echo "stopping old container"
-#docker stop kdm-frontend-dc
+docker stop kdm-frontend-dc
 
 echo "building new image"
 docker build -t kdm-frontend-dc .
