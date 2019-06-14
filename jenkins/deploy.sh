@@ -12,7 +12,7 @@ docker build -t kdm-frontend .
 echo "starting new container"
 JENKINS_NODE_COOKIE=dontkillme docker run -d  \
   --name kdm-frontend \
-  --network=docker_network \
+  --network=docker-network \
   -p 5000:5000 \
   --rm \
   kdm-frontend
