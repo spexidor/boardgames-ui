@@ -1,20 +1,18 @@
 echo "starting awesome react docker deployment script"
 
-echo "stopping old container"
-docker stop kdm-frontend-dc
+echo "stopping old container (if exists)"
+docker stop kdm-frontend
+
+echo "removing old container (if able)"
+docker rm kdm-frontend
 
 echo "building new image"
-docker build -t kdm-frontend-dc .
+docker build -t kdm-frontend .
 
-echo "whoami: " 
-whoami
-echo "PWD: " ${PWD}
-echo "ls:"
-ls -l
 echo "starting new container"
-
 JENKINS_NODE_COOKIE=dontkillme docker run -d  \
-  --name kdm-frontend-dc \
+  --name kdm-frontend \
+  --network=docker_network \
   -p 5000:5000 \
   --rm \
-  kdm-frontend-dc
+  kdm-frontend

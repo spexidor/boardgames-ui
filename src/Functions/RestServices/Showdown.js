@@ -10,9 +10,9 @@ export const GetShowdown = (id) => {
  
  export const CreateShowdown = (name) => {
  
-   console.log("creating new showdown in backend");
    const url = 'http://localhost:8083/showdown/'
- 
+   console.log("creating new showdown in backend (POST to " +url +")");
+   
    if(typeof name !== 'undefined'){ 
      return fetch(url, {
      crossDomain:true,

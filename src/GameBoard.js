@@ -204,6 +204,9 @@ export default class GameBoard extends Component {
   action.monsterMoveSelected = false;
 
   this.setState({action: action});
+  
+  monster.activatedThisTurn = true;
+  //this.updateMonster(monster);
 
   console.log("monster attacking, fetching aiCard=" +aiCard.title +" from state");
   this.attack(monster, aiCard, survivor);
@@ -1786,10 +1789,6 @@ deHover = () => {
     else {
       console.log("ai card already revealed");
     }
-
-    let monster = this.state.monster;
-    monster.activatedThisTurn = true;
-    this.updateMonster(monster);
   }
 
   /*
