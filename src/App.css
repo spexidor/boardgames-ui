@@ -27,9 +27,17 @@
 }
 
 .bug-list {
-  color: white;
+  color: gray;
   position: absolute;
   right: 5%;
+  bottom: 5%;
+  font-size: 0.7vw;
+}
+
+.version-info {
+  color: gray;
+  position: absolute;
+  left: 2%;
   bottom: 5%;
   font-size: 0.7vw;
 }

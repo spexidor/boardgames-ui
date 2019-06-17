@@ -3,6 +3,7 @@ import './App.css';
 import GameBoard from './GameBoard';
 import GameSelector from './GameSelector'
 import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/RestServices/Showdown';
+import { GetGitInfo } from './Functions/RestServices/BackendInfo';
 
  export default class Game extends Component {
  
@@ -10,7 +11,8 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
     super(props);
 
     this.state = {
-      loaded: false
+      loaded: false,
+      info: "",
     }
   }
   
@@ -23,7 +25,13 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
           showdown: showdown});
       }
       })
-      */
+    */
+
+    GetGitInfo().then(data => {
+      console.log("received git info from backend: " +data);
+      console.log("commit: " +data.commit_time);
+      this.setState({info: "Latest commit: " +data.commit_time +" (" +data.commit_message  +")"});
+    });
   }
 
   updateShowdown = (showdown) => {
@@ -49,7 +57,13 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
 
     let gameBoard = <div></div>;
     let newGameScreen = <div></div>;
-    let menu = <div>;</div>
+    let menu = <div></div>;
+
+    let versionInfo = 
+    <div className="version-info">
+      {this.state.info}
+    </div>;
+
     if(this.state.loaded){
       gameBoard = <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown}/>;
       menu = <GameSelector createGame={this.createGame}/>;
@@ -76,6 +90,7 @@ import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/Re
         {newGameScreen}
         {gameBoard}
         {menu}
+        {versionInfo}
       </div>)
   }
 }

@@ -1773,7 +1773,21 @@ deHover = () => {
         aiDeck = this.shuffleAI(aiDeck);
       }
       if (aiDeck.cardsInDeck.length > 0) {
-        let aiCard = aiDeck.cardsInDeck.shift(); 
+        this.printAI(); //debug
+        let firstCardIndex = this.getFirstCardIndex(aiDeck.cardsInDeck);
+        let aiCard = "";
+        if(firstCardIndex !== -1){
+          console.log("revealing index " +firstCardIndex);
+          aiCard = aiDeck.cardsInDeck[firstCardIndex];
+          aiDeck.cardsInDeck.splice(firstCardIndex, 1)
+          console.log("revealed card: " +aiCard.title);
+          this.printAI();
+        }
+        else{
+          console.log("ERROR: no card with card order 0 found in aiDeck.cardsInDeck")
+          aiCard = aiDeck.cardsInDeck.shift();
+        }
+        
 
         this.addLogMessage("** New AI Card revealed: " +aiCard.title, "GAME_INFO");
         this.setState({
@@ -1789,6 +1803,15 @@ deHover = () => {
     else {
       console.log("ai card already revealed");
     }
+  }
+
+  getFirstCardIndex = (deck) => {
+    for(let n=0; n<deck.length; n++){
+      if(deck[n].orderInDeck === 0){
+        return n;
+      }
+    }
+    return -1;
   }
 
   /*

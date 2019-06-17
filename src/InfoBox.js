@@ -56,7 +56,7 @@ export default class InfoBox extends Component {
         weapon = this.props.weapon.name;
 
         infoBox = 
-        <div className="handle round-gradient info-box" style={{position: "absolute", top: this.props.top-75, left: this.props.left+25}}>
+        <div className="handle round-gradient info-box" style={{position: "absolute", top: this.props.top-50, left: this.props.left+25}}>
           <ul className="info-box-list">
           <li><b>{name+", id=" +id}</b></li>
           <li>Survival: {survival}</li>
@@ -97,7 +97,7 @@ export default class InfoBox extends Component {
 
         let trapRiskStr = "(" +trapRisk1.toFixed(0) +"/" +trapRisk2.toFixed(0) +"/" +trapRisk3.toFixed(0) +"% risk of trap)"
         infoBox = 
-        <div className="handle round-gradient info-box" style={{position: "absolute", top: this.props.top-70, left: this.props.left}}>
+        <div className="handle round-gradient info-box" style={{position: "absolute", top: this.props.top-50, left: this.props.left}}>
           <ul className="info-box-list">
             <li><b>{this.props.monster.name}</b></li>
             <li>Status: {this.props.monster.status}</li>

@@ -6,20 +6,20 @@ export default class GameSelector extends Component {
     constructor(props) {
         super (props)
         this.state = {
-           input: 'Game name',
            hidden: true
         }
       }
 
     newGame = () =>{
-        this.props.createGame(this.state.input);
+        this.props.createGame("");
     }
 
+    /*
     handleChange = (e) => {
         this.setState({
           input: e.target.value
         })
-      }
+      }*/
 
       toggleHide = () => {
         //const wrapper = document.getElementById('wrapper');
@@ -45,12 +45,6 @@ export default class GameSelector extends Component {
                 <div className="menu-hide" onClick={this.toggleHide}>
                   <div className="arrow-up"></div>
                 </div>
-                <input
-                type="text"
-                value= {this.state.input || ''}
-                onChange= {this.handleChange}
-                placeholder = "Game name"
-                />
                 <button onClick={this.newGame}>New Game</button>
             </div>
       }
