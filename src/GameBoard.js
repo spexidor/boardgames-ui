@@ -1145,7 +1145,6 @@ deHover = () => {
     monster.activatedThisTurn = false;
 
     if(showdown.act === "MONSTERS"){
-
       showdown.act = "SURVIVORS";
 
       for (let n = 0; n < survivors.length; n++) {
@@ -1163,7 +1162,7 @@ deHover = () => {
         this.gameWon();
       }
     }
-    else{
+    else if (showdown.act === "SURVIVORS"){
       showdown.act = "MONSTERS";
       showdown.turn = showdown.turn + 1;
 
@@ -1181,10 +1180,13 @@ deHover = () => {
         this.addLogMessage("The monster stands up", "GAME_INFO");
       }
     }
+    else {
+      console.log("ERROR: unexpected game act: " +showdown.act);
+    }
 
     this.updateMonster(monster);
     this.addLogMessage("------------------------", "GAME_INFO");
-    this.addLogMessage("** " +showdown.act +" act starting **", "GAME_INFO");
+    this.addLogMessage("** Turn " +showdown.turn +", " +showdown.act +" act starting **", "GAME_INFO");
     this.props.updateShowdown(showdown);
   }
 
@@ -1379,6 +1381,7 @@ deHover = () => {
 
   getNegativeTokens = (monster, tokenType) => {
     let counter = 0;
+    console.log("DEBUG: " +monster.negativeTokens);
     for(let n=0; n<monster.negativeTokens.length; n++){
       if(monster.negativeTokens[n] === tokenType){
         console.log("-1 " +tokenType +" from token");
@@ -2104,6 +2107,10 @@ deHover = () => {
     this.setState({action: action})
   }
 
+  setHLCardFirstInDeck = (card) => {
+    console.log("clicked " +card.title); //TODO: change deck order of card to 0
+  }
+
   render() {
 
     //console.log("rendering GameBoard.js, gear in grid: " +this.state.survivor.gearGrid.gear.length);
@@ -2157,7 +2164,7 @@ deHover = () => {
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter toggleHLSelecter={this.toggleHLSelecter} hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}
         
-        {this.state.debug.showAllHLcards ? <AllHLCards woundLocation={this.woundLocation.bind(this)} hlCards = {this.state.hlDeck.cardsInDeck}/> : null }
+        {this.props.showHLCards ? <AllHLCards clickedCard={this.setHLCardFirstInDeck.bind(this)} hlCards = {this.state.hlDeck.cardsInDeck}/> : null }
       </div>
     )
   }

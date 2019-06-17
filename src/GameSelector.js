@@ -14,6 +14,10 @@ export default class GameSelector extends Component {
         this.props.createGame("");
     }
 
+    hlCardsInDeck = () => {
+      this.props.hlCardsInDeck();
+    }
+
     /*
     handleChange = (e) => {
         this.setState({
@@ -46,6 +50,9 @@ export default class GameSelector extends Component {
                   <div className="arrow-up"></div>
                 </div>
                 <button onClick={this.newGame}>New Game</button>
+                <br/>
+                 Debug options:
+                <button onClick={this.hlCardsInDeck}>Show/hide HL cards deck</button>
             </div>
       }
 

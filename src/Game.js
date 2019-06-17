@@ -13,19 +13,22 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
     this.state = {
       loaded: false,
       info: "",
+      devMode: true,
+      showHLCards: false
     }
   }
   
   componentDidMount(){
-    /*
-    GetLatestShowdown(this.state.id).then(showdown => {
-      if(showdown !== null){
-        this.setState({
-          loaded: true,
-          showdown: showdown});
-      }
+    
+    if(this.state.devMode){
+      GetLatestShowdown(this.state.id).then(showdown => {
+        if(showdown !== null){
+          this.setState({
+            loaded: true,
+            showdown: showdown});
+        }
       })
-    */
+    }
 
     GetGitInfo().then(data => {
       console.log("received git info from backend: " +data);
@@ -53,6 +56,10 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
     });
   }
 
+  showHLCards = () => {
+    this.setState({showHLCards: !this.state.showHLCards})
+  }
+
   render(){
 
     let gameBoard = <div></div>;
@@ -65,8 +72,8 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
     </div>;
 
     if(this.state.loaded){
-      gameBoard = <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown}/>;
-      menu = <GameSelector createGame={this.createGame}/>;
+      gameBoard = <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown} showHLCards={this.state.showHLCards}/>;
+      menu = <GameSelector createGame={this.createGame} hlCardsInDeck={this.showHLCards}/>;
     }
     else {
       newGameScreen = 

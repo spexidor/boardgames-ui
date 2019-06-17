@@ -4,8 +4,8 @@ import lantern from './images/lantern_white.png';
 
 export default class HLCard extends Component {
 
-woundLocation = () => {
-    this.props.woundLocation(this.props.hlCard);
+clickedCard = () => {
+    this.props.clickedCard(this.props.hlCard);
 }
 
 render(){
@@ -80,7 +80,7 @@ render(){
     let title = <div className={titleClassName}>{hlCard.title}</div>
     
    return(
-    <div className="border-box hlCard" onClick={this.woundLocation}>
+    <div className="border-box hlCard" onClick={this.clickedCard}>
         {title}
         {impervious}
         {reflex}
