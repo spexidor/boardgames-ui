@@ -14,7 +14,7 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
       loaded: false,
       backendInfo: "",
       frontendInfo: "",
-      devMode: true,
+      devMode: false,
       showHLCards: false
     }
   }
@@ -105,7 +105,7 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
         <p>
           <li>Grab on multiple run over survivors not implemented</li>
           <li>Sniff not implemented</li>
-          <li> + to many to list :) </li>
+          <li>Not able to choose move path when monster moves as a reaction</li>
         </p>
         </div>
       </div>
