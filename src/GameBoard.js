@@ -1255,6 +1255,9 @@ deHover = () => {
         }
         let selection = this.state.selection;
         selection.monsterTarget = data[0];
+        this.setState({
+          selection: selection,
+        });
       }
       else if(data.length > 0){
         console.log("multiple possible targets, choose 1");
@@ -2211,7 +2214,7 @@ deHover = () => {
         <ActionBox act={this.props.showdown.act} showGearGrid={this.showGearGrid} moveSelected={this.state.action.moveSelected} survivor={this.state.survivor} aiCard={this.state.revealedAI} selection={this.state.selection.typeSelected} survivorMove={this.clickedSurvivorMove} activate={this.clickedActivate} changeFacing={this.changeFacing} />
         <Gamelog log={this.state.log}/>
         {this.state.popUp.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} survivor={this.state.survivor} showGearGrid={this.showGearGrid} act={this.props.showdown.act}/>: null }
-        {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} monsterMoveSelected={this.state.action.monsterMoveSelected} target={this.target} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
+        {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} inRange={this.state.monsterInRange} monsterMoveSelected={this.state.action.monsterMoveSelected} target={this.target} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter toggleHLSelecter={this.toggleHLSelecter} hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}
         

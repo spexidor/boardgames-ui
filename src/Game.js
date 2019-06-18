@@ -14,14 +14,15 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
       loaded: false,
       backendInfo: "",
       frontendInfo: "",
-      devMode: true,
       showHLCards: false
     }
   }
   
   componentDidMount(){
-    
-    if(this.state.devMode){
+
+    console.log("ENV: " +process.env.NODE_ENV);
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+      // dev code
       GetLatestShowdown(this.state.id).then(showdown => {
         if(showdown !== null){
           this.setState({
@@ -29,21 +30,22 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
             showdown: showdown});
         }
       })
+    } else {
+        // production code
+        
+        //backend git
+        GetGitInfo().then(data => {
+          console.log("received git info from backend: " +data);
+          console.log("commit: " +data.commit_time);
+          this.setState({backendInfo: "Latest commit: " +data.commit_time +" (" +data.commit_message  +")"});
+        });
+
+        //frontend git
+        const data = require('./static/gitInfo.txt')
+        fetch(data).then(result => 
+          result.text()
+        ).then(text => this.setState({frontendInfo: text}));
     }
-
-    //backend git
-    GetGitInfo().then(data => {
-      console.log("received git info from backend: " +data);
-      console.log("commit: " +data.commit_time);
-      this.setState({backendInfo: "Latest commit: " +data.commit_time +" (" +data.commit_message  +")"});
-    });
-
-    //frontend git
-    const data = require('./static/gitInfo.txt')
-    fetch(data).then(result => 
-      result.text()
-    ).then(text => this.setState({frontendInfo: text}));
-  
   }
 
   updateShowdown = (showdown) => {

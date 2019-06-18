@@ -31,9 +31,3 @@ export default class HLSelecter extends React.Component {
       );
     }
   }
-
-  /*
-<div className='hl-selecter'>
-            {cards}
-          </div>
-  */
