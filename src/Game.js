@@ -14,7 +14,7 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
       loaded: false,
       backendInfo: "",
       frontendInfo: "",
-      devMode: false,
+      devMode: true,
       showHLCards: false
     }
   }

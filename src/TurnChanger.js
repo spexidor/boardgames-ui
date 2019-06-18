@@ -7,12 +7,8 @@ export default class TurnChanger extends React.Component {
   
     let nextAct ="";
     let monsterAction =<div></div>;
-    let showHLSelecter = <div></div>;
     let nextActDisabled = false;
 
-    if(!this.props.selectHLCard && this.props.hlCards.length > 0){
-      showHLSelecter = <button onClick={this.props.toggleHLSelecter}>Show HL selecter</button>
-    }
     if(this.props.act === "SURVIVORS"){
         nextAct = "Go to Monsters act";
     }
@@ -27,15 +23,14 @@ export default class TurnChanger extends React.Component {
     }
       let actionBox = 
       <div>
-        {showHLSelecter}
         <button disabled={nextActDisabled} onClick={this.props.nextAct}>{nextAct}</button>
       </div>
         
     
       return (
         <div className="round-gradient turn-changer">
-          {actionBox}
           {monsterAction}
+          {actionBox}
         </div>
       );
     }

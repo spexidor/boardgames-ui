@@ -48,9 +48,7 @@ export default class ActionBox extends Component {
         <button disabled={moveDisabled} className={moveActive} onClick={this.props.survivorMove}>Move</button>
         <button disabled={activateDisabled} onClick={this.props.activate}>Activate</button>
         <button onClick={this.props.showGearGrid}>Gear</button>
-        <br/>
         {moveDisabled ? <i>{moveDisabledReasonStr}</i>: null}
-        <br/>
         {activateDisabled ? <i>{activateDisabledReasonStr}</i>: null}
         </div>
     }

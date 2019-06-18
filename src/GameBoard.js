@@ -2199,7 +2199,7 @@ deHover = () => {
     return (
       <div>
 
-        <TurnChanger hlCards={this.state.revealedHL} selectHLCard={this.state.action.selectHLCard} toggleHLSelecter={this.toggleHLSelecter}  activatedThisTurn={this.state.monster.activatedThisTurn} revealAI={this.clickedRevealAI} nextAct={this.nextAct} act={this.props.showdown.act}/>
+        <TurnChanger hlCards={this.state.revealedHL} selectHLCard={this.state.action.selectHLCard} activatedThisTurn={this.state.monster.activatedThisTurn} revealAI={this.clickedRevealAI} nextAct={this.nextAct} act={this.props.showdown.act}/>
         
         <div className="gameboard-normal">
           <TileRenderer monsterMoves={this.state.monsterMoves} targets={this.state.targets} tileSizeX={size} tileSizeY={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} monsterMoveHighlights={this.state.monsterMoveHighlights} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />

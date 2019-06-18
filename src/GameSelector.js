@@ -18,23 +18,14 @@ export default class GameSelector extends Component {
       this.props.hlCardsInDeck();
     }
 
-    /*
-    handleChange = (e) => {
-        this.setState({
-          input: e.target.value
-        })
-      }*/
+    toggleHide = () => {
+      //const wrapper = document.getElementById('wrapper');
+      //wrapper.classList.toggle('is-nav-open');
 
-      toggleHide = () => {
-        //const wrapper = document.getElementById('wrapper');
-        //wrapper.classList.toggle('is-nav-open');
-  
-        this.setState({hidden: !this.state.hidden});
-      }
+      this.setState({hidden: !this.state.hidden});
+    }
 
     render(){
-
-      
 
       let menu = <div></div>
       if(this.state.hidden){
