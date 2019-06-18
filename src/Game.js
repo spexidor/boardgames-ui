@@ -46,16 +46,6 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
   
   }
 
-  /*
-  setGit = () => {
-    const data = require('./static/gitInfo.txt')
-    fetch(data).then(result => 
-      //return result.text()
-      result.text()
-    ).then(text => this.setState({gitInfo: text}));
-  }
-  */
-
   updateShowdown = (showdown) => {
     console.log("updating showdown state, turn=" +showdown.turn);
     

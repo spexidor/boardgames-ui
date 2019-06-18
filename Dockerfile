@@ -10,6 +10,7 @@ COPY . .
 
 # Build for production.
 RUN npm install
+RUN npm run git-info
 RUN npm run build
 
 # Install `serve` to run the application.
