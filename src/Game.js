@@ -12,7 +12,8 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
 
     this.state = {
       loaded: false,
-      info: "",
+      backendInfo: "",
+      frontendInfo: "",
       devMode: true,
       showHLCards: false
     }
@@ -30,12 +31,30 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
       })
     }
 
+    //backend git
     GetGitInfo().then(data => {
       console.log("received git info from backend: " +data);
       console.log("commit: " +data.commit_time);
-      this.setState({info: "Latest commit: " +data.commit_time +" (" +data.commit_message  +")"});
+      this.setState({backendInfo: "Latest commit: " +data.commit_time +" (" +data.commit_message  +")"});
     });
+
+    //frontend git
+    const data = require('./static/gitInfo.txt')
+    fetch(data).then(result => 
+      result.text()
+    ).then(text => this.setState({frontendInfo: text}));
+  
   }
+
+  /*
+  setGit = () => {
+    const data = require('./static/gitInfo.txt')
+    fetch(data).then(result => 
+      //return result.text()
+      result.text()
+    ).then(text => this.setState({gitInfo: text}));
+  }
+  */
 
   updateShowdown = (showdown) => {
     console.log("updating showdown state, turn=" +showdown.turn);
@@ -68,7 +87,7 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
 
     let versionInfo = 
     <div className="version-info">
-      {this.state.info}
+      {this.state.backendInfo} | {this.state.frontendInfo}
     </div>;
 
     if(this.state.loaded){

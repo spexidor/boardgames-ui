@@ -6,7 +6,7 @@ export default class GameSelector extends Component {
     constructor(props) {
         super (props)
         this.state = {
-           hidden: true
+           hidden: true,
         }
       }
 
@@ -33,6 +33,8 @@ export default class GameSelector extends Component {
       }
 
     render(){
+
+      
 
       let menu = <div></div>
       if(this.state.hidden){

@@ -1,0 +1,1 @@
+5690ac1 addded showHLCards to game menu

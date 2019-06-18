@@ -1958,7 +1958,7 @@ deHover = () => {
   */
   discardHLCard = (hlCard) => {
     if(!this.state.action.monsterMoveSelected){
-      this.moveHLCard(hlCard, "DISCARD"); 
+      this.moveHLCard(hlCard, "REVEALED", "DISCARD"); 
     }
     else {
       console.log("UNABLE TO DISCARD HL CARD; WAITING FOR PLAYER INPUT");
@@ -1969,42 +1969,90 @@ deHover = () => {
   Persistant injuries are placed in 'removed' pile
   */
   removeHLCard = (hlCard) => {
-    this.moveHLCard(hlCard, "REMOVE");
+    this.moveHLCard(hlCard, "REVEALED", "REMOVED");
   }
 
-  moveHLCard = (hlCard, destination) => {
+  /*
+  Removes hlCard from source, then adds it to destination
+  */
+  moveHLCard = (hlCard, source, destination) => {
 
-    console.log("moving hl card: " +hlCard.title +" to " +destination);
+    console.log("moving hl card: " +hlCard.title +" to " +destination +" from " +source);
     
     let hlDeck = this.state.hlDeck;
     let revealedHL = this.state.revealedHL;
 
-    for(let n=0; n<revealedHL.length; n++){
-      if(revealedHL[n].title === hlCard.title){
-        console.log("removing index " +n +", title=" +revealedHL[n].title);
-        revealedHL.splice(n, 1);
-        break;
+    if(source === "REVEALED"){
+      for(let n=0; n<revealedHL.length; n++){
+        if(revealedHL[n].title === hlCard.title){
+          console.log("removing index " +n +", title=" +revealedHL[n].title +" from revealed cards");
+          revealedHL.splice(n, 1);
+          break;
+        }
       }
     }
+    else if(source === "DRAW"){
+      for(let n=0; n<hlDeck.cardsInDeck.length; n++){
+        if(hlDeck.cardsInDeck[n].title === hlCard.title){
+          console.log("removing index " +n +", title=" +hlDeck.cardsInDeck[n].title +" from cards in deck");
+          hlDeck.cardsInDeck.splice(n, 1);
+          break;
+        }
+      }
+    }
+    else if(source === "DISCARD"){
+      for(let n=0; n<hlDeck.cardsInDiscard.length; n++){
+        if(hlDeck.cardsInDiscard[n].title === hlCard.title){
+          console.log("removing index " +n +", title=" +hlDeck.cardsInDiscard[n].title +" from cards in discard");
+          hlDeck.cardsInDiscard.splice(n, 1);
+          break;
+        }
+      }
+    }
+    else if(source === "REMOVED"){
+      for(let n=0; n<hlDeck.cardsRemoved.length; n++){
+        if(hlDeck.cardsRemoved[n].title === hlCard.title){
+          console.log("removing index " +n +", title=" +hlDeck.cardsRemoved[n].title +" from removed cards");
+          hlDeck.cardsRemoved.splice(n, 1);
+          break;
+        }
+      }
+    }
+    else {
+      console.log("ERROR: unknow source " +source);
+    }
+    
 
     if(destination === "DISCARD"){
-      hlDeck.cardsInDiscard.push(hlCard);
+      console.log("adding " +hlCard.title +" to discard pile");
+      hlDeck.cardsInDiscard.unshift(hlCard);
     }
     else if(destination === "REMOVE"){
-      hlDeck.cardsRemoved.push(hlCard);
+      console.log("adding " +hlCard.title +" to removed pile");
+      hlDeck.cardsRemoved.unshift(hlCard);
+    }
+    else if(destination === "DRAW"){
+      console.log("adding " +hlCard.title +" to draw pile");
+      hlDeck.cardsInDeck.unshift(hlCard);
+    }
+    else if(destination === "REVEALED"){
+      console.log("adding " +hlCard.title +" to revealed cards");
+      revealedHL.unshift(hlCard);
     }
     else {
       console.log("ERROR: unknow destination " +destination);
     }
 
+    console.log("revealed hl cards length: " +revealedHL.length);
     let action = this.state.action;
-    if(revealedHL.length === 0){
+    if(revealedHL === 0 || revealedHL.length === 0){
       action.selectHLCard = false;
       revealedHL = 0; 
     }
     else {
       action.selectHLCard = true;
     }
+
     UpdateMonsterHL(this.state.monster.id, hlDeck);
     this.setState({
       revealedHL: revealedHL,
@@ -2109,6 +2157,9 @@ deHover = () => {
 
   setHLCardFirstInDeck = (card) => {
     console.log("clicked " +card.title); //TODO: change deck order of card to 0
+
+    this.moveHLCard(card, "DRAW", "DRAW");
+    
   }
 
   render() {
@@ -2118,7 +2169,7 @@ deHover = () => {
     //general
     const size = 40;
     const width_tiles = 22; //22
-    const height_tiles = 18; //18
+    const height_tiles = 16; //16
     const topOffset = 50;
     const leftOffset = 50;
     let highlights = this.state.highlights;
