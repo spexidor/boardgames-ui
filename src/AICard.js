@@ -45,6 +45,9 @@ return str;
 
 render(){
 
+    console.log("rendering ai card: monsterInRange=" +this.props.monsterInRange.toString());
+    console.log("rendering ai card: monsterMoveSelected=" +this.props.monsterMoveSelected.toString());
+
     //monster
     let monsterAttackDisabled = true;
     let monsterMoveDisabled = true;
@@ -52,14 +55,14 @@ render(){
     if(this.props.targets.length === 1){
         monsterAttackDisabled = false;
     }
-    if(this.props.targets.length === 1 && !this.props.aiCard.noMove){
+    if(this.props.targets.length === 1 && !this.props.aiCard.noMove && !this.props.monsterInRange){
         monsterMoveDisabled = false;
     }
     if(this.props.aiCard !== 0 && this.props.targets.length === 0){
         getTargetDisabled = false;
     }
     let moveActive = "";
-    if(this.props.monsterMoveSelected){
+    if(this.props.monsterMoveSelected && !this.props.monsterInRange){
         moveActive = "button-active";
         monsterMoveDisabled = false;
     }

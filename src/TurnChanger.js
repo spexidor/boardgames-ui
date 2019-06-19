@@ -6,31 +6,46 @@ export default class TurnChanger extends React.Component {
     render() {
   
     let nextAct ="";
-    let monsterAction =<div></div>;
+    let newAiButton =<div></div>;
     let nextActDisabled = false;
+    let nextActTooltip = "";
 
     if(this.props.act === "SURVIVORS"){
-        nextAct = "Go to Monsters act";
+        nextAct = "> Go to Monsters act >";
     }
     else{
-        nextAct = "Go to Survivors act";
+        nextAct = "> Go to Survivors act >";
         nextActDisabled = !this.props.activatedThisTurn;
-        monsterAction = 
+        const newAiDisabled = this.props.activatedThisTurn;
+
+        let newAiDisabledReasonStr = "";
+        
+        if (newAiDisabled) {
+          newAiDisabledReasonStr = "Monster activated this turn"
+        }
+        if (nextActDisabled) {
+          
+          nextActTooltip = "No AI Card has been revealed yet"
+        }
+        newAiButton = 
         <div>
-          <button disabled={this.props.activatedThisTurn} onClick={this.props.revealAI}>New AI</button>
-          {this.props.activatedThisTurn ? <i>Monster activated this turn</i>: null} 
+          <span data-tip={newAiDisabledReasonStr}>
+            <button disabled={newAiDisabled} onClick={this.props.revealAI}>New AI</button>
+          </span>
         </div>
     }
-      let actionBox = 
+      let nextActButton = 
       <div>
-        <button disabled={nextActDisabled} onClick={this.props.nextAct}>{nextAct}</button>
+        <span data-tip={nextActTooltip}>
+          <button disabled={nextActDisabled} onClick={this.props.nextAct}>{nextAct}</button>
+        </span>
       </div>
         
     
       return (
         <div className="round-gradient turn-changer">
-          {monsterAction}
-          {actionBox}
+          {newAiButton}
+          {nextActButton}
         </div>
       );
     }

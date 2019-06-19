@@ -121,11 +121,17 @@ html {
 }
 
 .action-box {
+  
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+
   text-align: left;
   position: absolute;
   color: #505050;
   height: 2vw;
-  width: 23vw;
+  width: 30vw;
   top: 1vw;
   left: 50vw;
   font-size: 0.8vw;

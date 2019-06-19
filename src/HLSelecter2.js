@@ -7,7 +7,7 @@ export default class HLSelecter extends React.Component {
 
     render() {
   
-      let cards = this.props.hlCards.map((hlCard, index) => <HLCard key={index} hlCard={hlCard} woundLocation={this.props.woundLocation} />)
+      let cards = this.props.hlCards.map((hlCard, index) => <HLCard key={index} hlCard={hlCard} clickedCard={this.props.woundLocation} />)
       let button = <div><button onClick={this.props.toggleHLSelecter}>Hide selecter</button></div>
 
       return (

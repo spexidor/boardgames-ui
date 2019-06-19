@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './App.css';
-//import Draggable from 'react-draggable';
 
 export default class ActionBox extends Component {
  
@@ -10,14 +9,16 @@ export default class ActionBox extends Component {
 
   render(){
 
-    //survivor
     let activateDisabled = false;
     let moveDisabled = false;
-    let moveDisabledReasonStr = "";
-    let activateDisabledReasonStr = "";
+    let moveDisabledReasonStr = "1";
+    let activateDisabledReasonStr = "2";
+    let gearButtonDisabled = true;
+
     if(this.props.act === "MONSTERS"){
         moveDisabled = true;
         moveDisabledReasonStr = "Waiting for survivors turn";
+        activateDisabledReasonStr = moveDisabledReasonStr;
     }
     else if(this.props.survivor.movesLeft < 1){
         moveDisabled = true;
@@ -34,38 +35,50 @@ export default class ActionBox extends Component {
     else if(this.deadOrKnockedDown() || this.props.act === "MONSTERS"){
         activateDisabled = true;
     }
-
     let moveActive = "";
     if(this.props.moveSelected){
         moveActive = "button-active";
     }
 
-    let actionBox = <div></div>
-    if(this.props.selection==="survivor"){
-
-        actionBox = 
-        <div>
-        <button disabled={moveDisabled} className={moveActive} onClick={this.props.survivorMove}>Move</button>
+    let monsterActions = <div></div>;
+    let actionMove = 
+    <div>
+        <span data-tip={moveDisabledReasonStr}>
+            <button disabled={moveDisabled} className={moveActive} onClick={this.props.survivorMove}>Move</button>
+        </span>
+    </div>
+    let actionActivate = 
+    <span data-tip={activateDisabledReasonStr}>
         <button disabled={activateDisabled} onClick={this.props.activate}>Activate</button>
-        <button onClick={this.props.showGearGrid}>Gear</button>
-        {moveDisabled ? <i>{moveDisabledReasonStr}</i>: null}
-        {activateDisabled ? <i>{activateDisabledReasonStr}</i>: null}
-        </div>
-    }
-    else if(this.props.selection==="monster"){
-        actionBox = 
-        <div>
-        <button className="button" onClick={this.props.changeFacing.bind(this, "UP")}>Turn up</button>
-        <button className="button" onClick={this.props.changeFacing.bind(this, "DOWN")}>Turn down</button>
-        <button className="button" onClick={this.props.changeFacing.bind(this, "LEFT")}>Turn left</button>
-        <button className="button" onClick={this.props.changeFacing.bind(this, "RIGHT")}>Turn right</button>
-        </div>
+    </span>
+    
+    if(this.props.selection==="survivor"){
+        gearButtonDisabled = false;
     }
     
+    let actionShowGearGrid = 
+    <div>
+        <button disabled={gearButtonDisabled} onClick={this.props.showGearGrid}>Gear</button>
+    </div>
+
     return(
         <div className="round-gradient action-box">
-            {actionBox}
+           {actionMove}
+           {actionActivate}
+           {actionShowGearGrid}
+           {monsterActions}
         </div>
     )
   }
 }
+//<button disabled={moveDisabled} className={moveActive} onClick={this.props.survivorMove}>Move</button>
+
+/*
+
+ <span data-tip={activateDisabledReasonStr}>
+                <button disabled={activateDisabled} onClick={this.props.activate}>Activate</button>
+            </span>
+            <button onClick={this.props.showGearGrid}>Gear</button>
+        </div>;
+
+        */
