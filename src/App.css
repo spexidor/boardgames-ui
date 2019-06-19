@@ -243,6 +243,10 @@ Width:  2.5   1.25   1.0   0.5
   
 }
 
+.gray-scale {
+  filter: saturate(0) brightness(0.8);;
+}
+
 .hlCard:hover {
   filter: brightness(1.1);
 }
@@ -522,6 +526,7 @@ Width:  2.5   1.25   1.0   0.5
 }
 .gameboard-tile {
   filter: sepia(0.5) hue-rotate(160deg);
+  opacity: 0.9;
 }
 .gameboard-tile:hover {
   filter: sepia(0.5) hue-rotate(160deg) brightness(1.8);

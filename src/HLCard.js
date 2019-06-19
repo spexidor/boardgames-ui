@@ -5,10 +5,18 @@ import lantern from './images/lantern_white.png';
 export default class HLCard extends Component {
 
 clickedCard = () => {
-    this.props.clickedCard(this.props.hlCard);
+    if(!this.props.trapRevealed || (this.props.trapRevealed && this.props.hlCard.trap)){
+        this.props.clickedCard(this.props.hlCard);
+    }
 }
 
 render(){
+
+    let grayScale = "";
+    if(this.props.trapRevealed && !this.props.hlCard.trap){
+        grayScale = "gray-scale";
+    }
+    console.log("gray scale: " +grayScale);
 
     //Input:
     let hlCard = this.props.hlCard;
@@ -78,9 +86,10 @@ render(){
         titleClassName = titleClassName +" hlCard-top-trap";
     }
     let title = <div className={titleClassName}>{hlCard.title}</div>
+    let className = "border-box hlCard " +grayScale;
     
    return(
-    <div className="border-box hlCard" onClick={this.clickedCard}>
+    <div className={className} onClick={this.clickedCard}>
         {title}
         {impervious}
         {reflex}

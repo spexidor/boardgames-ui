@@ -6,7 +6,7 @@ import SurvivorTiles from './SurvivorTiles';
 import InfoBox from './InfoBox';
 import ActionBox from './ActionBox';
 import DodgeSelecter from './DodgeSelecter'
-import HLSelecter from './HLSelecter2'
+import HLSelecter from './HLSelecter'
 import Gamelog from './Gamelog';
 import AICard from './AICard';
 import TurnChanger from './TurnChanger';
@@ -1642,8 +1642,9 @@ deHover = () => {
 
   dodgePopUpClosed = (dodgedHit) => {
 
-    let survivor = dodge.survivor;
     let dodge = this.state.dodge;
+    let survivor = dodge.survivor;
+    
     dodge.showDodgePopup = false;
     if(dodgedHit !== ""){
       this.addLogMessage("Dodged hit to " +dodgedHit, "SURVIVOR");
@@ -2241,7 +2242,7 @@ deHover = () => {
         {this.state.popUp.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} survivor={this.state.survivor} showGearGrid={this.showGearGrid} act={this.props.showdown.act}/>: null }
         {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} monsterInRange={this.state.monsterInRange} monsterMoveSelected={this.state.action.monsterMoveSelected} target={this.findAvailableTargets} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
-        {this.state.action.selectHLCard ? <HLSelecter toggleHLSelecter={this.toggleHLSelecter} hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}
+        {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}
         
         {this.props.showHLCards ? <AllHLCards clickedCard={this.setHLCardFirstInDeck.bind(this)} hlCards = {this.state.hlDeck.cardsInDeck}/> : null }
       </div>
