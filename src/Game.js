@@ -4,6 +4,7 @@ import GameBoard from './GameBoard';
 import GameSelector from './GameSelector'
 import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/RestServices/Showdown';
 import { GetGitInfo } from './Functions/RestServices/BackendInfo';
+import { BugInfo, VersionInfo } from './Functions/RenderFunctions';
 
  export default class Game extends Component {
  
@@ -77,30 +78,14 @@ import { GetGitInfo } from './Functions/RestServices/BackendInfo';
     let newGameScreen = <div></div>;
     let menu = <div></div>;
 
-    let versionInfo = 
-    <div className="version-info">
-      {this.state.backendInfo} | {this.state.frontendInfo}
-    </div>;
+    let versionInfo = VersionInfo(this.state.backendInfo +"|" +this.state.frontendInfo);
 
     if(this.state.loaded){
       gameBoard = <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown} showHLCards={this.state.showHLCards}/>;
       menu = <GameSelector createGame={this.createGame} hlCardsInDeck={this.showHLCards}/>;
     }
     else {
-      newGameScreen = 
-      <div>
-        <div className="new-game">
-        <button onClick={this.createGame}>New Game</button>
-        </div>
-        <div className="bug-list">
-        Known bugs:
-        <p>
-          <li>Grab on multiple run over survivors not implemented</li>
-          <li>Sniff not implemented</li>
-          <li>Not able to choose move path when monster moves as a reaction</li>
-        </p>
-        </div>
-      </div>
+      newGameScreen = BugInfo(this.createGame);
     }
     
     return(
