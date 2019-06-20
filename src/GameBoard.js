@@ -856,10 +856,9 @@ deHover = () => {
 
     this.stashHlCard(hlCard);
 
-    let monster = this.state.monster;
     let action = this.state.action;
+    let monster = this.state.monster;
     let survivor = this.state.survivor;
-    
     console.log("wounding with survivor " +survivor.name);
     let attackProfile = this.getSelectedAttackProfile();
 
@@ -879,7 +878,7 @@ deHover = () => {
     }
     else {
 
-      let sucessValue = this.toWoundValue(monster); //why can´t I access let 'monster' here?
+      let sucessValue = this.toWoundValue(monster);
       let diceRoll = GetDiceRoll(1,10);
         
       let woundResult = {dieResult: 0, sucess: false, crit: false};
