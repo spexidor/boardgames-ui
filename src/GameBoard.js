@@ -4,11 +4,11 @@ import TileRenderer from './TileRenderer';
 import MonsterTile from './MonsterTile';
 import SurvivorTiles from './SurvivorTiles';
 import InfoBox from './InfoBox';
-import ActionBox from './ActionBox';
+import ActionBox from './Components/ActionBox';
 import DodgeSelecter from './DodgeSelecter'
 import HLSelecter from './HLSelecter'
 import Gamelog from './Gamelog';
-import AICard from './AICard';
+import AICard from './Components/AICard';
 import TurnChanger from './TurnChanger';
 import GearGrid from './GearGrid';
 import AllHLCards from './AllHLCards';
@@ -871,10 +871,12 @@ deHover = () => {
     else if(!SurvivorInRange(monster, survivor, attackProfile)){
       this.addLogMessage("Survivor out of range, cancelling hit", "GAME_INFO");
       this.discardHLCard(hlCard);
+      this.discardRevealedHLCards();
     }
     else if(survivor.status === "KNOCKED_DOWN"){
       this.addLogMessage("Survivor knocked down, unable to attack", "GAME_INFO");
       this.discardHLCard(hlCard);
+      this.discardRevealedHLCards();
     }
     else {
 
@@ -1307,7 +1309,7 @@ deHover = () => {
       this.turnMonsterToSurvivor(survivor);
 
       const diceRolls = GetDiceRolls(1,10, aiCard.attack.speed);
-      this.addLogMessage("Rolled " +diceRolls);
+      this.addLogMessage("Rolled " +diceRolls, "GAME_INFO");
       const hits = this.getHits(diceRolls, this.getMonsterToHitValue(monster, aiCard.attack));
 
       this.addLogMessage("The monster scored " +hits.length +" hits (hitting on " +this.getMonsterToHitValue(monster, aiCard.attack) +"+)", "MONSTER");
@@ -1952,7 +1954,7 @@ deHover = () => {
 
   removeAICard = (numWounds) => {
     alert("You scored a wound!");
-    this.addLogMessage("Removing " +numWounds +" wounds from monster", "GAME_INFO");
+    this.addLogMessage("Removing " +numWounds +" wounds from monster, " +this.state.monster.aiDeck.cardsInDeck+this.state.monster.aiDeck.cardsInDiscard+1 +" wounds remaining", "GAME_INFO");
     let aiDeck = this.state.aiDeck;
     let updated = false;
     
@@ -1986,6 +1988,13 @@ deHover = () => {
     }
     else {
       console.log("UNABLE TO DISCARD HL CARD; WAITING FOR PLAYER INPUT");
+    }
+  }
+
+  discardRevealedHLCards = () => {
+    let revealedHL = this.state.revealedHL;
+    for(let n=0; n<revealedHL.length; n++){
+      this.moveHLCard(revealedHL[n], "REVEALED", "DISCARD");
     }
   }
 

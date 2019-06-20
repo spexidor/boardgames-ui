@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-import './App.css';
+import '../App.css';
 import Draggable from 'react-draggable';
 
-export default class Gamelog extends Component {
+export default class AICards extends Component {
  
 mapTargets = (target) => {
 let str = "";
@@ -45,8 +45,8 @@ return str;
 
 render(){
 
-    console.log("rendering ai card: monsterInRange=" +this.props.monsterInRange.toString());
-    console.log("rendering ai card: monsterMoveSelected=" +this.props.monsterMoveSelected.toString());
+    //console.log("rendering ai card: monsterInRange=" +this.props.monsterInRange.toString());
+    //console.log("rendering ai card: monsterMoveSelected=" +this.props.monsterMoveSelected.toString());
 
     //monster
     let monsterAttackDisabled = true;
