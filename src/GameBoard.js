@@ -856,9 +856,10 @@ deHover = () => {
 
     this.stashHlCard(hlCard);
 
-    let action = this.state.action;
     let monster = this.state.monster;
+    let action = this.state.action;
     let survivor = this.state.survivor;
+    
     console.log("wounding with survivor " +survivor.name);
     let attackProfile = this.getSelectedAttackProfile();
 
@@ -878,8 +879,7 @@ deHover = () => {
     }
     else {
 
-      let monster2 = this.state.monster;
-      const sucessValue = this.toWoundValue(monster2); //why can´t I access let 'monster' here?
+      let sucessValue = this.toWoundValue(monster); //why can´t I access let 'monster' here?
       let diceRoll = GetDiceRoll(1,10);
         
       let woundResult = {dieResult: 0, sucess: false, crit: false};
@@ -908,10 +908,8 @@ deHover = () => {
       }
       else if(!hlCard.critable && woundResult.crit){
         this.addLogMessage("No critical hits on this location :/ ", "GAME_INFO")
-      }
-      
+      }      
       let effectTriggered = false;
-      let monster = this.state.monster;
 
       if(woundResult.crit && hlCard.critable){ //critical wound
         //Critical wounds handled after reactions because might affect where HL card is discarded
@@ -2242,7 +2240,7 @@ deHover = () => {
         {this.state.popUp.showGearGrid ?  <GearGrid specialUseGear={this.specialUseGear.bind(this)} selectGear={this.selectGear.bind(this)} survivor={this.state.survivor} showGearGrid={this.showGearGrid} act={this.props.showdown.act}/>: null }
         {this.state.revealedAI !== 0 ? <AICard aiCard={this.state.revealedAI} monsterInRange={this.state.monsterInRange} monsterMoveSelected={this.state.action.monsterMoveSelected} target={this.findAvailableTargets} targets={this.state.targets} attack={this.clickedAttack}  monsterMove={this.clickedMonsterMove}/> : null }
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
-        {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation.bind(this)} /> : null}
+        {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation} /> : null}
         
         {this.props.showHLCards ? <AllHLCards clickedCard={this.setHLCardFirstInDeck.bind(this)} hlCards = {this.state.hlDeck.cardsInDeck}/> : null }
       </div>
