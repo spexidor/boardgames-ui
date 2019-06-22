@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import '../App.css';
 
-export default class GameSelector extends Component {
+export default class Menu extends Component {
 
     constructor(props) {
         super (props)

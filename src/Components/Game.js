@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import '../App.css';
 import GameBoard from './GameBoard';
-import GameSelector from './GameSelector'
+import Menu from './Menu'
 import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from '../Functions/RestServices/Showdown';
 import { GetGitInfo } from '../Functions/RestServices/BackendInfo';
 import { BugInfo, VersionInfo } from '../Rendering/RenderFunctions';
+import {Survivor} from '../Classes/Survivor';
 
  export default class Game extends Component {
  
@@ -22,8 +23,7 @@ import { BugInfo, VersionInfo } from '../Rendering/RenderFunctions';
   componentDidMount(){
 
     console.log("ENV: " +process.env.NODE_ENV);
-    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
-      // dev code
+    if ((!process.env.NODE_ENV || process.env.NODE_ENV === 'development') && true) {
       GetLatestShowdown(this.state.id).then(showdown => {
         if(showdown !== null){
           this.setState({
@@ -32,8 +32,6 @@ import { BugInfo, VersionInfo } from '../Rendering/RenderFunctions';
         }
       })
     } else {
-        // production code
-        
         //backend git
         GetGitInfo().then(data => {
           console.log("received git info from backend: " +data);
@@ -42,7 +40,7 @@ import { BugInfo, VersionInfo } from '../Rendering/RenderFunctions';
         });
 
         //frontend git
-        const data = require('./static/gitInfo.txt')
+        const data = require('../static/gitInfo.txt')
         fetch(data).then(result => 
           result.text()
         ).then(text => this.setState({frontendInfo: text}));
@@ -74,25 +72,17 @@ import { BugInfo, VersionInfo } from '../Rendering/RenderFunctions';
 
   render(){
 
-    let gameBoard = <div></div>;
-    let newGameScreen = <div></div>;
-    let menu = <div></div>;
-
     let versionInfo = VersionInfo(this.state.backendInfo +"|" +this.state.frontendInfo);
 
-    if(this.state.loaded){
-      gameBoard = <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown} showHLCards={this.state.showHLCards}/>;
-      menu = <GameSelector createGame={this.createGame} hlCardsInDeck={this.showHLCards}/>;
-    }
-    else {
-      newGameScreen = BugInfo(this.createGame);
+    if(!this.state.loaded){
+      //newGameScreen = ;
     }
     
     return(
       <div>
-        {newGameScreen}
-        {gameBoard}
-        {menu}
+        {!this.state.loaded ? BugInfo(this.createGame) : null } 
+        {this.state.loaded ? <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown} showHLCards={this.state.showHLCards}/> : null } 
+        {this.state.loaded ? <Menu createGame={this.createGame} hlCardsInDeck={this.showHLCards}/> : null } 
         {versionInfo}
       </div>)
   }
