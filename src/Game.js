@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import './App.css';
-import GameBoard from './GameBoard';
-import GameSelector from './GameSelector'
+import GameBoard from './Components/GameBoard';
+import GameSelector from './Components/GameSelector'
 import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from './Functions/RestServices/Showdown';
 import { GetGitInfo } from './Functions/RestServices/BackendInfo';
-import { BugInfo, VersionInfo } from './Functions/RenderFunctions';
+import { BugInfo, VersionInfo } from './Rendering/RenderFunctions';
 
  export default class Game extends Component {
  

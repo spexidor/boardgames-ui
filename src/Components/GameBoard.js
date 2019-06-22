@@ -1,22 +1,22 @@
 import React, { Component } from 'react';
-import './App.css';
+import '../App.css';
 import TileRenderer from './TileRenderer';
 import MonsterTile from './MonsterTile';
 import SurvivorTiles from './SurvivorTiles';
 import InfoBox from './InfoBox';
-import ActionBox from './Components/ActionBox';
+import ActionBox from './ActionBox';
 import DodgeSelecter from './DodgeSelecter'
 import HLSelecter from './HLSelecter'
 import Gamelog from './Gamelog';
-import AICard from './Components/AICard';
+import AICard from './AICard';
 import TurnChanger from './TurnChanger';
 import GearGrid from './GearGrid';
 import AllHLCards from './AllHLCards';
 import ReactTooltip from 'react-tooltip'
 
-import { UpdateSurvivor, DeleteSurvivor, GetHitlocations, GetSurvivorMoves, GetInjury} from './Functions/RestServices/Survivor';
-import { UpdateMonster , UpdateMonsterAI, UpdateMonsterHL, GetTargets, GetMonsterMoves, GetMonsterSpecialMove } from './Functions/RestServices/Monster';
-import { PositionsEqual, EmptySpaceInFrontOfMonster, SurvivorInRange, MonsterInRange, MonsterOnSurvivor, GetDiceRoll, GetDiceRolls, GetMonsterDirectionMarks, DirectionsAgainstSurvivor} from './Functions/HelperFunctions'
+import { UpdateSurvivor, DeleteSurvivor, GetHitlocations, GetSurvivorMoves, GetInjury} from '../Functions/RestServices/Survivor';
+import { UpdateMonster , UpdateMonsterAI, UpdateMonsterHL, GetTargets, GetMonsterMoves, GetMonsterSpecialMove } from '../Functions/RestServices/Monster';
+import { PositionsEqual, EmptySpaceInFrontOfMonster, SurvivorInRange, MonsterInRange, MonsterOnSurvivor, GetDiceRoll, GetDiceRolls, GetMonsterDirectionMarks, DirectionsAgainstSurvivor} from '../Functions/HelperFunctions'
 
 
 export default class GameBoard extends Component {

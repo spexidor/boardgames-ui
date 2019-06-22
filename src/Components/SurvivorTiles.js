@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import './App.css';
+import '../App.css';
 import SurvivorTile from './SurvivorTile';
-import s1 from './images/s1_c.jpg';
-import s2 from './images/s2_c.png';
-import s3 from './images/s3_c.png';
-import s4 from './images/s4_c.png';
+import s1 from '../images/s1_c.jpg';
+import s2 from '../images/s2_c.png';
+import s3 from '../images/s3_c.png';
+import s4 from '../images/s4_c.png';
 
 export default class SurvivorTiles extends Component {
  

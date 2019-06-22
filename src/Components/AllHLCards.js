@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './App.css';
+import '../App.css';
 import HLCard from './HLCard';
 
 export default class AllHLCards extends Component {

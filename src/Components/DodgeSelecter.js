@@ -1,5 +1,5 @@
 import React from 'react';
-import './App.css';
+import '../App.css';
 import Draggable from 'react-draggable';
 
 export default class DodgeSelecter extends React.Component {

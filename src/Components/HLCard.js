@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import './App.css';
-import lantern from './images/lantern_white.png';
+import '../App.css';
+import lantern from '../images/lantern_white.png';
 
 export default class HLCard extends Component {
 

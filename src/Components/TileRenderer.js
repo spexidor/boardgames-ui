@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import './App.css';
-import skulls from './images/skulls4_bw.png';
+import '../App.css';
+import skulls from '../images/skulls4_bw.png';
 import GameBoardTile from './GameBoardTile';
 
 export default class TileRenderer extends Component 

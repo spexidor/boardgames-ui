@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import './App.css';
-import monsterImg from'./images/kingdom_death_dig_tile_4x_transp_small.png';
+import '../App.css';
+import monsterImg from'../images/kingdom_death_dig_tile_4x_transp_small.png';
 //import monsterImg from'./images/white_lion_1.png';
 
 

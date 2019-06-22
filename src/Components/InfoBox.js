@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import './App.css';
-import lantern from './images/lantern2.png';
+import '../App.css';
+import lantern from '../images/lantern2.png';
 
 export default class InfoBox extends Component {
  
