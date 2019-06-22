@@ -53,11 +53,6 @@ export const DeleteSurvivor = (survivor) => {
       console.log("Survivor id not defined: " +url);
     }
   }
-
-  export const GetHitlocations = (numDice) => {
-    const url = 'http://localhost:8083/survivor/hitlocation?numDice=' +numDice;
-    return fetch(url).then(response => response.json());
-  }
   
   export const GetInjury = (hitlocation) => {
     console.log("fetching injury from table " +hitlocation)

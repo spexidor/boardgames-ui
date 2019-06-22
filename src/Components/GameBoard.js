@@ -14,10 +14,10 @@ import GearGrid from './GearGrid';
 import AllHLCards from './AllHLCards';
 import ReactTooltip from 'react-tooltip'
 
-import { UpdateSurvivor, DeleteSurvivor, GetHitlocations, GetSurvivorMoves, GetInjury} from '../Functions/RestServices/Survivor';
+import { UpdateSurvivor, DeleteSurvivor, GetSurvivorMoves, GetInjury} from '../Functions/RestServices/Survivor';
 import { UpdateMonster , UpdateMonsterAI, UpdateMonsterHL, GetTargets, GetMonsterMoves, GetMonsterSpecialMove } from '../Functions/RestServices/Monster';
-import { PositionsEqual, EmptySpaceInFrontOfMonster, SurvivorInRange, MonsterInRange, MonsterOnSurvivor, GetDiceRoll, GetDiceRolls, GetMonsterDirectionMarks, DirectionsAgainstSurvivor} from '../Functions/HelperFunctions'
-
+import { PositionsEqual, EmptySpaceInFrontOfMonster, SurvivorInRange, MonsterInRange, MonsterOnSurvivor, GetMonsterDirectionMarks, DirectionsAgainstSurvivor} from '../Functions/HelperFunctions'
+import { GetDiceRoll, GetDiceRolls, GetHitlocations } from '../Functions/Dice'
 
 export default class GameBoard extends Component {
 
@@ -1385,17 +1385,16 @@ deHover = () => {
       }
       else 
       {
-        GetHitlocations(numHits).then(hitLocations => { //Roll to get hitlocations
-          this.addLogMessage(survivor.name +" took hits to " +hitLocations +" (damage=" +damage +")", "MONSTER");
-        
-          this.addLogMessage(survivor.name +" has " +survivor.survival +" survival", "GAME_INFO");
-          if(survivor.survival > 0 && !survivor.doomed){
-            this.dodgePopUp(hitLocations, survivor, attack); //may remove 1 hit
-          }
-          else {
-            this.removeArmourWrapper(hitLocations, survivor, attack);
-          }
-      });
+        let hitLocations = GetHitlocations(numHits); //Roll to get hitlocations
+        this.addLogMessage(survivor.name +" took hits to " +hitLocations +" (damage=" +damage +")", "MONSTER");
+      
+        this.addLogMessage(survivor.name +" has " +survivor.survival +" survival", "GAME_INFO");
+        if(survivor.survival > 0 && !survivor.doomed){
+          this.dodgePopUp(hitLocations, survivor, attack); //may remove 1 hit
+        }
+        else {
+          this.removeArmourWrapper(hitLocations, survivor, attack);
+        }
       }
     }
   }
