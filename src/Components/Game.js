@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import '../App.css';
 import GameBoard from './GameBoard';
-import Menu from './Menu'
 import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from '../Functions/RestServices/Showdown';
 import { BugInfo } from '../Rendering/RenderFunctions';
 import VersionInfo from './VersionInfo'
+import { GameEngine } from '../Classes/GameEngine';
 
  export default class Game extends Component {
  
@@ -12,8 +12,9 @@ import VersionInfo from './VersionInfo'
     super(props);
 
     this.state = {
+      gameEngine: "",
+      gameState: "",
       loaded: false,
-      showHLCards: false
     }
   }
   
@@ -26,18 +27,17 @@ import VersionInfo from './VersionInfo'
         if(showdown !== null){
           this.setState({
             loaded: true,
-            showdown: showdown});
+            gameState: showdown});
         }
       })
     } 
   }
 
-  updateShowdown = (showdown) => {
+  updateGameState = (showdown) => {
     console.log("updating showdown state, turn=" +showdown.turn);
     
-    UpdateShowdown(this.state.showdown);
-    this.setState({
-      showdown: showdown});
+    UpdateShowdown(this.state.gameState);
+    this.setState({gameState: showdown});
   }
 
   createGame = (e) => {
@@ -46,13 +46,10 @@ import VersionInfo from './VersionInfo'
       console.log("new game: " +data.id)
       this.setState({
         loaded: true,
-        showdown: data
+        gameState: data,
+        gameEngine: new GameEngine(data, this.updateGameState),
       })
     });
-  }
-
-  showHLCards = () => {
-    this.setState({showHLCards: !this.state.showHLCards})
   }
 
   render(){
@@ -60,8 +57,7 @@ import VersionInfo from './VersionInfo'
     return(
       <div>
         {!this.state.loaded ? BugInfo(this.createGame) : null } 
-        {this.state.loaded ? <GameBoard showdown={this.state.showdown} updateShowdown={this.updateShowdown} showHLCards={this.state.showHLCards}/> : null } 
-        {this.state.loaded ? <Menu createGame={this.createGame} hlCardsInDeck={this.showHLCards}/> : null } 
+        {this.state.loaded ? <GameBoard showdown={this.state.gameState} gameEngine={this.state.gameEngine} updateShowdown={this.updateShowdown}/> : null } 
         <VersionInfo/>
       </div>)
   }

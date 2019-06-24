@@ -12,6 +12,7 @@ import AICard from './AICard';
 import TurnChanger from './TurnChanger';
 import GearGrid from './GearGrid';
 import AllHLCards from './AllHLCards';
+import Menu from './Menu'
 import ReactTooltip from 'react-tooltip'
 
 import { UpdateSurvivor, DeleteSurvivor, GetSurvivorMoves, GetInjury} from '../Functions/RestServices/Survivor';
@@ -81,6 +82,9 @@ export default class GameBoard extends Component {
       debug: {
         showAllHLcards: false,
         hlCard: this.props.showdown.monster.hlDeck.cardsInDeck[0]
+      },
+      options: {
+        showAllHLcards: false,
       }
     }
   }
@@ -2205,6 +2209,12 @@ deHover = () => {
     
   }
 
+  showHLCards = () => {
+    let options = this.state.options;
+    options.showHLCards = !options.showHLCards;
+    this.setState({options: options});
+  }
+
   render() {
 
     //console.log("rendering GameBoard.js, gear in grid: " +this.state.survivor.gearGrid.gear.length);
@@ -2260,7 +2270,9 @@ deHover = () => {
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation} /> : null}
         
-        {this.props.showHLCards ? <AllHLCards clickedCard={this.setHLCardFirstInDeck.bind(this)} hlCards = {this.state.hlDeck.cardsInDeck}/> : null }
+        {this.state.options.showHLCards ? <AllHLCards clickedCard={this.setHLCardFirstInDeck.bind(this)} hlCards = {this.state.hlDeck.cardsInDeck}/> : null }
+        <Menu createGame={this.createGame} hlCardsInDeck={this.showHLCards}/> : null } 
+        
       </div>
     )
   }
