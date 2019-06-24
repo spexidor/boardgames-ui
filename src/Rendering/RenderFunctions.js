@@ -17,11 +17,3 @@ export const BugInfo = (createGame) => {
       </div>
     );
 }
-
-export const VersionInfo = (info) => {
-    return(
-        <div className="version-info">
-            {info}
-        </div>
-    );
-}

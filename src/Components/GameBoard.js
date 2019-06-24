@@ -126,6 +126,7 @@ export default class GameBoard extends Component {
   }
   */
 
+  //UI
   keyUpFunction = (event) => {
     if(event.keyCode===16){ //shift
       let keyDown = this.state.keyDown;
@@ -134,6 +135,7 @@ export default class GameBoard extends Component {
     }
   }
 
+  //UI
   keyFunction = (event) => {
     //37, 38, 39, 40: left, up, right, down
     //49: 1
@@ -197,6 +199,7 @@ export default class GameBoard extends Component {
    }
  }
 
+ //UI
  clickedAttack = () => {
   let aiCard = this.state.revealedAI;
   let survivor = this.state.selection.monsterTarget;
@@ -211,6 +214,7 @@ export default class GameBoard extends Component {
   this.attack(monster, aiCard, survivor);
 }
 
+//UI
   /*
   * Handles a click on the board
   */
@@ -231,6 +235,7 @@ export default class GameBoard extends Component {
   }
 }
 
+//UI
 clickedSurvivorMove = () => {
   let action = this.state.action;
   action.moveSelected = !action.moveSelected;
@@ -239,6 +244,7 @@ clickedSurvivorMove = () => {
   })
 }
 
+//UI
 clickedMonsterMove = () => {
   let action = this.state.action;
   action.moveSelected = !action.moveSelected;
@@ -254,10 +260,12 @@ clickedMonsterMove = () => {
   })
 }
 
+//UI
 clickedActivate = () => {
   this.activateSurvivor(this.state.survivor);
 }
 
+//UI
 clickedBoard = (x,y) => {
 
   this.addLogMessage("CLICKED TILE " +x +"," +y, "GAME_INFO");
@@ -304,6 +312,7 @@ clickedBoard = (x,y) => {
   }
  }
 
+ //UI
 /*
  * Deselects survivor/monster
  */
@@ -325,6 +334,7 @@ deselect = () => {
   })
 }
 
+//GE - monster
  moveMonsterInDirection = (direction) => {
   if(this.state.action.monsterMoveSelected){
 
@@ -391,6 +401,7 @@ deselect = () => {
   }
  }
 
+ //GE - monster
  moveMonsterToValidPosition = (x,y) => {
 
   let monster = this.state.monster;
