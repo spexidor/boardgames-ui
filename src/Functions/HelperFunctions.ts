@@ -250,3 +250,33 @@ export const PositionOnBoard = (pos: Position) => {
   }
   return true;
 }
+
+export const GetNegativeTokens = (monster: Monster, tokenType: string) => {
+  let counter = 0;
+  for(let n=0; n<monster.negativeTokens.length; n++){
+    if(monster.negativeTokens[n] === tokenType){
+      console.log("-1 " +tokenType +" from token");
+      counter++;
+    }
+  }
+  return counter;
+}
+
+export const GetPositiveTokens = (monster: Monster, tokenType: string) => {
+  let counter = 0;
+  for(let n=0; n<monster.positiveTokens.length; n++){
+    if(monster.positiveTokens[n] === tokenType){
+      console.log("+1 " +tokenType +" from token");
+      counter++;
+    }
+  }
+  return counter;
+}
+
+export const GetTokenBonus = (monster: Monster, tokenType: string) => {
+  let bonus = 0;
+  bonus -= GetNegativeTokens(monster, tokenType);
+  bonus += GetPositiveTokens(monster, tokenType);
+  
+  return bonus;
+}

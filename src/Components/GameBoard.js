@@ -17,7 +17,7 @@ import ReactTooltip from 'react-tooltip'
 
 import { UpdateSurvivor, DeleteSurvivor, GetSurvivorMoves, GetInjury} from '../Functions/RestServices/Survivor';
 import { UpdateMonster , UpdateMonsterAI, UpdateMonsterHL, GetTargets, GetMonsterMoves, GetMonsterSpecialMove } from '../Functions/RestServices/Monster';
-import { PositionsEqual, EmptySpaceInFrontOfMonster, SurvivorInRange, MonsterInRange, MonsterOnSurvivor, GetMonsterDirectionMarks, DirectionsAgainstSurvivor} from '../Functions/HelperFunctions'
+import { PositionsEqual, EmptySpaceInFrontOfMonster, SurvivorInRange, MonsterInRange, MonsterOnSurvivor, GetMonsterDirectionMarks, DirectionsAgainstSurvivor, GetTokenBonus} from '../Functions/HelperFunctions'
 import { GetDiceRoll, GetDiceRolls, GetHitlocations } from '../Functions/Dice'
 
 export default class GameBoard extends Component {
@@ -1134,7 +1134,7 @@ deHover = () => {
   }
 
   toWoundValue = (monster) => {
-    let t = this.state.monster.statline.toughness + this.getTokenBonus(monster, "TOUGHNESS");
+    let t = this.state.monster.statline.toughness + GetTokenBonus(monster, "TOUGHNESS");
     //let s1 = this.state.survivor.strength;
     let s1 = 0;
     let s2 = this.getSelectedAttackProfile().strengthBonus;
@@ -1368,7 +1368,7 @@ deHover = () => {
   }
 
   getMonsterToHitValue = (monster, attack) => {
-    const toHit = attack.toHitValue + this.getTokenBonus(monster, "ACCURACY");
+    const toHit = attack.toHitValue + GetTokenBonus(monster, "ACCURACY");
     if (toHit < 2){
       return 2;
     }
@@ -1383,7 +1383,7 @@ deHover = () => {
     console.log("damageSurvivor: survivor: " +survivor.name +", numHits: " +numHits);
     if(numHits > 0)
     {
-      let damage = attack.damage + this.getTokenBonus(monster, "DAMAGE");
+      let damage = attack.damage + GetTokenBonus(monster, "DAMAGE");
       attack.damage = damage;
 
       if(attack.trigger && attack.trigger.afterHit){
@@ -1412,35 +1412,6 @@ deHover = () => {
         }
       }
     }
-  }
-
-  getNegativeTokens = (monster, tokenType) => {
-    let counter = 0;
-    for(let n=0; n<monster.negativeTokens.length; n++){
-      if(monster.negativeTokens[n] === tokenType){
-        console.log("-1 " +tokenType +" from token");
-        counter++;
-      }
-    }
-    return counter;
-  }
-  getPositiveTokens = (monster, tokenType) => {
-    let counter = 0;
-    for(let n=0; n<monster.positiveTokens.length; n++){
-      if(monster.positiveTokens[n] === tokenType){
-        console.log("+1 " +tokenType +" from token");
-        counter++;
-      }
-    }
-    return counter;
-  }
-
-  getTokenBonus = (monster, tokenType) => {
-    let bonus = 0;
-    bonus -= this.getNegativeTokens(monster, tokenType);
-    bonus += this.getPositiveTokens(monster, tokenType);
-    
-    return bonus;
   }
 
   /*
