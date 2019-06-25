@@ -2234,7 +2234,7 @@ deHover = () => {
         
         <div className="gameboard-normal">
           <TileRenderer monsterMoves={this.state.monsterMoves} targets={this.state.targets} click={this.click} monsterMoveHighlights={this.state.monsterMoveHighlights} highlights={highlights} markedTile={{x: this.state.selection.markedX, y: this.state.selection.markedY}}/>
-          <MonsterTile deHoverMonster={this.deHoverMonster} hoverMonster={this.hoverMonster} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
+          <MonsterTile deHoverMonster={this.deHoverMonster} hoverMonster={this.hoverMonster}  click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
           <SurvivorTiles deHoverSurvivor={this.deHoverSurvivor} hoverSurvivor={this.hoverSurvivor} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
         </div>
         

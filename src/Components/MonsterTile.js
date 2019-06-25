@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import '../App.css';
 import monsterImg from'../images/kingdom_death_dig_tile_4x_transp_small.png';
-//import monsterImg from'./images/white_lion_1.png';
-
+import { properties } from '../properties'
 
 export default class MonsterTile extends Component {
  
@@ -55,11 +54,15 @@ dehover = () => {
 
   render(){
 
+    const tileSize = properties.GAMEBOARD_TILE_SIZE_X;
+    const topOffset = properties.GAMEBOARD_TILE_TOP;
+    const leftOffset = properties.GAMEBOARD_TILE_LEFT;
+
     const shrink = 10;
-    let top=this.state.y*this.props.tileSize + this.props.topOffset +shrink;
-    let left=this.state.x*this.props.tileSize+ this.props.leftOffset +shrink;
-    let height = this.props.height*this.props.tileSize -shrink*2;
-    let width = this.props.width*this.props.tileSize -shrink*2;
+    let top=this.state.y*tileSize + topOffset +shrink;
+    let left=this.state.x*tileSize+ leftOffset +shrink;
+    let height = this.props.height*tileSize -shrink*2;
+    let width = this.props.width*tileSize -shrink*2;
     let degree = 0; //Default up
 
     if(this.props.gameStatus === "WIN"){
@@ -85,7 +88,7 @@ dehover = () => {
     }
 
     let img = <div></div>
-    //console.log("size: " +this.props.tileSize +" top: " +top +" left: " +left +" height: " +height +" width: " +width);
+    //console.log("size: " +tileSize +" top: " +top +" left: " +left +" height: " +height +" width: " +width);
     if(height>0 && width >0){
       img = <img className="monster-tile" src={monsterImg} alt={"monster_" +this.props.id} border={border} onClick={this.props.click} onMouseLeave={this.dehover} onMouseOver={this.hover} style={{transform: rotate, position: 'absolute', height: height, width: width, top: top-border, left: left-border}}/>
     }
