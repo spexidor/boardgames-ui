@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import '../App.css';
 import GameBoard from './GameBoard';
-import UI from './UI';
 import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from '../Functions/RestServices/Showdown';
 import { BugInfo } from '../Rendering/RenderFunctions';
 import VersionInfo from './VersionInfo'
@@ -62,7 +61,6 @@ import { GameEngine } from '../Classes/GameEngine';
       <div>
         {!this.state.loaded ? BugInfo(this.createGame) : null } 
         {this.state.loaded && !this.state.NEW ? <GameBoard showdown={this.state.gameState} gameEngine={this.state.gameEngine} updateShowdown={this.updateGameState}/> : null } 
-        {this.state.loaded && this.state.NEW ? <UI gameState={this.state.gameState} gameEngine={this.state.gameEngine}/> : null } 
         <VersionInfo/>
       </div>)
   }
