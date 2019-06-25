@@ -1,6 +1,6 @@
 import React  from 'react';
 
-export const BugInfo = (createGame) => {
+export const NewGameScreen = (createGame) => {
     return(
         <div>
         <div className="new-game">
