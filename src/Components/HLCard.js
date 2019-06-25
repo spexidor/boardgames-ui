@@ -16,7 +16,6 @@ render(){
     if(this.props.trapRevealed && !this.props.hlCard.trap){
         grayScale = "gray-scale";
     }
-    console.log("gray scale: " +grayScale);
 
     //Input:
     let hlCard = this.props.hlCard;

@@ -80,11 +80,11 @@ export default class GameBoard extends Component {
       ],
 
       debug: {
-        showAllHLcards: false,
         hlCard: this.props.showdown.monster.hlDeck.cardsInDeck[0]
       },
       options: {
-        showAllHLcards: false,
+        showHLcardsInDeck: false,
+        showHLcardsInDiscard: false,
       }
     }
   }
@@ -1968,7 +1968,10 @@ deHover = () => {
 
   removeAICard = (numWounds) => {
     alert("You scored a wound!");
-    this.addLogMessage("Removing " +numWounds +" wounds from monster, " +this.state.monster.aiDeck.cardsInDeck+this.state.monster.aiDeck.cardsInDiscard+1 +" wounds remaining", "GAME_INFO");
+    const a1 = this.state.monster.aiDeck.cardsInDeck.length;
+    const a2 = this.state.monster.aiDeck.cardsInDiscard.length;
+    const woundsRemaining = a1+a2+1;
+    this.addLogMessage("Removing " +numWounds +" wounds from monster, " +woundsRemaining +" wounds remaining", "GAME_INFO");
     let aiDeck = this.state.aiDeck;
     let updated = false;
     
@@ -2203,26 +2206,29 @@ deHover = () => {
   }
 
   setHLCardFirstInDeck = (card) => {
-    console.log("clicked " +card.title); //TODO: change deck order of card to 0
-
+    console.log("clicked " +card.title);
     this.moveHLCard(card, "DRAW", "DRAW");
-    
+  }
+  setHLCardFirstInDiscard = (card) => {
+    console.log("clicked " +card.title);
+    this.moveHLCard(card, "DISCARD", "DISCARD");
   }
 
-  showHLCards = () => {
+  showHLCardsInDeck = () => {
     let options = this.state.options;
-    options.showHLCards = !options.showHLCards;
+    options.showHLCardsInDeck = !options.showHLCardsInDeck;
+    this.setState({options: options});
+  }
+  showHLCardsInDiscard = () => {
+    let options = this.state.options;
+    options.showHLCardsInDiscard = !options.showHLCardsInDiscard;
     this.setState({options: options});
   }
 
   render() {
 
-    //console.log("rendering GameBoard.js, gear in grid: " +this.state.survivor.gearGrid.gear.length);
-
     //general
     const size = 40;
-    const width_tiles = 22; //22
-    const height_tiles = 16; //16
     const topOffset = 50;
     const leftOffset = 50;
     let highlights = this.state.highlights;
@@ -2256,7 +2262,7 @@ deHover = () => {
         <TurnChanger hlCards={this.state.revealedHL} selectHLCard={this.state.action.selectHLCard} activatedThisTurn={this.state.monster.activatedThisTurn} revealAI={this.clickedRevealAI} nextAct={this.nextAct} act={this.props.showdown.act}/>
         
         <div className="gameboard-normal">
-          <TileRenderer monsterMoves={this.state.monsterMoves} targets={this.state.targets} tileSizeX={size} tileSizeY={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} monsterMoveHighlights={this.state.monsterMoveHighlights} highlights={highlights} markedX={this.state.selection.markedX} markedY={this.state.selection.markedY} width_tiles={width_tiles} height_tiles={height_tiles} />
+          <TileRenderer monsterMoves={this.state.monsterMoves} targets={this.state.targets} click={this.click} monsterMoveHighlights={this.state.monsterMoveHighlights} highlights={highlights} markedTile={{x: this.state.selection.markedX, y: this.state.selection.markedY}}/>
           <MonsterTile deHoverMonster={this.deHoverMonster} hoverMonster={this.hoverMonster} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} facing={monsterFacing} selectedMonster={this.state.selection.selectedMonsterId} positionX={monsterPosX} positionY={monsterPosY} height={monsterHeight} width={monsterWidth} id={monsterId} gameStatus={gameStatus}/>
           <SurvivorTiles deHoverSurvivor={this.deHoverSurvivor} hoverSurvivor={this.hoverSurvivor} tileSize={size} topOffset={topOffset} leftOffset={leftOffset} click={this.click} selectedSurvivorId={this.state.selection.selectedSurvivorId} survivors={survivors} />
         </div>
@@ -2270,8 +2276,10 @@ deHover = () => {
         {this.state.dodge.showDodgePopup ? <DodgeSelecter hits={this.state.dodge.hits} dodgeHits={this.dodgePopUpClosed.bind(this)} /> : null}
         {this.state.action.selectHLCard ? <HLSelecter hlCards={this.state.revealedHL} woundLocation={this.woundLocation} /> : null}
         
-        {this.state.options.showHLCards ? <AllHLCards clickedCard={this.setHLCardFirstInDeck.bind(this)} hlCards = {this.state.hlDeck.cardsInDeck}/> : null }
-        <Menu createGame={this.createGame} hlCardsInDeck={this.showHLCards}/> : null } 
+        {this.state.options.showHLCardsInDeck ? <AllHLCards clickedCard={this.setHLCardFirstInDeck.bind(this)} hlCards = {this.state.hlDeck.cardsInDeck}/> : null }
+        {this.state.options.showHLCardsInDiscard ? <AllHLCards clickedCard={this.setHLCardFirstInDiscard.bind(this)} hlCards = {this.state.hlDeck.cardsInDiscard}/> : null }
+
+        <Menu createGame={this.createGame} hlCardsInDiscard={this.showHLCardsInDiscard} hlCardsInDeck={this.showHLCardsInDeck}/> : null } 
         
       </div>
     )

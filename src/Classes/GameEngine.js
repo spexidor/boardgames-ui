@@ -3,6 +3,8 @@ export class GameEngine {
 
         this.gameState = initialGameState;
         this.updateRef = updateReference;
+
+        console.log("creating new game engine");
     }
 
     updateGameState = () => {
@@ -10,5 +12,8 @@ export class GameEngine {
         this.updateRef(this.gameState);
     }
 
+    click = () => {
+        console.log("gameEngine: click");
+    }
 
 }

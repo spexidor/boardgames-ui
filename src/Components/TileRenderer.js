@@ -2,19 +2,38 @@ import React, { Component } from 'react';
 import '../App.css';
 import skulls from '../images/skulls4_bw.png';
 import GameBoardTile from './GameBoardTile';
+import { properties } from '../properties.js';
+
+/*
+Input properties:
+click:                  function triggered when clicking a tile
+
+monsterMoves:           array of coordinates where monster can move
+targets:                array of possible monster targets
+monsterMoveHighlights:  array of coordinates where monster can move (direction against survivor)
+highlights:             array of coordinates where survivor can move
+markedTile              coordinate of marked tile {x: 0, y: 0}
+*/
 
 export default class TileRenderer extends Component 
 {
     render(){
 
+        const width_tiles = properties.GAMEBOARD_WIDTH; //22
+        const height_tiles = properties.GAMEBOARD_HEIGHT; //16
+        const tileSizeX = properties.GAMEBOARD_TILE_SIZE_X;
+        const tileSizeY = properties.GAMEBOARD_TILE_SIZE_Y;
+        const leftOffset = properties.GAMEBOARD_TILE_LEFT;
+        const topOffset = properties.GAMEBOARD_TILE_TOP;
+        
         let left;
         let top;
         let tilePositions = [];
 
-        for(let x=0;x<this.props.width_tiles;x++){
-            left = this.props.tileSizeX*x + this.props.leftOffset;
-            for(let y=0; y<this.props.height_tiles; y++){
-              top = this.props.tileSizeY*y + this.props.topOffset;
+        for(let x=0;x<width_tiles;x++){
+            left = tileSizeX*x + leftOffset;
+            for(let y=0; y<height_tiles; y++){
+              top = tileSizeY*y + topOffset;
       
               let highlight = false;
               let target = false;
@@ -62,7 +81,7 @@ export default class TileRenderer extends Component
         if(tilePositions.length > 0){
             tiles = 
             <div>
-              <MapTable data={tilePositions} sizeY={this.props.tileSizeY} sizeX={this.props.tileSizeX} click={this.props.click} markedX={this.props.markedX} markedY={this.props.markedY}/>
+              <MapTable data={tilePositions} sizeY={tileSizeY} sizeX={tileSizeX} click={this.props.click} markedX={this.props.markedTile.x} markedY={this.props.markedTile.y}/>
             </div>
         }
 

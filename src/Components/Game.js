@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import '../App.css';
 import GameBoard from './GameBoard';
+import UI from './UI';
 import { UpdateShowdown, GetLatestShowdown, CreateShowdown} from '../Functions/RestServices/Showdown';
 import { BugInfo } from '../Rendering/RenderFunctions';
 import VersionInfo from './VersionInfo'
@@ -15,19 +16,22 @@ import { GameEngine } from '../Classes/GameEngine';
       gameEngine: "",
       gameState: "",
       loaded: false,
+      NEW: false,
     }
   }
   
   componentDidMount(){
 
-    console.log("ENV: " +process.env.NODE_ENV);
+    console.log("Starting new session in " +process.env.NODE_ENV +" environment");
     const loadExistingShowdown = true; //set to false to always create new showdown (as in prod)
     if ((!process.env.NODE_ENV || process.env.NODE_ENV === 'development') && loadExistingShowdown) {
       GetLatestShowdown(this.state.id).then(showdown => {
         if(showdown !== null){
           this.setState({
             loaded: true,
-            gameState: showdown});
+            gameState: showdown,
+            gameEngine: new GameEngine(showdown, this.updateGameState)
+          });
         }
       })
     } 
@@ -57,8 +61,16 @@ import { GameEngine } from '../Classes/GameEngine';
     return(
       <div>
         {!this.state.loaded ? BugInfo(this.createGame) : null } 
-        {this.state.loaded ? <GameBoard showdown={this.state.gameState} gameEngine={this.state.gameEngine} updateShowdown={this.updateShowdown}/> : null } 
+        {this.state.loaded && !this.state.NEW ? <GameBoard showdown={this.state.gameState} gameEngine={this.state.gameEngine} updateShowdown={this.updateGameState}/> : null } 
+        {this.state.loaded && this.state.NEW ? <UI gameState={this.state.gameState} gameEngine={this.state.gameEngine}/> : null } 
         <VersionInfo/>
       </div>)
   }
 }
+
+/*
+
+
+        
+
+*/

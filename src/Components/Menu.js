@@ -17,6 +17,9 @@ export default class Menu extends Component {
     hlCardsInDeck = () => {
       this.props.hlCardsInDeck();
     }
+    hlCardsInDiscard = () => {
+      this.props.hlCardsInDiscard();
+    }
 
     toggleHide = () => {
       //const wrapper = document.getElementById('wrapper');
@@ -45,7 +48,8 @@ export default class Menu extends Component {
                 <button onClick={this.newGame}>New Game</button>
                 <br/>
                  Debug options:
-                <button onClick={this.hlCardsInDeck}>Show/hide HL cards deck</button>
+                <button onClick={this.hlCardsInDeck}>Show/hide HL cards in deck</button>
+                <button onClick={this.hlCardsInDiscard}>Show/hide HL cards in discard</button>
             </div>
       }
 
