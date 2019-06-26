@@ -10,8 +10,8 @@ export default class MonsterTile extends Component {
 
     this.state = {
         facing: props.facing,
-        x: this.props.positionX,
-        y: this.props.positionY 
+        x: this.props.position.x,
+        y: this.props.position.y 
     }
   }
 
@@ -25,16 +25,16 @@ updateRenderedMonster = () => {
   let y = this.state.y;
   const margin = 0.05;
   const moveSpeed = 0.2;
-  if(x+margin < this.props.positionX){
+  if(x+margin < this.props.position.x){
     x += moveSpeed;
   }
-  else if(x-margin > this.props.positionX){
+  else if(x-margin > this.props.position.x){
     x -= moveSpeed;
   }
-  if(y+margin < this.props.positionY){
+  if(y+margin < this.props.position.y){
     y += moveSpeed;
   }
-  else if(y-margin > this.props.positionY){
+  else if(y-margin > this.props.position.y){
     y -= moveSpeed;
   }
   this.setState({x: x, y: y});

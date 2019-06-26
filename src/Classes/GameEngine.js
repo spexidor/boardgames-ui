@@ -1,7 +1,10 @@
+import { DeckManager } from '../Classes/DeckManager'; 
+
 export class GameEngine {
     constructor(initialGameState, updateReference){
 
         this.gameState = initialGameState;
+        this.deckManager = new DeckManager(initialGameState.monster.aiDeck);
         this.updateRef = updateReference;
 
         console.log("creating new game engine");
@@ -14,6 +17,10 @@ export class GameEngine {
 
     click = () => {
         console.log("gameEngine: click");
+    }
+
+    getDeckManager = () => {
+        return this.deckManager;
     }
 
 }

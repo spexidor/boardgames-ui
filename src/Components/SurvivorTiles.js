@@ -5,6 +5,7 @@ import s1 from '../images/s1_c.jpg';
 import s2 from '../images/s2_c.png';
 import s3 from '../images/s3_c.png';
 import s4 from '../images/s4_c.png';
+import { properties } from '../properties'
 
 export default class SurvivorTiles extends Component {
  
@@ -62,6 +63,9 @@ export default class SurvivorTiles extends Component {
     render(){
 
       //console.log("rendering SurvivorTiles.js: " +this.props.hoverSurvivor)
+      const tileSize = properties.GAMEBOARD_TILE_SIZE_X;
+      const topOffset = properties.GAMEBOARD_TILE_TOP;
+      const leftOffset = properties.GAMEBOARD_TILE_LEFT;
 
         let tiles = <div></div>;
         let survivors = [];
@@ -85,8 +89,8 @@ export default class SurvivorTiles extends Component {
                 src = srcArr[3];
               }
 
-              let left = this.state.x[i]*this.props.tileSize + this.props.leftOffset;
-              let top =  this.state.y[i]*this.props.tileSize + this.props.topOffset;
+              let left = this.state.x[i]*tileSize + leftOffset;
+              let top =  this.state.y[i]*tileSize + topOffset;
               survivors.push(
                   {
                     topPx: top+shrink, 
@@ -95,7 +99,7 @@ export default class SurvivorTiles extends Component {
                     id: this.props.survivors[i].id,
                     selectedSurvivorId: this.props.selectedSurvivorId,
                     src: src,
-                    size: this.props.tileSize,
+                    size: tileSize,
                     knockedDown: this.props.survivors[i].status === "KNOCKED_DOWN",
                     hover: this.props.hoverSurvivor,
                     deHover: this.props.deHoverSurvivor
