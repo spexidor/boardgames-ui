@@ -1,16 +1,18 @@
+import {EnvHost} from './BackendHost'
+
 export const GetShowdown = (id) => {
-    const url = 'http://localhost:8083/showdown/' +id;
+    const url = EnvHost + '/showdown/' +id;
     return fetch(url).then(response => response.json());
  }
 
  export const GetLatestShowdown = () => {
-  const url = 'http://localhost:8083/showdown/latest';
+  const url = EnvHost + '/showdown/latest';
   return fetch(url).then(response => response.json());
 }
  
  export const CreateShowdown = (name) => {
  
-   const url = 'http://localhost:8083/showdown/'
+   const url = EnvHost + '/showdown/'
    console.log("creating new showdown in backend (POST to " +url +")");
    
    if(typeof name !== 'undefined'){ 
@@ -33,7 +35,7 @@ export const GetShowdown = (id) => {
  export const UpdateShowdown = (showdown) => {
 
     const id = showdown.id;
-    const url = 'http://localhost:8083/showdown/' +id;
+    const url = EnvHost + '/showdown/' +id;
     
     fetch(url, {
     crossDomain:true,

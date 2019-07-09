@@ -1,8 +1,10 @@
+import {EnvHost} from './BackendHost'
+
 export const UpdateSurvivor = (survivor) => {
 
     //console.log("updating survivor in back end");
     const id = survivor.id;
-    const url = 'http://localhost:8083/survivor/' +id;
+    const url = EnvHost + '/survivor/' +id;
 
     if(typeof id !== 'undefined'){ 
       return fetch(url, {
@@ -37,7 +39,7 @@ export const UpdateSurvivor = (survivor) => {
 export const DeleteSurvivor = (survivor) => {
 
     const id = survivor.id;
-    const url = 'http://localhost:8083/survivor/' +id;
+    const url = EnvHost + '/survivor/' +id;
     console.log("REST: deleting survivor " +survivor.name +" from back end");
   
     if(typeof id !== 'undefined'){ 
@@ -56,12 +58,12 @@ export const DeleteSurvivor = (survivor) => {
   
   export const GetInjury = (hitlocation) => {
     console.log("fetching injury from table " +hitlocation)
-    const url = 'http://localhost:8083/survivor/injury?table=' +hitlocation;
+    const url = EnvHost + '/survivor/injury?table=' +hitlocation;
     
     return fetch(url).then(response => response.json());
   }
 
   export const GetSurvivorMoves = (id) => {
-    const url = "http://localhost:8083/survivor/" + id + "/openMoves";
+    const url = EnvHost + "/survivor/" + id + "/openMoves";
     return fetch(url).then(response => response.json());
   }

@@ -1,10 +1,11 @@
 import {Monster, HlDeck, AiDeck} from './../Interfaces'
+import {EnvHost} from './BackendHost'
 
 export const UpdateMonster = (monster: Monster) => {
 //export function UpdateMonster<T>(monster: Monster): Promise<T> {
 
     const id = monster.id;
-    const url = 'http://localhost:8083/monster/' +id;
+    const url = EnvHost + '/monster/' +id;
   
     if(typeof id !== 'undefined'){
   
@@ -39,7 +40,7 @@ export const UpdateMonster = (monster: Monster) => {
 
   export const UpdateMonsterAI = (monsterId: number, aiDeck: AiDeck) => {
 
-    const url = 'http://localhost:8083/monster/' +monsterId +'/ai';
+    const url = EnvHost + '/monster/' +monsterId +'/ai';
   
     if(typeof monsterId !== 'undefined'){
   
@@ -66,7 +67,7 @@ export const UpdateMonster = (monster: Monster) => {
 
   export const UpdateMonsterHL = (monsterId:number, hlDeck: HlDeck) => {
 
-    const url = 'http://localhost:8083/monster/' +monsterId +'/hl';
+    const url = EnvHost + '/monster/' +monsterId +'/hl';
   
     if(typeof monsterId !== 'undefined'){
   
@@ -92,7 +93,7 @@ export const UpdateMonster = (monster: Monster) => {
 
 
 export const GetAiDeck = (monsterId: number) => {
-    const url = 'http://localhost:8083/monster/' +monsterId +'/ai';
+    const url = EnvHost + '/monster/' +monsterId +'/ai';
     return fetch(url).then(response => response.json());
 }
 
@@ -104,17 +105,17 @@ export const UpdateAiDeck = (monsterId: number, aiDeck: AiDeck) => {
  * Returns list of survivors
  */
 export const GetTargets = (monsterId: number, cardId: number) => {
-    const url = 'http://localhost:8083/monster/' +monsterId +'/ai/' +cardId +'/targets';
+    const url = EnvHost + '/monster/' +monsterId +'/ai/' +cardId +'/targets';
     return fetch(url).then(response => response.json());
 }
 
 export const GetMonsterMoves = (id: number) => {
-    const url = "http://localhost:8083/monster/" + id + "/openMoves";
+    const url = EnvHost + "/monster/" + id + "/openMoves";
     return fetch(url).then(response => response.json());
   }
 
 export const GetMonsterSpecialMove = (id: number, direction: string) => {
   let length = 5;
-  const url = "http://localhost:8083/monster/" + id + "/specificMove?direction=" +direction +"&length=" +length;
+  const url = EnvHost + "/monster/" + id + "/specificMove?direction=" +direction +"&length=" +length;
   return fetch(url).then(response => response.json());
 }
